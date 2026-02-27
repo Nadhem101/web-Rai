@@ -1,0 +1,4908 @@
+[
+  {
+    "code": "ECME316",
+    "designation": "Banc de test KAS",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "17 /09/2025",
+    "date_mise_en_service": "17/09/2025",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME315",
+    "designation": "Banc de test cart FAAC0033",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "17/02/2025",
+    "date_mise_en_service": "17/02/2025",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME314",
+    "designation": "Banc de test cart 005144",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "28/11/2024",
+    "date_mise_en_service": "28/11/2024",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME313",
+    "designation": "Banc de test PS X X X X",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "2024",
+    "date_mise_en_service": "2024",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME312",
+    "designation": "Megometre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "09/02/2024",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME311",
+    "designation": "Banc de test pour BT82538",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "30/01/2024",
+    "date_mise_en_service": "30/01/2024",
+    "verif_type": "IP",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Tue Jan 30 2024 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME310",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "20/12/2023",
+    "date_mise_en_service": "20/12/2023",
+    "verif_type": "IP",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Wed Dec 20 2023 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME309",
+    "designation": "Alimentaton",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "07/12/2023",
+    "date_mise_en_service": "07/12/2023",
+    "verif_type": "Exempté",
+    "zone": "électro-aiment",
+    "calib_dates": [
+      "Thu Dec 07 2023 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME308",
+    "designation": "Banc de test renesas",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "14/11/2023",
+    "date_mise_en_service": "14/11/2023",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME307",
+    "designation": "Appareil de mesure de l'inducatance",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "21/02/2024",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Feb 21 2024 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME306",
+    "designation": "Banc de test carte palpeuse",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "29/08/2023",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME305",
+    "designation": "Banc de test carte commande double actionneur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "2021",
+    "date_mise_en_service": "2021",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME304",
+    "designation": "Banc de test UNIF CF en boitier REVG",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "11 /05/2023",
+    "date_mise_en_service": "11/05/2023",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Thu May 11 2023 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME303",
+    "designation": "Banc de test carte booster",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "03 /05/2023",
+    "date_mise_en_service": "03/05/2023",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed May 03 2023 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME302",
+    "designation": "Banc de test AYADYPOOL",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "14 /03/2023",
+    "date_mise_en_service": "14/03/2023",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Tue Mar 14 2023 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME301",
+    "designation": "Banc de test luneau",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02 /02/2023",
+    "date_mise_en_service": "02/02/2023",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Thu Feb 02 2023 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME300",
+    "designation": "Cale d'entregrain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "13/02/2023",
+    "date_mise_en_service": "13/02/2023",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "Mon Feb 13 2023 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME299",
+    "designation": "Cale d'entregrain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "13/02/2023",
+    "date_mise_en_service": "13/02/2023",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "Mon Feb 13 2023 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME298",
+    "designation": "Cale d'entregrain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "13/02/2023",
+    "date_mise_en_service": "13/02/2023",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "Mon Feb 13 2023 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME297",
+    "designation": "Banc de test carte ILS 56210000720",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "16/07/2022",
+    "date_mise_en_service": "16/07/2022",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Sat Jul 16 2022 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME296",
+    "designation": "Banc de test 5619100600 /56220000100",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "05/07/2022",
+    "date_mise_en_service": "05/07/2022",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "Tue Jul 05 2022 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME295",
+    "designation": "Tampon filée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "09/03/2022",
+    "date_mise_en_service": "09/03/2022",
+    "verif_type": "IP",
+    "zone": "electro-aiment",
+    "calib_dates": [
+      "Wed Mar 09 2022 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME294",
+    "designation": "Couple mètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/09/2021",
+    "date_mise_en_service": "19/01/2022",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Jan 19 2022 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME293",
+    "designation": "Couple mètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/09/2021",
+    "date_mise_en_service": "19/01/2022",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Jan 19 2022 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME292",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/09/2021",
+    "date_mise_en_service": "02/09/2021",
+    "verif_type": "IP",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Thu Sep 02 2021 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME291",
+    "designation": "Banc de test (interface de test 008 )",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "22/07/2021",
+    "date_mise_en_service": "22/07/2021",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Thu Jul 22 2021 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME290",
+    "designation": "Banc de test cable TEDS",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/07/2021",
+    "date_mise_en_service": "15/07/2021",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Thu Jul 15 2021 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME289",
+    "designation": "Multimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "25/05/2021",
+    "date_mise_en_service": "25/05/2021",
+    "verif_type": "IP",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Tue May 25 2021 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME288",
+    "designation": "Banc de test 004  K3121681 / K3120600",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "20/04/2021",
+    "date_mise_en_service": "20/04/2021",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Thu Apr 22 2021 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME287",
+    "designation": "Banc de test carte afficheur AY012020",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2021",
+    "date_mise_en_service": "27/01/2021",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Jan 27 2021 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME286",
+    "designation": "Banc de test carte de base AY012020",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2021",
+    "date_mise_en_service": "27/01/2021",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Jan 27 2021 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME285",
+    "designation": "Banc de test faisceau 83233137",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "05/01/2021",
+    "date_mise_en_service": "05/01/2021",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Tue Jan 05 2021 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME284",
+    "designation": "Tournevis dynamomètrique",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "21/09/2020",
+    "date_mise_en_service": "21/09/2020",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "Mon Sep 21 2020 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME283",
+    "designation": "Tournevis dynamomètrique",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "21/09/2020",
+    "date_mise_en_service": "21/09/2020",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "Mon Sep 21 2020 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME282",
+    "designation": "Banc de test boitier Hummbox US LC",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "26/05/2020",
+    "date_mise_en_service": "26/05/2020",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Tue May 26 2020 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME281",
+    "designation": "Testeur ESD",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/06/2018",
+    "date_mise_en_service": "15/06/2018",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "Fri Jun 15 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 7
+  },
+  {
+    "code": "ECME280",
+    "designation": "Banc de test carte DSM5002",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/05/2020",
+    "date_mise_en_service": "12/05/2020",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Tue May 12 2020 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME279",
+    "designation": "Banc de test panol autodef",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/03/2020",
+    "date_mise_en_service": "12/03/2020",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Thu Mar 12 2020 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME278",
+    "designation": "Banc de programation des modules chauffage  101006-101016-600106",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/10/2019",
+    "date_mise_en_service": "02/10/2019",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Oct 02 2019 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME277",
+    "designation": "Banc de test produit final 101006-101016-600106",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/10/2019",
+    "date_mise_en_service": "02/10/2019",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Oct 02 2019 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME276",
+    "designation": "Banc de test du PCBA  101006-101016-600106",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/10/2019",
+    "date_mise_en_service": "02/10/2019",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Oct 02 2019 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME275",
+    "designation": "Multimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/01/2020",
+    "date_mise_en_service": "15/01/2020",
+    "verif_type": "IP",
+    "zone": "Chauvin arnoux",
+    "calib_dates": [
+      "Wed Jan 15 2020 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 4
+  },
+  {
+    "code": "ECME274",
+    "designation": "Cale pour EA 92-19-61-20",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "06/01/2020",
+    "date_mise_en_service": "06/01/2020",
+    "verif_type": "Exempté",
+    "zone": "electro-aiment",
+    "calib_dates": [
+      "Mon Jan 06 2020 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME273",
+    "designation": "Dielectrique",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "17/12/2019",
+    "date_mise_en_service": "17/12/2019",
+    "verif_type": "IP",
+    "zone": "electro-aiment",
+    "calib_dates": [
+      "Tue Dec 17 2019 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 6
+  },
+  {
+    "code": "ECME272",
+    "designation": "Banc de test cabine peinture",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "25/10/2019",
+    "date_mise_en_service": "25/10/2019",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Fri Oct 25 2019 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME271",
+    "designation": "Banc de test caterpillar",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "16/10/2019",
+    "date_mise_en_service": "16/10/2019",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Oct 16 2019 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME270",
+    "designation": "Banc de test carte cablée codeur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/10/2018",
+    "date_mise_en_service": "02/10/2018",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Tue Oct 02 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME269",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/09/2018",
+    "date_mise_en_service": "12/09/2018",
+    "verif_type": "Exempté",
+    "zone": "embase relais",
+    "calib_dates": [
+      "Wed Sep 12 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME268",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/09/2018",
+    "date_mise_en_service": "12/09/2018",
+    "verif_type": "Exempté",
+    "zone": "embase relais",
+    "calib_dates": [
+      "Wed Sep 12 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME267",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/09/2018",
+    "date_mise_en_service": "12/09/2018",
+    "verif_type": "Exempté",
+    "zone": "embase relais",
+    "calib_dates": [
+      "Wed Sep 12 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME266",
+    "designation": "Balance",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "28/05/2018",
+    "date_mise_en_service": "28/05/2018",
+    "verif_type": "IP",
+    "zone": "Magasin",
+    "calib_dates": [
+      "Mon May 28 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 6
+  },
+  {
+    "code": "ECME265",
+    "designation": "Pied à coulisse",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "24/05/2018",
+    "date_mise_en_service": "24/05/2018",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Thu May 24 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 6
+  },
+  {
+    "code": "ECME264",
+    "designation": "Banc de test pour carte afficheur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "17/04/2018",
+    "date_mise_en_service": "17/04/2018",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Tue Apr 17 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME263",
+    "designation": "mesureur de température",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "05/04/2018",
+    "date_mise_en_service": "05/04/2018",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [
+      "Thu Apr 05 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 7
+  },
+  {
+    "code": "ECME262",
+    "designation": "mesureur de température",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "05/04/2018",
+    "date_mise_en_service": "05/04/2018",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Thu Apr 05 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 7
+  },
+  {
+    "code": "ECME261",
+    "designation": "pied à coulisse",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "21/03/2018",
+    "date_mise_en_service": "21/03/2018",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Wed Mar 21 2018 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 7
+  },
+  {
+    "code": "ECME260",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "07/02/2018",
+    "date_mise_en_service": "07/02/2018",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Wed Feb 07 2018 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME259",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "07/02/2018",
+    "date_mise_en_service": "07/02/2018",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [
+      "Wed Feb 07 2018 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME258",
+    "designation": "Banc de test des rallonge superseal 4 poles",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/12/2017",
+    "date_mise_en_service": "12/12/2017",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Tue Dec 12 2017 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME257",
+    "designation": "Cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "29/11/2017",
+    "date_mise_en_service": "29/11/2017",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Nov 29 2017 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME256",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "18/04/2017",
+    "date_mise_en_service": "18/04/2017",
+    "verif_type": "IP",
+    "zone": "Chauvin arnoux",
+    "calib_dates": [
+      "Tue Apr 18 2017 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME255",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "25/04/2017",
+    "date_mise_en_service": "25/04/2017",
+    "verif_type": "IP",
+    "zone": "electro-aiment",
+    "calib_dates": [
+      "Tue Apr 25 2017 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME254",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "22/03/2017",
+    "date_mise_en_service": "23/03/2017",
+    "verif_type": "IP",
+    "zone": "electro-aiment",
+    "calib_dates": [
+      "Thu Mar 23 2017 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME253",
+    "designation": "mesureur de température",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "26/01/2017",
+    "date_mise_en_service": "26/01/2017",
+    "verif_type": "IP",
+    "zone": "Electro-aimant",
+    "calib_dates": [
+      "Thu Jan 26 2017 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME252",
+    "designation": "mesureur de températeur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "26/01/2017",
+    "date_mise_en_service": "26/01/2017",
+    "verif_type": "IP",
+    "zone": "bobinage",
+    "calib_dates": [
+      "Thu Jan 26 2017 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME251",
+    "designation": "Pied à coulisse",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10/01/2017",
+    "date_mise_en_service": "10/01/2017",
+    "verif_type": "IP",
+    "zone": "Maintenance",
+    "calib_dates": [
+      "Tue Jan 10 2017 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME250",
+    "designation": "Balance",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/07/2016",
+    "date_mise_en_service": "28/07/2016",
+    "verif_type": "IP",
+    "zone": "Magasin",
+    "calib_dates": [
+      "Thu Jul 28 2016 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME249",
+    "designation": "Pied à coulisse DIN 862",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "29/06/2016",
+    "date_mise_en_service": "29/06/2016",
+    "verif_type": "IP",
+    "zone": "Maintenance",
+    "calib_dates": [
+      "Wed Jun 29 2016 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME248",
+    "designation": "Banc de test THERMOSONDE",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "22/06/2016",
+    "date_mise_en_service": "22/06/2016",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Wed Jun 22 2016 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME247",
+    "designation": "Dielectrimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "29/03/2016",
+    "date_mise_en_service": "05/04/2016",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Tue Apr 05 2016 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME246",
+    "designation": "Cale pour 7122BE et 7R25BMT",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10/02/2016",
+    "date_mise_en_service": "10/02/2016",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Wed Feb 10 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME245",
+    "designation": "Alimentation",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10/02/2016",
+    "date_mise_en_service": "10/02/2016",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Wed Feb 10 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME244",
+    "designation": "Banc de test",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10/02/2016",
+    "date_mise_en_service": "10/02/2016",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Wed Feb 10 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME243",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "03/02/2016",
+    "date_mise_en_service": "03/02/2016",
+    "verif_type": "IP",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Wed Feb 03 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME242",
+    "designation": "Cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "03/02/2016",
+    "date_mise_en_service": "03/02/2016",
+    "verif_type": "Exempté",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Feb 03 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME241",
+    "designation": "Cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2016",
+    "date_mise_en_service": "27/01/2016",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Jan 27 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME240",
+    "designation": "Banc de control",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2016",
+    "date_mise_en_service": "27/01/2016",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Jan 27 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME239",
+    "designation": "Banc de control",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2016",
+    "date_mise_en_service": "27/01/2016",
+    "verif_type": "Exempté",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Jan 27 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME238",
+    "designation": "Comparateur numerique",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2016",
+    "date_mise_en_service": "27/01/2016",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Jan 27 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME237",
+    "designation": "Alimentation",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2016",
+    "date_mise_en_service": "27/01/2016",
+    "verif_type": "Exempté",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Jan 27 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME236",
+    "designation": "Multimètre à table",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/01/2016",
+    "date_mise_en_service": "27/01/2016",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Jan 27 2016 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME235",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/12/2015",
+    "date_mise_en_service": "02/12/2015",
+    "verif_type": "Exempté",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Wed Dec 02 2015 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME234",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "11/11/2015",
+    "date_mise_en_service": "11/11/2015",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Wed Nov 11 2015 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME233",
+    "designation": "Mesureur de force d'extraction",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "01/10/2015",
+    "date_mise_en_service": "01/10/2015",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Thu Oct 01 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME232",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "18/09/2015",
+    "date_mise_en_service": "18/09/2015",
+    "verif_type": "IP",
+    "zone": "maintenance",
+    "calib_dates": [
+      "Fri Sep 18 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME231",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "18/09/2015",
+    "date_mise_en_service": "18/09/2015",
+    "verif_type": "IP",
+    "zone": "Embases/relais",
+    "calib_dates": [
+      "Fri Sep 18 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME230",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "18/09/2015",
+    "date_mise_en_service": "18/09/2015",
+    "verif_type": "IP",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Fri Sep 18 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME229",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "18/09/2015",
+    "date_mise_en_service": "18/09/2015",
+    "verif_type": "IP",
+    "zone": "Bobinage",
+    "calib_dates": [
+      "Fri Sep 18 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME228",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "18/09/2015",
+    "date_mise_en_service": "18/09/2015",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Fri Sep 18 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME227",
+    "designation": "Cale pour EA 71733723060",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "11/06/2015",
+    "date_mise_en_service": "11/06/2015",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Fri Jun 12 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME226",
+    "designation": "Outil de vérification de la cote 50,9 mm de EA 71845773530",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "24/03/2015",
+    "date_mise_en_service": "24/03/2015",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME225",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "28/04/2015",
+    "date_mise_en_service": "28/04/2015",
+    "verif_type": "Exempté",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Tue Apr 28 2015 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME224",
+    "designation": "Banc de contrôle socomec",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "18/02/2015",
+    "date_mise_en_service": "18/02/2015",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Wed Feb 18 2015 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME223",
+    "designation": "Banc de test de la carte serrure",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "05/01/2015",
+    "date_mise_en_service": "05/01/2015",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Mon Jan 05 2015 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME222",
+    "designation": "pied à coulisse",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "25/11/2014",
+    "date_mise_en_service": "25/11/2014",
+    "verif_type": "IP",
+    "zone": "elec.aimants",
+    "calib_dates": [
+      "Tue Nov 25 2014 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME221",
+    "designation": "Banc de test 57321006",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "24/09/2014",
+    "date_mise_en_service": "24/09/2014",
+    "verif_type": "Exempté",
+    "zone": "electronique",
+    "calib_dates": [
+      "Wed Sep 24 2014 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME220",
+    "designation": "Accessoire de test haute",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME219",
+    "designation": "Banc de test KFAI0000006A / 5A",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "19/08/2014",
+    "date_mise_en_service": "20/08/2014",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Wed Aug 20 2014 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME218",
+    "designation": "Banc de test KFAI0000004A",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "19/08/2014",
+    "date_mise_en_service": "20/08/2014",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Wed Aug 20 2014 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME217",
+    "designation": "Banc de contrôle des produits",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/07/2014",
+    "date_mise_en_service": "15/07/2014",
+    "verif_type": "Exempté",
+    "zone": "embase relais",
+    "calib_dates": [
+      "Tue Jul 15 2014 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME216",
+    "designation": "Tournevis Dynamomètrique",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "21/05/2014",
+    "date_mise_en_service": "28/05/2014",
+    "verif_type": "IP",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Wed May 28 2014 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME215",
+    "designation": "Testeur de rallonges 2&3 poles",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/10/2013",
+    "date_mise_en_service": "02/10/2013",
+    "verif_type": "Exempté",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Wed Oct 02 2013 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME214",
+    "designation": "Ensemble de pression",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "17/09/2013",
+    "date_mise_en_service": "17/09/2013",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Tue Sep 17 2013 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME213",
+    "designation": "Banc de test boitiers LDPM",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "20/08/2013",
+    "date_mise_en_service": "20/08/2013",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Tue Aug 20 2013 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME212",
+    "designation": "Banc de test cartes varate",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "11/04/2013",
+    "date_mise_en_service": "11/04/2013",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Thu Apr 11 2013 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME211",
+    "designation": "Banc de test cartes silxxx",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/12/2012",
+    "date_mise_en_service": "27/12/2012",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Thu Dec 27 2012 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME210",
+    "designation": "Banc de test cable KUHN",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "16/10/2012",
+    "date_mise_en_service": "16/10/2012",
+    "verif_type": "Exempté",
+    "zone": "KUHN",
+    "calib_dates": [
+      "Tue Oct 16 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME209",
+    "designation": "alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/10/2012",
+    "date_mise_en_service": "23/10/2012",
+    "verif_type": "Exempté",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Tue Oct 23 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME208",
+    "designation": "alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/10/2012",
+    "date_mise_en_service": "23/10/2012",
+    "verif_type": "Exempté",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "Tue Oct 23 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME207",
+    "designation": "Banc de test du tempo 'F' de blocage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/10/2012",
+    "date_mise_en_service": "23/10/2012",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Tue Oct 23 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "Client",
+    "designation": "R.A.I.",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "Externe",
+    "zone": "",
+    "calib_dates": [],
+    "interventions_count": 4
+  },
+  {
+    "code": "ECME205",
+    "designation": "Banc de test groom",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "03/10/2012",
+    "date_mise_en_service": "03/10/2012",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Wed Oct 03 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME204",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "21/09/2012",
+    "date_mise_en_service": "21/09/2012",
+    "verif_type": "Exempté",
+    "zone": "Maintenance",
+    "calib_dates": [
+      "Fri Sep 21 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME203",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "21/09/2012",
+    "date_mise_en_service": "21/09/2012",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Fri Sep 21 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME202",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "21/09/2012",
+    "date_mise_en_service": "21/09/2012",
+    "verif_type": "Exempté",
+    "zone": "Chauvin Arnoux",
+    "calib_dates": [
+      "Fri Sep 21 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME201",
+    "designation": "Matrice pour sertissage des broches",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/08/2012",
+    "date_mise_en_service": "27/08/2012",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Mon Aug 27 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME200",
+    "designation": "Matrice pour sertissage des broches",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/08/2012",
+    "date_mise_en_service": "27/08/2012",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Mon Aug 27 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME199",
+    "designation": "Posons",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/07/2012",
+    "date_mise_en_service": "13/07/2012",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Fri Jul 13 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 13
+  },
+  {
+    "code": "ECME198",
+    "designation": "Micromètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10/07/2012",
+    "date_mise_en_service": "14/07/2012",
+    "verif_type": "IP",
+    "zone": "Maintenance",
+    "calib_dates": [
+      "Sat Jul 14 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 13
+  },
+  {
+    "code": "ECME197",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/05/2018",
+    "date_mise_en_service": "15/05/2018",
+    "verif_type": "IP",
+    "zone": "Embases/Relais",
+    "calib_dates": [
+      "Tue May 15 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME196",
+    "designation": "Cale pour électro-aimant",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/04/2014",
+    "date_mise_en_service": "02/04/2014",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Wed Apr 02 2014 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 11
+  },
+  {
+    "code": "ECME195",
+    "designation": "Cale pour électro-aimant",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/04/2014",
+    "date_mise_en_service": "02/04/2014",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Wed Apr 02 2014 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 11
+  },
+  {
+    "code": "ECME194",
+    "designation": "Dielectrimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "12/06/2012",
+    "date_mise_en_service": "12/06/2012",
+    "verif_type": "IP",
+    "zone": "Contrôle Qualité",
+    "calib_dates": [
+      "Tue Jun 12 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 13
+  },
+  {
+    "code": "ECME193",
+    "designation": "Banc de test des rallonge superseal de kuhn",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "31/05/2012",
+    "date_mise_en_service": "31/05/2012",
+    "verif_type": "Exempté",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Thu May 31 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME192",
+    "designation": "Banc de test carte de gestion portes",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "30/05/2012",
+    "date_mise_en_service": "30/05/2012",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Wed May 30 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME191",
+    "designation": "Banc de test AS AMPLIFIER",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "13/07/2011",
+    "date_mise_en_service": "27/03/2012",
+    "verif_type": "IP",
+    "zone": "électronique",
+    "calib_dates": [
+      "Tue Mar 27 2012 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME190",
+    "designation": "Cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "13/07/2011",
+    "date_mise_en_service": "13/07/2011",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Wed Jul 13 2011 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 15
+  },
+  {
+    "code": "ECME189",
+    "designation": "Milli-ohmmetr",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/06/2011",
+    "date_mise_en_service": "27/06/2011",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Mon Jun 27 2011 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 13
+  },
+  {
+    "code": "ECME188",
+    "designation": "Alimentation stailises",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnaux",
+    "calib_dates": [],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME187",
+    "designation": "Pince de sertissage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "Interne",
+    "zone": "électro-aimants",
+    "calib_dates": [],
+    "interventions_count": 24
+  },
+  {
+    "code": "ECME186",
+    "designation": "mesureur de températeur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "08/03/2011",
+    "date_mise_en_service": "08/03/2011",
+    "verif_type": "IP",
+    "zone": "administrative",
+    "calib_dates": [
+      "Tue Mar 08 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 12
+  },
+  {
+    "code": "ECME185",
+    "designation": "Bons de test proruit 57011006400",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/03/2011",
+    "date_mise_en_service": "23/03/2011",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Wed Mar 23 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME184",
+    "designation": "Bons de test pour produit 57033008000",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/03/2011",
+    "date_mise_en_service": "23/03/2011",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Wed Mar 23 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME183",
+    "designation": "Bons de test du varioface",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/03/2011",
+    "date_mise_en_service": "23/03/2011",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Wed Mar 23 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME182",
+    "designation": "Bons de test",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/03/2011",
+    "date_mise_en_service": "15/03/2011",
+    "verif_type": "IP",
+    "zone": "électronique",
+    "calib_dates": [
+      "Tue Mar 15 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME181",
+    "designation": "Milli-ohmmetr",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "26/01/2011",
+    "date_mise_en_service": "26/01/2011",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Wed Jan 26 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 14
+  },
+  {
+    "code": "ECME180",
+    "designation": "Oscilloscops",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "11/01/2011",
+    "date_mise_en_service": "11/01/2011",
+    "verif_type": "IP",
+    "zone": "électronique",
+    "calib_dates": [
+      "Tue Jan 11 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 14
+  },
+  {
+    "code": "ECME179",
+    "designation": "Multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "11/01/2011",
+    "date_mise_en_service": "11/01/2011",
+    "verif_type": "IP",
+    "zone": "Control qualité",
+    "calib_dates": [
+      "Tue Jan 11 2011 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 15
+  },
+  {
+    "code": "ECME178",
+    "designation": "Tampon fileté",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/12/2010",
+    "date_mise_en_service": "15/12/2010",
+    "verif_type": "IP",
+    "zone": "Control qualité",
+    "calib_dates": [
+      "Wed Dec 15 2010 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 14
+  },
+  {
+    "code": "ECME177",
+    "designation": "Tampon fileté",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/12/2010",
+    "date_mise_en_service": "15/12/2010",
+    "verif_type": "IP",
+    "zone": "Control qualité",
+    "calib_dates": [
+      "Wed Dec 15 2010 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 15
+  },
+  {
+    "code": "ECME176",
+    "designation": "Dielectrimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "13/12/2010",
+    "date_mise_en_service": "14/12/2010",
+    "verif_type": "IP",
+    "zone": "Electro-aimant",
+    "calib_dates": [
+      "Tue Dec 14 2010 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 5
+  },
+  {
+    "code": "ECME175",
+    "designation": "Cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "29/11/2010",
+    "date_mise_en_service": "29/11/2010",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Mon Nov 29 2010 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 15
+  },
+  {
+    "code": "ECME174",
+    "designation": "Alimentation stabilisee",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "Exempté",
+    "zone": "chauvin arnaux",
+    "calib_dates": [],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME173",
+    "designation": "Banc de réglage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/09/2010",
+    "date_mise_en_service": "23/09/2010",
+    "verif_type": "Exempté",
+    "zone": "Control qualité",
+    "calib_dates": [
+      "Thu Sep 23 2010 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME172",
+    "designation": "Banc de réglage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "23/09/2010",
+    "date_mise_en_service": "23/09/2010",
+    "verif_type": "Exempté",
+    "zone": "control qualité",
+    "calib_dates": [
+      "Thu Sep 23 2010 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME171",
+    "designation": "multimètre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "03/09/2010",
+    "date_mise_en_service": "03/09/2010",
+    "verif_type": "IP",
+    "zone": "méthode",
+    "calib_dates": [
+      "Fri Sep 03 2010 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME170",
+    "designation": "Banc de test groom",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "20/07/2010",
+    "date_mise_en_service": "20/07/2010",
+    "verif_type": "Exempté",
+    "zone": "électronique",
+    "calib_dates": [
+      "Tue Jul 20 2010 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME169",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/05/2018",
+    "date_mise_en_service": "15/05/2018",
+    "verif_type": "IP",
+    "zone": "Embases/Relais",
+    "calib_dates": [
+      "Tue May 15 2018 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME168",
+    "designation": "Masse étalant des ventouses 7951",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "25/05/2010",
+    "date_mise_en_service": "25/05/2010",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Tue May 25 2010 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 14
+  },
+  {
+    "code": "ECME167",
+    "designation": "Masse étalant des ventouses 7951",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "27/04/2010",
+    "date_mise_en_service": "27/04/2010",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Tue Apr 27 2010 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 14
+  },
+  {
+    "code": "ECME166",
+    "designation": "Cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Mon Jan 04 2010 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME165",
+    "designation": "Cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Mon Jan 04 2010 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 16
+  },
+  {
+    "code": "ECME164",
+    "designation": "Tampon fileté",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Tue Dec 08 2009 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 14
+  },
+  {
+    "code": "ECME163",
+    "designation": "Tampon fileté",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "08/12/2009",
+    "date_mise_en_service": "08/12/2009",
+    "verif_type": "IP",
+    "zone": "électro-aimant",
+    "calib_dates": [
+      "Tue Dec 08 2009 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 14
+  },
+  {
+    "code": "ECME162",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "25/11/2009",
+    "date_mise_en_service": "25/11/2009",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "Wed Nov 25 2009 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 15
+  },
+  {
+    "code": "ECME161",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "25/11/2009",
+    "date_mise_en_service": "25/11/2009",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "Wed Nov 25 2009 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 15
+  },
+  {
+    "code": "ECME160",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "13/11/2009",
+    "date_mise_en_service": "13/11/2009",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "Fri Nov 13 2009 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 15
+  },
+  {
+    "code": "ECME159",
+    "designation": "Mesureur de température",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "14/10/2009",
+    "date_mise_en_service": "14/10/2009",
+    "verif_type": "IP",
+    "zone": "maintenance",
+    "calib_dates": [
+      "Wed Oct 14 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME158",
+    "designation": "cale d'entre gain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/07/2009",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME157",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME156",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME155",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME154",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME153",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME152",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME151",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME150",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME149",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME148",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME147",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME146",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME145",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME144",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME143",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/07/2009",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME142",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME141",
+    "designation": "cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/07/2009",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME140",
+    "designation": "Cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/07/2009",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME139",
+    "designation": "Cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME138",
+    "designation": "Cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME137",
+    "designation": "Cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME136",
+    "designation": "Cale d'entre grain",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME135",
+    "designation": "Banc de réglage CA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/07/2009",
+    "date_mise_en_service": "21/07/2009",
+    "verif_type": "IP",
+    "zone": "embase relais",
+    "calib_dates": [
+      "Tue Jul 21 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME134",
+    "designation": "Réglait 50 cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/07/2009",
+    "date_mise_en_service": "02/07/2009",
+    "verif_type": "IP",
+    "zone": "Chauvin arnoux",
+    "calib_dates": [
+      "Thu Jul 02 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME133",
+    "designation": "Réglait 50 cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/07/2009",
+    "date_mise_en_service": "02/07/2009",
+    "verif_type": "IP",
+    "zone": "Control qualité",
+    "calib_dates": [
+      "Thu Jul 02 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 8
+  },
+  {
+    "code": "ECME132",
+    "designation": "Banc aimantation BD",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "25/05/2009",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME131",
+    "designation": "Banc réglage BA / CA / CA de base",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "25/05/2009",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME130",
+    "designation": "Battage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "25/05/2009",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME129",
+    "designation": "Banc réglage BA / CA / CA debase",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "25/05/2009",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME128",
+    "designation": "Banc réglage BD",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "25/05/2009",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME127",
+    "designation": "Banc réglage BD",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "25/05/2009",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME126",
+    "designation": "Poste de contrôle câblage 9946",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 3
+  },
+  {
+    "code": "ECME125",
+    "designation": "Poste de contrôle câblage 9705",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "Embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME124",
+    "designation": "Pince ampérométrique",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "maintenance",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 16
+  },
+  {
+    "code": "ECME123",
+    "designation": "Testeur de couple",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin-arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 16
+  },
+  {
+    "code": "ECME122",
+    "designation": "Detecteur de tension",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin-arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 4
+  },
+  {
+    "code": "ECME121",
+    "designation": "Pied à coulisse",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "16/04/2008",
+    "date_mise_en_service": "16/04/2008",
+    "verif_type": "IP",
+    "zone": "Control qualité",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME120",
+    "designation": "Balance de précision",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "15/04/2008",
+    "date_mise_en_service": "15/04/2008",
+    "verif_type": "IP",
+    "zone": "magasin",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME119",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME118",
+    "designation": "Multimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "02/01/2008",
+    "date_mise_en_service": "02/01/2008",
+    "verif_type": "IP",
+    "zone": "contrôle qualite",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 16
+  },
+  {
+    "code": "ECME117",
+    "designation": "Générateur de claquage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aiment",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 16
+  },
+  {
+    "code": "ECME116",
+    "designation": "Générateur de claquage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME115",
+    "designation": "Testeur de couple",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME114",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME113",
+    "designation": "cale pour EA7165112514",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME112",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME111",
+    "designation": "cale pour EA7122103611",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME110",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME109",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME108",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME107",
+    "designation": "",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME106",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME105",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME104",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME103",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME102",
+    "designation": "cale pour EA 7122103812",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME101",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME100",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME099",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME098",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME097",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME096",
+    "designation": "cale pour EA7122",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME095",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME094",
+    "designation": "BANC DE TEST",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME093",
+    "designation": "BANC DE TEST",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "…………….",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME092",
+    "designation": "BANC DE TEST",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME091",
+    "designation": "BANC DE TEST",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME090",
+    "designation": "BANC DE TEST",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME089",
+    "designation": "Banc de test",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME088",
+    "designation": "Testeur cable seicer",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 2
+  },
+  {
+    "code": "ECME087",
+    "designation": "BANC DE TEST",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "…………….",
+    "date_mise_en_service": "……………………….",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME086",
+    "designation": "Reglet 50 cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10/04/2007",
+    "date_mise_en_service": "10/04/2007",
+    "verif_type": "Exempté",
+    "zone": "magasin",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME085",
+    "designation": "Réglait 80cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "1/12/2008",
+    "date_mise_en_service": "1/12/2008",
+    "verif_type": "Exempté",
+    "zone": "controle qualité",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME084",
+    "designation": "Réglait 50cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10-04-2007",
+    "date_mise_en_service": "10-04-2007",
+    "verif_type": "Exempté",
+    "zone": "bobinage",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME083",
+    "designation": "Réglait 50 cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10-04-2007",
+    "date_mise_en_service": "10-04-2007",
+    "verif_type": "Exempté",
+    "zone": "eléctro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME082",
+    "designation": "Réglait  50cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10-04-2007",
+    "date_mise_en_service": "10-04-2007",
+    "verif_type": "Exempté",
+    "zone": "Electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME081",
+    "designation": "Réglait 50 cm",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "10-04-2007",
+    "date_mise_en_service": "10-04-2007",
+    "verif_type": "Exempté",
+    "zone": "Emba/relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME080",
+    "designation": "Multimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 7
+  },
+  {
+    "code": "ECME079",
+    "designation": "cale pour EA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "Electro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME078",
+    "designation": "Alimentation stabilisée",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME077",
+    "designation": "THERMOCOUPLE",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "maintenance",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME076",
+    "designation": "PEUSON",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME075",
+    "designation": "PEUSON",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "contrôle qualité",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME074",
+    "designation": "Peuson",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME073",
+    "designation": "Comparateur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embase /relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME072",
+    "designation": "Banc de contrôle",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "contrôle qualité",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME071",
+    "designation": "cale pour EA7145601711",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [],
+    "interventions_count": 19
+  },
+  {
+    "code": "ECME070",
+    "designation": "Générateur de claqquage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME069",
+    "designation": "Banc de test",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME068",
+    "designation": "Soli scope",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME067",
+    "designation": "Comparateur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimant",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME066",
+    "designation": "Comparateur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "Electro- aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME065",
+    "designation": "Banc de contrôle",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME064",
+    "designation": "Banc de test",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME063",
+    "designation": "Banc de test",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME062",
+    "designation": "Banc de teste carte SAM",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Wed Nov 26 2008 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME061",
+    "designation": "cale pour AE7323",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electro-aimants",
+    "calib_dates": [],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME060",
+    "designation": "outil de mesure d'isolement",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "electronique",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "modular",
+    "designation": "ECME059",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "ECME058",
+    "designation": "Comparateur",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctro-aimants",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME057",
+    "designation": "Générateur de claquage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "eléctro-aimonts",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 18
+  },
+  {
+    "code": "ECME056",
+    "designation": "Banc de control",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME055",
+    "designation": "Megometre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 10
+  },
+  {
+    "code": "ECME054",
+    "designation": "Bonc de contrôle",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME053",
+    "designation": "Multimetre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 9
+  },
+  {
+    "code": "ECME052",
+    "designation": "Poete de claquage",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 7
+  },
+  {
+    "code": "ECME051",
+    "designation": "Dielectrometre",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "chauvin arnoux",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 7
+  },
+  {
+    "code": "ECME050",
+    "designation": "Bonc de contrôle relais",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME049",
+    "designation": "Banc réglage BA",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME048",
+    "designation": "Bonc de contrôle relais",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME047",
+    "designation": "Bonc de contrôle relais",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME046",
+    "designation": "Peuson",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases / relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 16
+  },
+  {
+    "code": "ECME045",
+    "designation": "Peusan",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases / relais",
+    "calib_dates": [
+      "Mon May 25 2009 00:00:00 GMT+0200 (Central European Summer Time)"
+    ],
+    "interventions_count": 16
+  },
+  {
+    "code": "ECME044",
+    "designation": "Bonc de contrôle relais",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME043",
+    "designation": "Bonc de contrôle relais",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "embases relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "ECME042",
+    "designation": "Banc de teste carte SAM",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "Electronique",
+    "calib_dates": [
+      "Wed Nov 26 2008 00:00:00 GMT+0100 (Central European Standard Time)"
+    ],
+    "interventions_count": 1
+  },
+  {
+    "code": "ECME041",
+    "designation": "Mantage de test M T I",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "R.A.I.",
+    "date_achat": "………..",
+    "date_mise_en_service": "",
+    "verif_type": "IP",
+    "zone": "emba.relais",
+    "calib_dates": [
+      "……….."
+    ],
+    "interventions_count": 0
+  },
+  {
+    "code": "………………",
+    "designation": "ECME040",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "FARNELL",
+    "designation": "ECME039",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "FARNELL",
+    "designation": "ECME038",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 1
+  },
+  {
+    "code": "FARNELL",
+    "designation": "ECME037",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………….",
+    "verif_type": "Externe",
+    "zone": "…………",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "",
+    "designation": "ECME036",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………….",
+    "verif_type": "Externe",
+    "zone": "………",
+    "calib_dates": [],
+    "interventions_count": 16
+  },
+  {
+    "code": "TEC",
+    "designation": "ECME035",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "TEC",
+    "designation": "ECME034",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………..",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "TEC",
+    "designation": "ECME033",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………..",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "somfytec50g",
+    "designation": "ECME032",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………………..",
+    "verif_type": "Externe",
+    "zone": "",
+    "calib_dates": [],
+    "interventions_count": 9
+  },
+  {
+    "code": "CORREX/30g",
+    "designation": "ECME031",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………..",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "METLER",
+    "designation": "ECME030",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 9
+  },
+  {
+    "code": "ARDA",
+    "designation": "ECME029",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "1/12/2008",
+    "date_mise_en_service": "",
+    "verif_type": "Externe",
+    "zone": "2008-11-30",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "FLUKE/70",
+    "designation": "ECME028",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 16
+  },
+  {
+    "code": "FLUKE/77",
+    "designation": "ECME027",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "SARTORIUS",
+    "designation": "ECME026",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………..",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "…………..",
+    "designation": "ECME025",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 18
+  },
+  {
+    "code": "",
+    "designation": "ECME024",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "24/10/2008",
+    "date_mise_en_service": "",
+    "verif_type": "Externe",
+    "zone": "2008-10-23",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "DTMB-500-G",
+    "designation": "ECME023",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "02/09/2008",
+    "date_mise_en_service": "",
+    "verif_type": "Externe",
+    "zone": "2008-09-01",
+    "calib_dates": [],
+    "interventions_count": 8
+  },
+  {
+    "code": "TEC",
+    "designation": "ECME022",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………………",
+    "verif_type": "Externe",
+    "zone": "…………",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "CORREX/30g",
+    "designation": "ECME021",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "CORREX/30g",
+    "designation": "ECME020",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………",
+    "verif_type": "Externe",
+    "zone": "…………",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "FLUKE/85",
+    "designation": "ECME019",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………………",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "TEC",
+    "designation": "ECME018",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "FLUKE/73",
+    "designation": "ECME017",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………….",
+    "verif_type": "Externe",
+    "zone": "…………",
+    "calib_dates": [],
+    "interventions_count": 16
+  },
+  {
+    "code": "APPA/91",
+    "designation": "ECME016",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………..",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 1
+  },
+  {
+    "code": "FLUKE",
+    "designation": "ECME015",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………..",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 9
+  },
+  {
+    "code": "FLUKE",
+    "designation": "ECME014",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………….",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "appa/91",
+    "designation": "ECME013",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………..",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "APPA/91",
+    "designation": "ECME012",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "FLUKE",
+    "designation": "ECME011",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "FLUKE",
+    "designation": "ECME010",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………………..",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "FLUKE",
+    "designation": "ECME009",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………..",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "FLUKE",
+    "designation": "ECME008",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………….",
+    "verif_type": "Externe",
+    "zone": "………",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "",
+    "designation": "ECME007",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "2010-09-05",
+    "verif_type": "Externe",
+    "zone": "2010-09-05",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "",
+    "designation": "ECME006",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "04/05/2010",
+    "date_mise_en_service": "………………….",
+    "verif_type": "Externe",
+    "zone": "2010-05-03",
+    "calib_dates": [],
+    "interventions_count": 0
+  },
+  {
+    "code": "",
+    "designation": "ECME005",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "",
+    "verif_type": "Externe",
+    "zone": "2010-05-04",
+    "calib_dates": [],
+    "interventions_count": 14
+  },
+  {
+    "code": "mitutoyo",
+    "designation": "ECME004",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………………",
+    "verif_type": "Externe",
+    "zone": "……..",
+    "calib_dates": [],
+    "interventions_count": 8
+  },
+  {
+    "code": "mitutoyo",
+    "designation": "ECME003",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "………………….",
+    "verif_type": "Externe",
+    "zone": "……….",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "mitutoyo",
+    "designation": "ECME002",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "……………………..",
+    "verif_type": "Externe",
+    "zone": "………..",
+    "calib_dates": [],
+    "interventions_count": 17
+  },
+  {
+    "code": "mitutoyo",
+    "designation": "ECME001",
+    "marque": "",
+    "modele": "",
+    "n_serie": "",
+    "propriete": "",
+    "date_achat": "",
+    "date_mise_en_service": "…………………….",
+    "verif_type": "Externe",
+    "zone": "…………",
+    "calib_dates": [],
+    "interventions_count": 17
+  }
+]

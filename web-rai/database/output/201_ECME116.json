@@ -1,0 +1,302 @@
+[
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "Référence : FQ008/00",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Désignation :Générateur de claquage",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": " Code :       ECME116",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "MARQUE:…………",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Modèle :………….",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "N° de série:CDA703",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Propriété",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Date d’achat : ",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Vérification ",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Date de mise en service :",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Interne",
+    "__EMPTY_5": "X",
+    "__EMPTY_6": "IP001",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Client",
+    "__EMPTY_1": "X",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Externe",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Affectation",
+    "__EMPTY_1": "chauvin arnoux",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "………..",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Grandeur",
+    "__EMPTY_1": "tension",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Tolérance",
+    "__EMPTY_1": 0.05,
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Interventions",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "Nature",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Résultat",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Visa"
+  },
+  {
+    "__EMPTY": "2008-05-05T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2009-05-13T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2010-05-11T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2011-05-17T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2012-05-22T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2013-06-01T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2014-06-13T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2015-06-16T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2017-01-12T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2018-02-08T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2019-03-27T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2020-05-12T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2021-06-11T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2022-06-27T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2023-09-01T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2024-09-11T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2025-10-08T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  }
+]

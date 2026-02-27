@@ -1,0 +1,312 @@
+[
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "Référence : FQ008/00",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Désignation :THERMOCOUPLE",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": " Code :       ECME077",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "MARQUE:Therma 3",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Modèle :-50…1150°C",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "N° de séri: 2299",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Propriété",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Date d’achat : ………..",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Vérification ",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Date de mise en service :",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Interne",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "IP",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Client",
+    "__EMPTY_1": "X",
+    "__EMPTY_2": "…………………….",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Externe",
+    "__EMPTY_5": "  X",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Affectation",
+    "__EMPTY_1": "maintenance",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "………..",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Grandeur",
+    "__EMPTY_1": "température",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Tolérance",
+    "__EMPTY_1": "5°C",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Interventions",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "Nature",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Résultat",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Visa"
+  },
+  {
+    "__EMPTY": "2007-04-09T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme d'aprét le client ( rapport non recu )",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2008-05-07T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme  ",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2009-05-07T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme  ",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2009-08-27T22:00:00.000Z",
+    "__EMPTY_1": "retour au client pour réparation",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": " réparation connectique défectueuse 08-09-2009",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2010-05-10T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2011-05-12T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2012-05-15T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2013-05-27T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2014-06-02T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2015-06-16T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2017-01-09T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2018-01-22T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2019-01-21T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2020-01-29T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2021-03-03T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2023-04-02T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2024-05-03T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2025-05-22T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  }
+]

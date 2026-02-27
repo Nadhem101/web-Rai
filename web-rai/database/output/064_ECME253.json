@@ -1,0 +1,212 @@
+[
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "Référence : FQ008/00",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Désignation :mesureur de température",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": " Code :       ECME253",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "MARQUE: RS ",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Modèle :",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "N° de série:408-6109",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Propriété",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Date d’achat : 26/01/2017",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Vérification ",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "X",
+    "__EMPTY_2": "Date de mise en service : 26/01/2017",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Interne",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "IP001",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Client",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Externe",
+    "__EMPTY_5": "x",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Affectation",
+    "__EMPTY_1": "Electro-aimant",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "2017-01-25T23:00:00.000Z",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Grandeur",
+    "__EMPTY_1": "température",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Tolérance",
+    "__EMPTY_1": "5°C",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Interventions",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "Nature",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Résultat",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Visa"
+  },
+  {
+    "__EMPTY": "2018-02-06T23:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  },
+  {
+    "__EMPTY": "2019-03-27T23:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  },
+  {
+    "__EMPTY": "2020-05-12T22:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  },
+  {
+    "__EMPTY": "2021-06-11T22:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  },
+  {
+    "__EMPTY": "2022-06-29T22:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  },
+  {
+    "__EMPTY": "2023-09-01T22:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  },
+  {
+    "__EMPTY": "2024-09-10T22:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  },
+  {
+    "__EMPTY": "2025-10-03T22:00:00.000Z",
+    "__EMPTY_1": "Vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Imed"
+  }
+]

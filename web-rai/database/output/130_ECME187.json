@@ -1,0 +1,382 @@
+[
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "Référence : FQ008/00",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Désignation :Pince de sertissage",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": " Code :       ECME187",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "MARQUE: AWG",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Modèle :24-18 (0,2-0,8 mm2)",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "N° de série:AMP 654 148-1",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Propriété",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Date d’achat :",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Vérification ",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "R.A.I.",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Date de mise en service :",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Interne",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Client",
+    "__EMPTY_1": "X",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Externe",
+    "__EMPTY_5": "x",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Valeurs contrôlées suivant test d'arrachement sur fils sertis avec la pince référencées (<=31,2 N soit 3,12 Kg).  Test d'arrachement fait chez TEC à Mouy                                                                                                                          Values controlled though a pulling out test on wires crimped with the referenced crimper (<=31,2 N, i.e. 3,12 Kg). Pulling out test realized in TEC/Mouy",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Affectation",
+    "__EMPTY_1": "électro-aimants",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Grandeur",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Tolérance",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Interventions",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": ""
+  },
+  {
+    "__EMPTY": "Date",
+    "__EMPTY_1": "Nature",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Résultat",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "Visa"
+  },
+  {
+    "__EMPTY": "2011-09-19T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "faustino"
+  },
+  {
+    "__EMPTY": "2012-09-25T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "faustino"
+  },
+  {
+    "__EMPTY": "2013-10-01T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "faustino"
+  },
+  {
+    "__EMPTY": "2014-03-31T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "faustino"
+  },
+  {
+    "__EMPTY": "2014-10-17T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "faustino"
+  },
+  {
+    "__EMPTY": "2015-04-14T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "faustino"
+  },
+  {
+    "__EMPTY": "2015-11-08T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "fethi kitar"
+  },
+  {
+    "__EMPTY": "2016-05-23T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "fethi kitar"
+  },
+  {
+    "__EMPTY": "2017-01-09T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "faustino"
+  },
+  {
+    "__EMPTY": "2018-01-08T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2018-07-06T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2019-02-05T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2019-07-04T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2020-02-03T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2020-08-02T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2021-02-01T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2021-08-01T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2022-02-01T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2022-07-31T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2023-01-31T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2023-09-04T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2024-03-12T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2024-10-29T23:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  },
+  {
+    "__EMPTY": "2025-04-28T22:00:00.000Z",
+    "__EMPTY_1": "vérification",
+    "__EMPTY_2": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "conforme",
+    "__EMPTY_5": "",
+    "__EMPTY_6": "",
+    "__EMPTY_7": "imed"
+  }
+]

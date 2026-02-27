@@ -1,0 +1,302 @@
+[
+  {
+    "R.A.I.": "Désignation : comparateur",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": " Code :       ECME003 ",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Marque :mitutoyo",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "",
+    "__EMPTY": "Modèle :    ……………..",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "N° de série : 0015188",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Propriété",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "",
+    "__EMPTY": "Date d’achat :   …………..",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Vérification ",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "R.A.I.",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "",
+    "__EMPTY": "Date de mise en service :",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Interne",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "IP",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Client",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "     x",
+    "__EMPTY": "          ………………….",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Externe",
+    "Référence : FQ008/00": "  X",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Affectation",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "maintenance",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Date",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "……….",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Grandeur",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "longeur",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Tolérance",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "0,5mm",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Interventions",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": ""
+  },
+  {
+    "R.A.I.": "Date",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "Nature",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "Résultat",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "Visa"
+  },
+  {
+    "R.A.I.": "2007-01-17T23:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "IMED.H"
+  },
+  {
+    "R.A.I.": "2008-02-18T23:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "IMED.H"
+  },
+  {
+    "R.A.I.": "2009-02-17T23:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "IMED.H"
+  },
+  {
+    "R.A.I.": "2010-02-12T23:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2011-02-20T23:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2012-03-06T23:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2013-04-15T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2014-04-15T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2015-04-14T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2016-04-25T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2017-05-05T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2018-05-11T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2019-06-14T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2020-06-05T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2021-10-14T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2022-10-19T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2023-10-22T22:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  },
+  {
+    "R.A.I.": "2024-11-01T23:00:00.000Z",
+    "FICHE DE VIE D'UN EQUIPEMENT DE CONTRÖLE, DE MESURE ET D'ESSAI": "vérification",
+    "__EMPTY": "",
+    "__EMPTY_1": "",
+    "__EMPTY_2": "conforme",
+    "Référence : FQ008/00": "",
+    "__EMPTY_3": "",
+    "__EMPTY_4": "imed"
+  }
+]
