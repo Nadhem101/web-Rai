@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, Link, NavLink } from 'react-router-dom';
 import ListeEquipements from './pages/Inventaire/ListeEquipements.jsx';
 import Dashboard from './pages/Dashboard/Dashboard.jsx';
@@ -7,6 +7,15 @@ import EtatECME from './pages/ECME/EtatECME.jsx';
 import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
 
 const App = () => {
+  const [inventaireExpanded, setInventaireExpanded] = useState(false);
+
+  const inventaireCategories = [
+    { id: 'all', label: 'Tous les équipements', icon: '📋' },
+    { id: 'equipement', label: 'Équipement général', icon: '🔧' },
+    { id: 'pinces', label: 'Pinces de sertissage', icon: '🔨' },
+    { id: 'applicateurs', label: 'Applicateurs faisceaux', icon: '⚡' },
+  ];
+
   return (
     <div className="min-h-screen h-screen bg-gray-100 flex overflow-hidden">
       <aside className="w-64 bg-white shadow-lg hidden md:flex flex-col">
@@ -14,7 +23,7 @@ const App = () => {
           <h1 className="text-xl font-bold">WEB-RAI</h1>
           <p className="text-xs text-gray-500">Gestion des équipements</p>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           <NavLink
             to="/"
             end
@@ -26,16 +35,37 @@ const App = () => {
           >
             📊 Tableau de bord
           </NavLink>
-          <NavLink
-            to="/inventaire"
-            className={({ isActive }) =>
-              `block px-3 py-2 rounded-md text-sm font-medium ${
-                isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'
-              }`
-            }
-          >
-            📋 Inventaire
-          </NavLink>
+
+          {/* Inventaire expandable menu */}
+          <div>
+            <button
+              onClick={() => setInventaireExpanded(!inventaireExpanded)}
+              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
+                inventaireExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              📋 Inventaire
+              <span className={`transform transition-transform ${inventaireExpanded ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            {inventaireExpanded && (
+              <div className="ml-4 mt-1 space-y-1">
+                {inventaireCategories.map((cat) => (
+                  <NavLink
+                    key={cat.id}
+                    to={`/inventaire?categorie=${cat.id}`}
+                    className={({ isActive }) =>
+                      `block px-3 py-2 rounded-md text-sm ${
+                        isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                      }`
+                    }
+                  >
+                    {cat.icon} {cat.label}
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+
           <NavLink
             to="/preventif"
             className={({ isActive }) =>

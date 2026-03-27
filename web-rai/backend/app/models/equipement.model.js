@@ -30,8 +30,19 @@ const Equipement = sequelize.define(
       type: DataTypes.TEXT,
     },
     statut: {
-      type: DataTypes.ENUM('En service', 'Hors service', 'En maintenance'),
+      type: DataTypes.STRING(50),
       defaultValue: 'En service',
+      validate: {
+        isIn: [['En service', 'Hors service', 'En maintenance']],
+      },
+    },
+    categorie: {
+      type: DataTypes.STRING(50),
+      defaultValue: 'equipement',
+      validate: {
+        isIn: [['equipement', 'pinces', 'applicateurs']],
+      },
+      comment: 'Catégorie de l\'équipement: equipement (général), pinces (de sertissage), ou applicateurs (faisceaux)',
     },
   },
   {

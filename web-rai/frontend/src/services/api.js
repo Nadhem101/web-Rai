@@ -20,6 +20,14 @@ export const fabricantService = {
   getAll: () => API.get('/fabricants'),
 };
 
+export const pinceService = {
+  getAll: () => API.get('/pinces'),
+  getById: (id) => API.get(`/pinces/${id}`),
+  create: (data) => API.post('/pinces', data),
+  update: (id, data) => API.put(`/pinces/${id}`, data),
+  delete: (id) => API.delete(`/pinces/${id}`),
+};
+
 export const maintenanceEventService = {
   // fetch all events for a given year
   getByYear: (year) => API.get('/maintenance-events', { params: { year } }),
@@ -33,4 +41,12 @@ export const ecmeService = {
   getAll:          (params) => API.get('/ecme', { params }),
   getOne:          (code)   => API.get(`/ecme/${code}`),
   getAffectations: ()       => API.get('/ecme/meta/affectations'),
+};
+
+export const applicateurService = {
+  getAll: () => API.get('/applicateurs').then(res => res.data),
+  getById: (id) => API.get(`/applicateurs/${id}`).then(res => res.data),
+  create: (data) => API.post('/applicateurs', data).then(res => res.data),
+  update: (id, data) => API.put(`/applicateurs/${id}`, data).then(res => res.data),
+  delete: (id) => API.delete(`/applicateurs/${id}`).then(res => res.data),
 };

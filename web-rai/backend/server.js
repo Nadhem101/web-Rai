@@ -14,6 +14,8 @@ app.use('/api/zones',              require('./app/routes/zone.routes'));
 app.use('/api/fabricants',         require('./app/routes/fabricant.routes'));
 app.use('/api/maintenance-events', require('./app/routes/maintenance_event.routes'));
 app.use('/api/ecme',               require('./app/routes/ecme_etat.routes'));
+app.use('/api/pinces',             require('./app/routes/pince.routes'));
+app.use('/api/applicateurs',       require('./app/routes/applicateur.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API WEB-RAI fonctionne' });
