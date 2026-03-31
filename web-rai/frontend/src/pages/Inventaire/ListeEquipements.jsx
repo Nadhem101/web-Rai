@@ -6,6 +6,28 @@ import ApplicateursList from '../../components/ApplicateursList';
 import PinceForm from '../../components/PinceForm';
 import ApplicateurForm from '../../components/ApplicateurForm';
 
+const normalizeZoneName = (value) => {
+  if (!value) return '';
+  return value
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+};
+
+const getZoneOrderRank = (zoneName) => {
+  const normalized = normalizeZoneName(zoneName);
+
+  if (normalized.includes('bobinage')) return 1;
+  if (normalized.includes('coupe')) return 2;
+  if (normalized.includes('assemblage')) return 3;
+  if (normalized.includes('electronique')) return 4;
+  if (normalized.includes('fer') || normalized.includes('bain')) return 5;
+
+  return 99;
+};
+
 const ListeEquipements = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [equipements, setEquipements] = useState([]);
@@ -13,13 +35,35 @@ const ListeEquipements = () => {
   const [search, setSearch] = useState('');
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   
-  const categorie = searchParams.get('categorie') || 'all';
+  const rawCategorie = searchParams.get('categorie') || 'equipement-all';
+  const categorie = rawCategorie === 'all' || rawCategorie === 'equipement' ? 'equipement-all' : rawCategorie;
+
+  const fcEquipements = equipements.filter((eq) => eq.categorie === 'equipement');
+  const zoneCategories = Array.from(
+    new Map(
+      fcEquipements
+        .filter((eq) => eq.Zone?.nom_zone)
+        .map((eq) => [eq.Zone.nom_zone, eq.Zone.nom_zone])
+    ).values()
+  )
+    .sort((a, b) => {
+      const rankDiff = getZoneOrderRank(a) - getZoneOrderRank(b);
+      if (rankDiff !== 0) return rankDiff;
+      return a.localeCompare(b, 'fr', { sensitivity: 'base', numeric: true });
+    })
+    .map((zoneName) => ({
+      id: `zone:${zoneName}`,
+      label: zoneName,
+      icon: '🏭',
+      color: 'teal',
+      zoneName,
+    }));
 
   const categories = [
-    { id: 'all', label: 'Tous les équipements', icon: '📋', color: 'blue' },
-    { id: 'equipement', label: 'Équipement général', icon: '🔧', color: 'purple' },
-    { id: 'pinces', label: 'Pinces de sertissage', icon: '🔨', color: 'orange' },
-    { id: 'applicateurs', label: 'Applicateurs faisceaux', icon: '⚡', color: 'yellow' },
+    { id: 'equipement-all', label: 'Tous les équipements FC', icon: '📋', color: 'blue' },
+    ...zoneCategories,
+    { id: 'pinces', label: 'Pinces', icon: '🔨', color: 'orange' },
+    { id: 'applicateurs', label: 'Applicateurs', icon: '⚡', color: 'yellow' },
   ];
 
   useEffect(() => {
@@ -41,9 +85,16 @@ const ListeEquipements = () => {
   const getFilteredEquipements = () => {
     let filtered = equipements;
     
-    // Filter by category
-    if (categorie !== 'all') {
-      filtered = filtered.filter(eq => eq.categorie === categorie);
+    if (categorie === 'pinces' || categorie === 'applicateurs') {
+      return [];
+    }
+
+    // FC equipment tabs: all + per zone
+    filtered = filtered.filter((eq) => eq.categorie === 'equipement');
+
+    if (categorie.startsWith('zone:')) {
+      const selectedZone = categorie.slice(5);
+      filtered = filtered.filter((eq) => eq.Zone?.nom_zone === selectedZone);
     }
     
     // Filter by search
@@ -60,6 +111,7 @@ const ListeEquipements = () => {
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-200',
     purple: 'bg-purple-50 border-purple-200',
+    teal: 'bg-teal-50 border-teal-200',
     orange: 'bg-orange-50 border-orange-200',
     yellow: 'bg-yellow-50 border-yellow-200',
   };
@@ -67,6 +119,7 @@ const ListeEquipements = () => {
   const buttonColorClasses = {
     blue: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800',
     purple: 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800',
+    teal: 'bg-teal-600 hover:bg-teal-700 active:bg-teal-800',
     orange: 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800',
     yellow: 'bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800',
   };
@@ -100,51 +153,6 @@ const ListeEquipements = () => {
     setIsCreatingNew(false);
   };
 
-  // Show empty state if no category selected
-  if (categorie === 'all' && filteredEquipements.length === 0 && !search) {
-    return (
-      <div className="p-6 flex-1 overflow-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">📋 Inventaire des équipements</h1>
-          <button 
-            onClick={handleCreateNew}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-medium"
-          >
-            + Nouvel équipement
-          </button>
-        </div>
-
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="🔍 Rechercher par code ou désignation..."
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
-
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="text-center">
-            <p className="text-gray-500 mb-8 text-lg">Sélectionnez une catégorie pour afficher les équipements</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
-              {categories.map((cat) => (
-                <button
-                  key={cat.id}
-                  onClick={() => setSearchParams({ categorie: cat.id })}
-                  className={`p-6 rounded-lg border-2 transition-all ${colorClasses[cat.color]} hover:shadow-lg transform hover:scale-105`}
-                >
-                  <div className="text-4xl mb-2">{cat.icon}</div>
-                  <div className="font-semibold text-gray-800">{cat.label}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 flex-1 overflow-auto flex flex-col">
       <div className="flex justify-between items-center mb-6">
@@ -154,7 +162,7 @@ const ListeEquipements = () => {
         </div>
         <button 
           onClick={handleCreateNew}
-          className={`${buttonColorClasses[currentCategory?.color]} text-white px-4 py-2 rounded font-medium`}
+          className={`${buttonColorClasses[currentCategory?.color] || buttonColorClasses.blue} text-white px-4 py-2 rounded font-medium`}
         >
           + Nouvel équipement
         </button>
@@ -168,7 +176,7 @@ const ListeEquipements = () => {
               onClick={() => setSearchParams({ categorie: cat.id })}
               className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
                 categorie === cat.id
-                  ? `${buttonColorClasses[cat.color]} text-white shadow-md`
+                  ? `${buttonColorClasses[cat.color] || buttonColorClasses.blue} text-white shadow-md`
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
               }`}
             >

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 const PinceDetailModal = ({ pince, isOpen, onClose }) => {
-  const [selectedRefPair, setSelectedRefPair] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
 
   if (!isOpen || !pince) return null;
@@ -23,24 +22,27 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
     }
   };
 
-  // Get unique reference pairs
-  const getUniqueRefPairs = () => {
-    const pairs = new Map();
-    pince.variants?.forEach((variant) => {
-      const key = `${variant.reference_constructeur}|${variant.reference_tec}`;
-      if (!pairs.has(key)) {
-        pairs.set(key, {
-          constructeur: variant.reference_constructeur,
-          tec: variant.reference_tec,
-          variants: [],
-        });
-      }
-      pairs.get(key).variants.push(variant);
-    });
-    return Array.from(pairs.values());
+  const sortedVariants = [...(pince.variants || [])].sort((a, b) => {
+    const refConstructeurCompare = (a.reference_constructeur || '').localeCompare(b.reference_constructeur || '', 'fr', { numeric: true });
+    if (refConstructeurCompare !== 0) return refConstructeurCompare;
+    const refTecCompare = (a.reference_tec || '').localeCompare(b.reference_tec || '', 'fr', { numeric: true });
+    if (refTecCompare !== 0) return refTecCompare;
+    const sectionA = a.section_mm === null || a.section_mm === undefined ? Number.MAX_SAFE_INTEGER : Number(a.section_mm);
+    const sectionB = b.section_mm === null || b.section_mm === undefined ? Number.MAX_SAFE_INTEGER : Number(b.section_mm);
+    return sectionA - sectionB;
+  });
+
+  const getVariantPairKey = (variant) => {
+    const refConstructeur = (variant.reference_constructeur || '').trim();
+    const refTec = (variant.reference_tec || '').trim();
+    return `${refConstructeur}||${refTec}`;
   };
 
-  const refPairs = getUniqueRefPairs();
+  const hasValidMoyenne = (moyenne) => {
+    if (moyenne === null || moyenne === undefined || moyenne === '') return false;
+    const numericMoyenne = Number(moyenne);
+    return Number.isFinite(numericMoyenne);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -78,81 +80,59 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
             </div>
           </div>
 
-          {/* LEVEL 1: References List */}
-          {!selectedRefPair && !selectedVariant && pince.variants && pince.variants.length > 0 && (
+          {/* Variants Table */}
+          {!selectedVariant && pince.variants && pince.variants.length > 0 && (
             <div>
-              <h3 className="font-bold text-lg mb-4 text-orange-700">📋 Références des Cosses & Sertissage ({refPairs.length})</h3>
-              <div className="grid gap-3">
-                {refPairs.map((refPair, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setSelectedRefPair(refPair)}
-                    className="bg-gradient-to-r from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 p-4 rounded-lg border-2 border-orange-200 transition text-left"
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-sm font-semibold text-gray-700">Réf. Constructeur: <span className="font-mono text-orange-700">{refPair.constructeur || 'N/A'}</span></p>
-                        <p className="text-sm font-semibold text-gray-700">Réf. TEC: <span className="font-mono text-orange-700">{refPair.tec || 'N/A'}</span></p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-gray-600">Variantes</p>
-                        <p className="text-lg font-bold text-orange-700">{refPair.variants.length}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* LEVEL 2: Variants for selected reference pair */}
-          {selectedRefPair && !selectedVariant && (
-            <div>
-              {/* Back Button */}
-              <button
-                onClick={() => setSelectedRefPair(null)}
-                className="mb-4 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium transition flex items-center gap-2"
-              >
-                ← Retour aux Références
-              </button>
-
-              {/* Selected Reference Info */}
-              <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg border-2 border-orange-300 mb-4">
-                <h3 className="font-bold text-lg text-orange-700 mb-2">Référence Sélectionnée</h3>
-                <p className="text-sm"><span className="font-semibold">Réf. Constructeur:</span> <span className="font-mono">{selectedRefPair.constructeur || 'N/A'}</span></p>
-                <p className="text-sm"><span className="font-semibold">Réf. TEC:</span> <span className="font-mono">{selectedRefPair.tec || 'N/A'}</span></p>
-              </div>
-
-              {/* Variants Table */}
-              <h3 className="font-bold text-lg mb-3 text-orange-700">📊 Variantes ({selectedRefPair.variants.length})</h3>
+              <h3 className="font-bold text-lg mb-3 text-orange-700">📊 Variantes ({sortedVariants.length})</h3>
               <div className="overflow-x-auto border-2 border-orange-200 rounded-lg">
                 <table className="w-full">
                   <thead className="bg-orange-100 sticky top-0">
                     <tr>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700">Réf. Constructeur</th>
+                      <th className="px-4 py-3 text-left text-xs font-bold text-gray-700">Réf. TEC</th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700">Section (MM²)</th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700">Longueur Dénudage</th>
                       <th className="px-4 py-3 text-left text-xs font-bold text-gray-700">Valeur Traction</th>
                       <th className="px-4 py-3 text-center text-xs font-bold text-gray-700">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-orange-100">
-                    {selectedRefPair.variants.map((variant, idx) => (
-                      <tr key={variant.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-orange-50'}>
-                        <td className="px-4 py-3 text-sm font-bold text-orange-700">{variant.section_mm || '-'}</td>
-                        <td className="px-4 py-3 text-sm text-gray-800">{variant.longueur_denudage || '-'}</td>
-                        <td className="px-4 py-3 text-sm font-semibold text-gray-800">{variant.valeur_traction || '-'}</td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => setSelectedVariant(variant)}
-                            className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm font-medium transition"
+                  <tbody>
+                    {sortedVariants.map((variant, idx) => {
+                      const variantKey = getVariantPairKey(variant);
+                      const previousVariant = idx > 0 ? sortedVariants[idx - 1] : null;
+                      const isNewPair = idx === 0 || getVariantPairKey(previousVariant) !== variantKey;
+
+                      return (
+                        <React.Fragment key={variant.id}>
+                          {isNewPair && idx !== 0 && (
+                            <tr>
+                              <td colSpan={6} className="h-3 bg-orange-50/60 border-t-2 border-orange-200" />
+                            </tr>
+                          )}
+                          <tr
+                            className={`${idx % 2 === 0 ? 'bg-white' : 'bg-orange-50'} border-b border-orange-100 ${isNewPair ? 'border-t-2 border-t-orange-300' : ''}`}
                           >
-                            {variant.maintenanceRecords && variant.maintenanceRecords.length > 0
-                              ? `🔧 Vérif (${variant.maintenanceRecords.length})`
-                              : '📭 Aucun'}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                            <td className="px-4 py-3 text-sm font-mono text-gray-800">
+                              {variant.reference_constructeur || '-'}
+                            </td>
+                            <td className="px-4 py-3 text-sm font-mono text-gray-800">{variant.reference_tec || '-'}</td>
+                            <td className="px-4 py-3 text-sm font-bold text-orange-700">{variant.section_mm || '-'}</td>
+                            <td className="px-4 py-3 text-sm text-gray-800">{variant.longueur_denudage || '-'}</td>
+                            <td className="px-4 py-3 text-sm font-semibold text-gray-800">{variant.valeur_traction || '-'}</td>
+                            <td className="px-4 py-3 text-center">
+                              <button
+                                onClick={() => setSelectedVariant(variant)}
+                                className="bg-orange-600 hover:bg-orange-700 text-white px-3 py-1 rounded text-sm font-medium transition"
+                              >
+                                {variant.maintenanceRecords && variant.maintenanceRecords.length > 0
+                                  ? `🔧 Vérif (${variant.maintenanceRecords.length})`
+                                  : '📭 Aucun'}
+                              </button>
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -170,15 +150,6 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                 >
                   ← Retour aux Variantes
                 </button>
-                <button
-                  onClick={() => {
-                    setSelectedVariant(null);
-                    setSelectedRefPair(null);
-                  }}
-                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded font-medium transition flex items-center gap-2"
-                >
-                  ↑ Retour aux Références
-                </button>
               </div>
 
               {/* Selected Variant Info */}
@@ -188,7 +159,7 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                 {/* SPÉCIFICATION DU COSSE */}
                 <div className="mb-4 pb-4 border-b-2 border-orange-300">
                   <h4 className="text-sm font-bold text-orange-700 mb-3">🔌 SPÉCIFICATION DU COSSE</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                       <label className="text-xs text-gray-600 font-semibold">Réf. Constructeur</label>
                       <p className="text-sm font-mono text-gray-800">{selectedVariant.reference_constructeur || '-'}</p>
@@ -200,10 +171,6 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                     <div>
                       <label className="text-xs text-gray-600 font-semibold">Section (MM²)</label>
                       <p className="text-sm font-mono text-gray-800">{selectedVariant.section_mm || '-'}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs text-gray-600 font-semibold">Section (AWG)</label>
-                      <p className="text-sm font-mono text-gray-800">{selectedVariant.section_awg || '-'}</p>
                     </div>
                   </div>
                 </div>
@@ -283,10 +250,12 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                         </div>
 
                         {/* Average */}
-                        <div className="bg-gradient-to-r from-orange-100 to-orange-200 p-3 rounded border border-orange-300 text-center mb-2">
-                          <p className="text-xs font-semibold text-gray-700">Moyenne</p>
-                          <p className="text-2xl font-bold text-orange-700">{record.moyenne} N</p>
-                        </div>
+                        {hasValidMoyenne(record.moyenne) && (
+                          <div className="bg-gradient-to-r from-orange-100 to-orange-200 p-3 rounded border border-orange-300 text-center mb-2">
+                            <p className="text-xs font-semibold text-gray-700">Moyenne</p>
+                            <p className="text-2xl font-bold text-orange-700">{record.moyenne} N</p>
+                          </div>
+                        )}
 
                         {/* Remark */}
                         {record.remarque && (
@@ -307,7 +276,7 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
           )}
 
           {/* No Variants */}
-          {!selectedRefPair && !selectedVariant && (!pince.variants || pince.variants.length === 0) && (
+          {!selectedVariant && (!pince.variants || pince.variants.length === 0) && (
             <div className="p-4 rounded bg-gray-100 text-center text-sm text-gray-600">
               ⚠️ Aucune variante pour ce pince
             </div>

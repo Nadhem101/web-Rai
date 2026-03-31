@@ -1,8 +1,9 @@
 const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 const { sequelize, Pince, PinceVariant, PinceMaintenanceRecord, Fabricant } = require('../app/models');
 
-const PINCES_FILE = 'C:\\Users\\user\\Desktop\\Suivi des equipments FQ0300.csv';
+const PINCES_FILE = path.join(__dirname, '../../database/Suivi des equipments pince.csv');
 
 // Parse CSV line  
 const parseCSVLine = (line) => {
@@ -34,13 +35,40 @@ const parseCSVLine = (line) => {
 
 const parseTestValue = (val) => {
   if (!val || val === '') return null;
-  const num = parseFloat(val);
+  const normalized = String(val).replace(',', '.');
+  const num = parseFloat(normalized);
   return isNaN(num) ? null : num;
 };
 
 const cleanString = (str) => {
   if (!str) return '';
   return str.trim().replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+};
+
+const parseSectionMm = (value) => {
+  const cleaned = cleanString(value);
+  if (!cleaned) return null;
+
+  const normalized = cleaned
+    .replace(',', '.')
+    .replace(/\s+/g, '')
+    .replace(/[^0-9.\-]/g, '');
+
+  const parsed = parseFloat(normalized);
+  return Number.isNaN(parsed) ? null : parsed;
+};
+
+const hasMaintenanceValues = (testValues) => testValues.some((v) => v !== null);
+
+const parsePinceNumber = (raw) => {
+  const value = cleanString(raw).toUpperCase();
+  if (!value) return null;
+
+  const normalized = value.replace(/\s+/g, ' ');
+  const regex = /^P\d{1,3}(?:\s*BIS)?(?:\+P?\d{1,3})?(?:-\d+)?$/i;
+  if (!regex.test(normalized)) return null;
+
+  return normalized;
 };
 
 const parseDate = (dateStr) => {
@@ -53,11 +81,21 @@ const parseDate = (dateStr) => {
   return null;
 };
 
+const normalizePinceStatut = (rawValue, rawRemark) => {
+  const source = `${cleanString(rawValue)} ${cleanString(rawRemark)}`.toLowerCase();
+
+  if (source.includes('manque cosse')) return 'Manque cosse';
+  if (source.includes('verefication visuelle') || source.includes('verification visuelle')) return 'Vérification visuelle';
+  if (source.includes('hors service')) return 'Hors service';
+  if (source.includes('en service')) return 'En service';
+  return 'À vérifier';
+};
+
 async function importPinces() {
   try {
     console.log('🔄 Démarrage de l\'import des pinces...\n');
 
-    const pincesData = {};
+    const pincesData = new Map();
     const fileStream = fs.createReadStream(PINCES_FILE, { encoding: 'utf8' });
     const rl = readline.createInterface({
       input: fileStream,
@@ -65,166 +103,182 @@ async function importPinces() {
     });
 
     let lineCount = 0;
-    let dataStarted = false;
+    let currentPinceKey = null;
 
     for await (const line of rl) {
       lineCount++;
 
-      // Skip header lines (first 4 lines)
-      if (lineCount <= 4) {
-        if (lineCount === 4) console.log(`Skipped header rows, starting data parsing...\n`);
+      const columns = parseCSVLine(line);
+      if (columns.length < 17) {
+        while (columns.length < 17) columns.push('');
+      }
+
+      const col0 = cleanString(columns[0]);
+
+      const maybePinceNumber = parsePinceNumber(col0);
+      if (maybePinceNumber) {
+        const constructeur = (cleanString(columns[1]) || 'Inconnu').toUpperCase();
+        const referenceMore = cleanString(columns[2]) || '';
+        const pinceUniqueKey = `${maybePinceNumber}__${constructeur}__${referenceMore}`;
+
+        if (!pincesData.has(pinceUniqueKey)) {
+          pincesData.set(pinceUniqueKey, {
+            numeroPince: maybePinceNumber,
+            constructeur,
+            referenceMore,
+            lastReferenceConstructeur: cleanString(columns[3]) || null,
+            lastReferenceTec: cleanString(columns[4]) || null,
+            lastLongueurDenudage: cleanString(columns[6]) || null,
+            lastDateVerification: parseDate(cleanString(columns[13])),
+            statut: normalizePinceStatut(columns[15], columns[16]),
+            remarque: cleanString(columns[16]) || null,
+            variants: [],
+          });
+          console.log(`  ✓ ${maybePinceNumber} - ${constructeur}`);
+        } else {
+          const existing = pincesData.get(pinceUniqueKey);
+          const freshDate = parseDate(cleanString(columns[13]));
+          existing.lastDateVerification = freshDate || existing.lastDateVerification;
+          existing.statut = normalizePinceStatut(columns[15], columns[16]);
+          existing.remarque = cleanString(columns[16]) || existing.remarque;
+        }
+
+        currentPinceKey = pinceUniqueKey;
+      }
+
+      if (!currentPinceKey || !pincesData.has(currentPinceKey)) {
         continue;
       }
 
-      const columns = parseCSVLine(line);
-      if (columns.length < 5) continue;
+      const currentPince = pincesData.get(currentPinceKey);
 
-      const col0 = cleanString(columns[0]);
-      
-      // Skip lines that don't contain pince data
-      if (!col0) continue;
+      const rawReferenceConstructeur = cleanString(columns[3]);
+      const rawReferenceTec = cleanString(columns[4]);
+      const rawSectionMm = cleanString(columns[5]);
+      const rawLongueurDenudage = cleanString(columns[6]);
 
-      // Start when we see P01, P02, P3, etc.
-      if (!dataStarted && col0.match(/^P\d{1,3}$/i)) {
-        dataStarted = true;
-        console.log(`✓ Started parsing data at line ${lineCount}\n`);
+      if (rawReferenceConstructeur) currentPince.lastReferenceConstructeur = rawReferenceConstructeur;
+      if (rawReferenceTec) currentPince.lastReferenceTec = rawReferenceTec;
+      if (rawLongueurDenudage) currentPince.lastLongueurDenudage = rawLongueurDenudage;
+
+      const sectionMm = parseSectionMm(rawSectionMm);
+
+      const testValues = [
+        parseTestValue(cleanString(columns[8])),
+        parseTestValue(cleanString(columns[9])),
+        parseTestValue(cleanString(columns[10])),
+        parseTestValue(cleanString(columns[11])),
+        parseTestValue(cleanString(columns[12])),
+      ];
+
+      const explicitDateVerification = parseDate(cleanString(columns[13]));
+      if (explicitDateVerification) {
+        currentPince.lastDateVerification = explicitDateVerification;
       }
 
-      if (!dataStarted) continue;
+      const looksLikeVariant = Boolean(
+        rawReferenceConstructeur ||
+        rawReferenceTec ||
+        rawSectionMm ||
+        rawLongueurDenudage ||
+        cleanString(columns[7]) ||
+        hasMaintenanceValues(testValues)
+      );
 
-      // Check if this line starts with a pince number
-      const pinceMatch = col0.match(/^P\d{1,3}([+]P\d{1,3})?$/i);
-      if (!pinceMatch) continue;
-
-      const pinceKey = col0.toUpperCase();
-      const fabricant = cleanString(columns[1]) || 'Inconnu';
-
-      // Initialize pince  
-      if (!pincesData[pinceKey]) {
-        pincesData[pinceKey] = {
-          numeroPince: pinceKey,
-          fabricant,
-          reference: cleanString(columns[2]) || '',
-          variants: [],
-        };
-        console.log(`  ✓ ${pinceKey} - ${fabricant}`);
+      if (!looksLikeVariant) {
+        continue;
       }
 
-      // Only process if there's variant data (col3 has reference)
-      if (!cleanString(columns[3])) continue;
-
-      // Extract variant
       const variant = {
-        referenceConstructeur: cleanString(columns[3]) || null,
-        referenceTec: cleanString(columns[4]) || null,
-        sectionMm: parseFloat(cleanString(columns[5])) || null,
-        sectionAwg: cleanString(columns[6]) || null,
-        longueurDenudage: cleanString(columns[7]) || null,
-        valeurTraction: cleanString(columns[8]) || null,
-        testValues: [
-          parseTestValue(cleanString(columns[9])),
-          parseTestValue(cleanString(columns[10])),
-          parseTestValue(cleanString(columns[11])),
-          parseTestValue(cleanString(columns[12])),
-          parseTestValue(cleanString(columns[13])),
-        ],
-        dateVerification: parseDate(cleanString(columns[14])),
-        affectation: cleanString(columns[15]) || null,
-        statut: cleanString(columns[16]) || 'À vérifier',
-        remarque: cleanString(columns[17]) || null,
+        referenceConstructeur: currentPince.lastReferenceConstructeur,
+        referenceTec: currentPince.lastReferenceTec,
+        sectionMm,
+        sectionAwg: null,
+        longueurDenudage: rawLongueurDenudage || currentPince.lastLongueurDenudage,
+        valeurTraction: cleanString(columns[7]) || null,
+        testValues,
+        dateVerification: explicitDateVerification || currentPince.lastDateVerification,
+        affectation: cleanString(columns[14]) || null,
+        statut: normalizePinceStatut(columns[15], columns[16]),
+        remarque: cleanString(columns[16]) || null,
       };
 
-      if (variant.sectionMm) {
-        pincesData[pinceKey].variants.push(variant);
-      }
+      currentPince.variants.push(variant);
     }
 
-    console.log(`\n✅ CSV parsé: ${Object.keys(pincesData).length} pinces trouvées\n`);
+    console.log(`\n✅ CSV parsé: ${pincesData.size} pinces trouvées\n`);
 
-    // Import to database
+    // Rebuild pince data from CSV source of truth
+    await sequelize.transaction(async (transaction) => {
+      await PinceMaintenanceRecord.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction });
+      await PinceVariant.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction });
+      await Pince.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction });
+    });
+
     let createdCount = 0;
     let variantCount = 0;
     let recordCount = 0;
 
-    for (const [pinceNum, pinceData] of Object.entries(pincesData)) {
+    for (const pinceData of pincesData.values()) {
       try {
         let fabricant = await Fabricant.findOne({
-          where: { nom: pinceData.fabricant },
+          where: { nom: pinceData.constructeur },
         });
 
         if (!fabricant) {
           fabricant = await Fabricant.create({
-            nom: pinceData.fabricant,
+            nom: pinceData.constructeur,
           });
         }
 
-        let pince = await Pince.findOne({
-          where: { numero_pince: pinceNum },
+        const pince = await Pince.create({
+          numero_pince: pinceData.numeroPince,
+          reference_pince: pinceData.referenceMore,
+          fabricant_id: fabricant.id,
+          date_verification: pinceData.lastDateVerification,
+          statut: pinceData.statut,
+          remarque: pinceData.remarque,
         });
+        createdCount++;
 
-        if (!pince) {
-          pince = await Pince.create({
-            numero_pince: pinceNum,
-            reference_pince: pinceData.reference,
-            fabricant_id: fabricant.id,
-          });
-          createdCount++;
-          console.log(`  ✓ ${pinceNum} (${pinceData.variants.length} variantes)`);
-        }
+        console.log(`  ✓ ${pinceData.numeroPince} (${pinceData.variants.length} variantes)`);
 
         // Create variants and maintenance records
         for (const variantData of pinceData.variants) {
-          if (!variantData.referenceTec || !variantData.sectionMm) continue;
-
-          let variant = await PinceVariant.findOne({
-            where: {
-              pince_id: pince.id,
-              reference_tec: variantData.referenceTec,
-              section_mm: variantData.sectionMm,
-            },
-          });
-
-          if (!variant) {
-            variant = await PinceVariant.create({
-              pince_id: pince.id,
-              reference_constructeur: variantData.referenceConstructeur,
-              reference_tec: variantData.referenceTec,
-              section_mm: variantData.sectionMm,
-              section_awg: variantData.sectionAwg,
-              longueur_denudage: variantData.longueurDenudage,
-              valeur_traction: variantData.valeurTraction,
-              affectation: variantData.affectation,
-              remarque: variantData.remarque,
-            });
-            variantCount++;
+          if (!variantData.referenceConstructeur && !variantData.referenceTec && variantData.sectionMm === null) {
+            continue;
           }
 
-          // Create maintenance record
-          if (variantData.dateVerification && variantData.testValues.some(v => v !== null)) {
-            const existing = await PinceMaintenanceRecord.findOne({
-              where: {
-                pince_variant_id: variant.id,
-                date_verification: variantData.dateVerification,
-              },
-            });
+          const variant = await PinceVariant.create({
+            pince_id: pince.id,
+            reference_constructeur: variantData.referenceConstructeur,
+            reference_tec: variantData.referenceTec,
+            section_mm: variantData.sectionMm,
+            section_awg: null,
+            longueur_denudage: variantData.longueurDenudage,
+            valeur_traction: variantData.valeurTraction,
+            affectation: variantData.affectation,
+            remarque: variantData.remarque,
+          });
+          variantCount++;
 
-            if (!existing) {
-              await PinceMaintenanceRecord.create({
-                pince_variant_id: variant.id,
-                date_verification: variantData.dateVerification,
-                test_value_1: variantData.testValues[0],
-                test_value_2: variantData.testValues[1],
-                test_value_3: variantData.testValues[2],
-                test_value_4: variantData.testValues[3],
-                test_value_5: variantData.testValues[4],
-                statut_verification: 'À reprendre',
-              });
-              recordCount++;
-            }
+          // Create maintenance record
+          if (variantData.dateVerification && hasMaintenanceValues(variantData.testValues)) {
+            await PinceMaintenanceRecord.create({
+              pince_variant_id: variant.id,
+              date_verification: variantData.dateVerification,
+              test_value_1: variantData.testValues[0],
+              test_value_2: variantData.testValues[1],
+              test_value_3: variantData.testValues[2],
+              test_value_4: variantData.testValues[3],
+              test_value_5: variantData.testValues[4],
+              statut_verification: 'À reprendre',
+            });
+            recordCount++;
           }
         }
       } catch (error) {
-        console.error(`⚠ Erreur ${pinceNum}:`, error.message);
+        console.error(`⚠ Erreur ${pinceData.numeroPince}:`, error.message);
       }
     }
 

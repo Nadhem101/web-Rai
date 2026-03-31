@@ -10,10 +10,9 @@ const App = () => {
   const [inventaireExpanded, setInventaireExpanded] = useState(false);
 
   const inventaireCategories = [
-    { id: 'all', label: 'Tous les équipements', icon: '📋' },
-    { id: 'equipement', label: 'Équipement général', icon: '🔧' },
-    { id: 'pinces', label: 'Pinces de sertissage', icon: '🔨' },
-    { id: 'applicateurs', label: 'Applicateurs faisceaux', icon: '⚡' },
+    { id: 'equipement-all', label: 'Tous les équipements FC', icon: '📋' },
+    { id: 'pinces', label: 'Pinces', icon: '🔨' },
+    { id: 'applicateurs', label: 'Applicateurs', icon: '⚡' },
   ];
 
   return (
