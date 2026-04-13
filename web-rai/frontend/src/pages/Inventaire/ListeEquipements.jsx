@@ -16,20 +16,8 @@ const normalizeZoneName = (value) => {
     .trim();
 };
 
-const getZoneOrderRank = (zoneName) => {
-  const normalized = normalizeZoneName(zoneName);
-
-  if (normalized.includes('bobinage')) return 1;
-  if (normalized.includes('coupe')) return 2;
-  if (normalized.includes('assemblage')) return 3;
-  if (normalized.includes('electronique')) return 4;
-  if (normalized.includes('fer') || normalized.includes('bain')) return 5;
-
-  return 99;
-};
-
 const ListeEquipements = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [equipements, setEquipements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -38,33 +26,27 @@ const ListeEquipements = () => {
   const rawCategorie = searchParams.get('categorie') || 'equipement-all';
   const categorie = rawCategorie === 'all' || rawCategorie === 'equipement' ? 'equipement-all' : rawCategorie;
 
-  const fcEquipements = equipements.filter((eq) => eq.categorie === 'equipement');
-  const zoneCategories = Array.from(
-    new Map(
-      fcEquipements
-        .filter((eq) => eq.Zone?.nom_zone)
-        .map((eq) => [eq.Zone.nom_zone, eq.Zone.nom_zone])
-    ).values()
-  )
-    .sort((a, b) => {
-      const rankDiff = getZoneOrderRank(a) - getZoneOrderRank(b);
-      if (rankDiff !== 0) return rankDiff;
-      return a.localeCompare(b, 'fr', { sensitivity: 'base', numeric: true });
-    })
-    .map((zoneName) => ({
-      id: `zone:${zoneName}`,
-      label: zoneName,
-      icon: '🏭',
-      color: 'teal',
-      zoneName,
-    }));
+  // Zone mapping for display
+  const zoneMap = {
+    'zone:Bobinage': { label: 'Bobinage', icon: '🔄' },
+    'zone:Câblage': { label: 'Câblage', icon: '✂️' },
+    'zone:Électronique': { label: 'Électronique', icon: '💾' },
+    'zone:Chauvin Arnoux': { label: 'Chauvin Arnoux', icon: '⚙️' },
+    'zone:Embases Relais': { label: 'Embases Relais', icon: '🔌' },
+    'zone:Kuhn': { label: 'Kuhn', icon: '🏭' },
+    'zone:Club': { label: 'Club', icon: '🛠️' },
+    'zone:Maintenance': { label: 'Maintenance', icon: '🔧' },
+    'zone:Électro-aimant': { label: 'Électro-aimant', icon: '⚡' },
+  };
 
-  const categories = [
-    { id: 'equipement-all', label: 'Tous les équipements FC', icon: '📋', color: 'blue' },
-    ...zoneCategories,
-    { id: 'pinces', label: 'Pinces', icon: '🔨', color: 'orange' },
-    { id: 'applicateurs', label: 'Applicateurs', icon: '⚡', color: 'yellow' },
-  ];
+  const categoryMap = {
+    'equipement-all': { label: '📋 Tous les équipements', icon: '📋' },
+    'pinces': { label: '🔨 Pinces', icon: '🔨' },
+    'applicateurs': { label: '⚡ Applicateurs', icon: '⚡' },
+    ...zoneMap,
+  };
+
+  const currentCategory = categoryMap[categorie] || { label: 'Équipements', icon: '📋' };
 
   useEffect(() => {
     loadEquipements();
@@ -89,12 +71,18 @@ const ListeEquipements = () => {
       return [];
     }
 
-    // FC equipment tabs: all + per zone
+    // FC equipment: filter by categorie
     filtered = filtered.filter((eq) => eq.categorie === 'equipement');
 
+    // If zone is selected, filter by zone
     if (categorie.startsWith('zone:')) {
       const selectedZone = categorie.slice(5);
-      filtered = filtered.filter((eq) => eq.Zone?.nom_zone === selectedZone);
+      const normalizedSelectedZone = normalizeZoneName(selectedZone);
+      filtered = filtered.filter((eq) => {
+        if (!eq.Zone?.nom_zone) return false;
+        const dbZoneNormalized = normalizeZoneName(eq.Zone.nom_zone);
+        return dbZoneNormalized === normalizedSelectedZone;
+      });
     }
     
     // Filter by search
@@ -107,21 +95,10 @@ const ListeEquipements = () => {
   };
 
   const filteredEquipements = getFilteredEquipements();
-  const currentCategory = categories.find(c => c.id === categorie);
+
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-200',
-    purple: 'bg-purple-50 border-purple-200',
     teal: 'bg-teal-50 border-teal-200',
-    orange: 'bg-orange-50 border-orange-200',
-    yellow: 'bg-yellow-50 border-yellow-200',
-  };
-
-  const buttonColorClasses = {
-    blue: 'bg-blue-600 hover:bg-blue-700 active:bg-blue-800',
-    purple: 'bg-purple-600 hover:bg-purple-700 active:bg-purple-800',
-    teal: 'bg-teal-600 hover:bg-teal-700 active:bg-teal-800',
-    orange: 'bg-orange-600 hover:bg-orange-700 active:bg-orange-800',
-    yellow: 'bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800',
   };
 
   const getStatutColor = (statut) => {
@@ -137,14 +114,6 @@ const ListeEquipements = () => {
     }
   };
 
-  const handleCreateNew = () => {
-    if (categorie === 'pinces' || categorie === 'applicateurs') {
-      setIsCreatingNew(true);
-    } else {
-      alert('Veuillez sélectionner une catégorie d\'équipement première');
-    }
-  };
-
   const handleFormClose = () => {
     setIsCreatingNew(false);
   };
@@ -157,32 +126,8 @@ const ListeEquipements = () => {
     <div className="p-6 flex-1 overflow-auto flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold">{currentCategory?.icon} {currentCategory?.label}</h1>
+          <h1 className="text-2xl font-bold">{currentCategory.label}</h1>
           <p className="text-sm text-gray-500">{filteredEquipements.length} équipement(s)</p>
-        </div>
-        <button 
-          onClick={handleCreateNew}
-          className={`${buttonColorClasses[currentCategory?.color] || buttonColorClasses.blue} text-white px-4 py-2 rounded font-medium`}
-        >
-          + Nouvel équipement
-        </button>
-      </div>
-
-      <div className="mb-6 grid grid-cols-1 gap-3 auto-fit">
-        <div className="flex gap-2 overflow-x-auto pb-2">
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSearchParams({ categorie: cat.id })}
-              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-                categorie === cat.id
-                  ? `${buttonColorClasses[cat.color] || buttonColorClasses.blue} text-white shadow-md`
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {cat.icon} {cat.label}
-            </button>
-          ))}
         </div>
       </div>
 

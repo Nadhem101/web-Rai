@@ -2,6 +2,124 @@
 import { maintenanceEventService } from '../../services/api';
 import { EQUIPEMENTS, WEEKS, getCurrentWeek, isMaintenance } from '../../utils/maintenanceSchedule';
 
+const DEFAULT_INTERVALS = [{ type: '1M', freq: 4, start: 1, color: 'blue' }];
+
+const CALENDAR_VIEWS = [
+  {
+    id: 'cablage-electronique',
+    label: 'Cablage & Electronique',
+    title: 'Calendrier des preventives systematiques de Cablage & Electronique',
+    subtitle: '" KW01 ===> KW53 "',
+    reference: 'FQ024/00',
+    items: [
+      { code: 'EQUIP347', designation: 'Machine de coupe', zone: 'Cablage' },
+      { code: 'EQUIP210', designation: 'Marquage a chaud', zone: 'Cablage' },
+      { code: 'EQUIP395', designation: 'Machine de coupe', zone: 'Cablage' },
+      { code: 'EQUIP432', designation: 'Machine de coupe', zone: 'Cablage' },
+      { code: 'EQUIP355', designation: 'Machine de coupe', zone: 'Cablage' },
+      { code: 'EQUIP349', designation: 'Machine de marquage', zone: 'Cablage' },
+      { code: 'EQUIP451', designation: 'Machine de marquage', zone: 'Cablage' },
+      { code: 'EQUIP476', designation: 'Machine de degraissage', zone: 'Cablage' },
+      { code: 'EQUIP475', designation: 'Machine de coupe', zone: 'Cablage' },
+      { code: 'EQUIP353', designation: 'Bottleuse', zone: 'Cablage' },
+      { code: 'EQUIP457', designation: 'Bottleuse', zone: 'Cablage' },
+      { code: 'EQUIP444', designation: 'Machine de sertissage', zone: 'Cablage' },
+      { code: 'EQUIP386', designation: 'Press manuel', zone: 'Cablage' },
+      { code: 'EQUIP405', designation: 'Machine de sertissage', zone: 'Cablage' },
+      { code: 'EQUIP342', designation: 'Machine de sertissage', zone: 'Cablage' },
+      { code: 'EQUIP343', designation: 'Machine de sertissage', zone: 'Cablage' },
+      { code: 'EQUIP450', designation: 'Machine de sertissage', zone: 'Cablage' },
+      { code: 'EQUIP194', designation: 'Machine de sertissage', zone: 'Cablage' },
+      { code: 'EQUIP391', designation: 'Machine coupe gain', zone: 'Cablage' },
+      { code: 'EQUIP458', designation: 'Machine de sertissage', zone: 'Cablage' },
+      { code: 'EQUIP340', designation: 'Machine de denudage', zone: 'Cablage' },
+      { code: 'EQUIP463', designation: 'Machine de denudage', zone: 'Cablage' },
+      { code: 'EQUIP459', designation: 'Machine de denudage', zone: 'Cablage' },
+      { code: 'EQUIP460', designation: 'Machine de denudage', zone: 'Cablage' },
+      { code: 'EQUIP461', designation: 'Machine de denudage', zone: 'Cablage' },
+      { code: 'EQUIP462', designation: 'Machine de denudage', zone: 'Cablage' },
+      { code: 'EQUIP464', designation: 'Machine de denudage', zone: 'Cablage' },
+      { code: 'EQUIP341', designation: 'Machine insertion embout', zone: 'Electronique' },
+      { code: 'EQUIP384', designation: 'Machine ULTRASON', zone: 'Electronique' },
+      { code: 'EQUIP473', designation: 'Machine ULTRASON', zone: 'Electronique' },
+      { code: 'EQUIP346', designation: 'Machine Vague', zone: 'Electronique' },
+      { code: 'EQUIP466', designation: 'Machine de lavage', zone: 'Electronique' },
+      { code: 'EQUIP495', designation: 'Machine de coupe PCB', zone: 'Electronique' },
+      { code: 'EQUIP005', designation: 'Insertion cosse', zone: 'Electronique' },
+    ],
+  },
+  {
+    id: 'bobinage-assemblage',
+    label: 'Bobinage & Assemblage mecanique',
+    title: 'Calendrier des preventives systematiques de Bobinage & Assemblage Mecanique',
+    subtitle: '" KW01 ===> KW53 "',
+    reference: 'FQ024/00',
+    items: [
+      { code: 'EQUIP151', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP152', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP154', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP155', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP156', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP157', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP158', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP159', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP161', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP162', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP168', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP230', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP231', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP367', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP308', designation: 'Soudure a ultrasons', zone: 'Bobinage' },
+      { code: 'EQUIP148', designation: 'Machine de bobinage', zone: 'Bobinage' },
+      { code: 'EQUIP094', designation: 'Soudeuse electrique', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP297', designation: 'Poste coupe lame', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP147', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP144', designation: 'Poste marquage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP061', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP254', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP039', designation: 'Presse sertissage broche', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP046', designation: 'Presse insertion broche CA', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP082', designation: 'Presse montage volet CAP', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP092', designation: 'Machine soudage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP090', designation: 'Marquage a chaud', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP312', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP038', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP057', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP316', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP196', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP197', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP198', designation: 'Presse de sertissage Torniquet', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP193', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP189', designation: 'Poste d insertion', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP191', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP202', designation: 'Perseuse noyau', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP203', designation: 'Poste d insertion noyau', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP201', designation: 'Presse de sertissage Torniquet', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP199', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP200', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+      { code: 'EQUIP220', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
+    ],
+  },
+];
+
+function resolveEquipement(item) {
+  const fromSchedule = EQUIPEMENTS.find((eq) => eq.code === item.code);
+  if (fromSchedule) {
+    return {
+      ...fromSchedule,
+      designation: item.designation || fromSchedule.designation,
+      zone: item.zone || fromSchedule.zone,
+    };
+  }
+
+  return {
+    code: item.code,
+    designation: item.designation,
+    zone: item.zone,
+    intervals: DEFAULT_INTERVALS,
+  };
+}
+
 function CellMenu({ popup, onDone, onReschedule, onReset, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
@@ -86,10 +204,9 @@ const CalendrierPreventif = () => {
   const currentWeek = getCurrentWeek();
   const currentYear = new Date().getFullYear();
 
-  const [zoneFilter, setZoneFilter]             = useState('Tous');
+  const [viewFilter, setViewFilter]             = useState(CALENDAR_VIEWS[0].id);
   const [searchCode, setSearchCode]             = useState('');
   const [highlightedEquip, setHighlightedEquip] = useState(null);
-  const [showFilters, setShowFilters]           = useState(false);
   const [cellStates, setCellStates]             = useState({});
   const [popup, setPopup]                       = useState(null);
   const [rescheduleModal, setRescheduleModal]   = useState(null);
@@ -119,17 +236,22 @@ const CalendrierPreventif = () => {
     return { equip_code, interval_type, week: parseInt(weekStr, 10), year: currentYear };
   };
 
-  const zones = ['Tous', ...new Set(EQUIPEMENTS.map((e) => e.zone))];
+  const selectedView = useMemo(() => {
+    return CALENDAR_VIEWS.find((view) => view.id === viewFilter) || CALENDAR_VIEWS[0];
+  }, [viewFilter]);
+
+  const viewEquipements = useMemo(() => {
+    return selectedView.items.map(resolveEquipement);
+  }, [selectedView]);
 
   const filteredEquipements = useMemo(() => {
-    return EQUIPEMENTS.filter((e) => {
-      const matchZone = zoneFilter === 'Tous' || e.zone === zoneFilter;
+    return viewEquipements.filter((e) => {
       const matchCode = searchCode === '' ||
         e.code.toLowerCase().includes(searchCode.toLowerCase()) ||
         e.designation.toLowerCase().includes(searchCode.toLowerCase());
-      return matchZone && matchCode;
+      return matchCode;
     });
-  }, [zoneFilter, searchCode]);
+  }, [viewEquipements, searchCode]);
 
   const scheduledCells = useMemo(() => {
     const index = {};
@@ -265,14 +387,14 @@ const CalendrierPreventif = () => {
       <div className="bg-white border-b shadow-sm px-4 py-2 flex-shrink-0">
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
-            <h1 className="text-sm font-bold text-gray-800 leading-tight sm:text-base">Calendrier des preventives systematiques</h1>
-            <p className="text-xs text-gray-500">Cablage &amp; Electronique  KW01 to KW53</p>
+            <h1 className="text-sm font-bold text-gray-800 leading-tight sm:text-base">{selectedView.title}</h1>
+            <p className="text-xs text-gray-500">{selectedView.subtitle}</p>
           </div>
           <div className="flex flex-wrap gap-1.5 text-xs">
             {[
               { label: 'Date',          value: new Date().toLocaleDateString('fr-FR'), bg: 'bg-blue-50 border-blue-200 text-blue-800' },
               { label: 'Semaine',       value: `KW ${currentWeek}`,                   bg: 'bg-amber-50 border-amber-200 text-amber-800' },
-              { label: 'Ref.',          value: 'FQ024/00',                            bg: 'bg-gray-50 border-gray-200 text-gray-700' },
+              { label: 'Ref.',          value: selectedView.reference,                bg: 'bg-gray-50 border-gray-200 text-gray-700' },
               { label: 'Cette semaine', value: `${currentWeekDone}/${currentWeekTasks} faits`, bg: 'bg-green-50 border-green-200 text-green-800' },
               { label: 'Total fait',    value: doneCount,                             bg: 'bg-slate-50 border-slate-200 text-slate-800' },
             ].map(({ label, value, bg }) => (
@@ -290,10 +412,10 @@ const CalendrierPreventif = () => {
             className="border rounded px-2 py-0.5 text-xs w-40 sm:w-48 focus:outline-none focus:ring-2 focus:ring-blue-300"
             value={searchCode} onChange={(e) => setSearchCode(e.target.value)} />
           <div className="flex gap-1 flex-wrap">
-            {zones.map((z) => (
-              <button key={z} onClick={() => setZoneFilter(z)}
-                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${zoneFilter === z ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-                {z}
+            {CALENDAR_VIEWS.map((view) => (
+              <button key={view.id} onClick={() => setViewFilter(view.id)}
+                className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${viewFilter === view.id ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                {view.label}
               </button>
             ))}
           </div>

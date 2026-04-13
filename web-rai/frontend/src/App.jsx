@@ -8,11 +8,22 @@ import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
 
 const App = () => {
   const [inventaireExpanded, setInventaireExpanded] = useState(false);
+  const [equipementsExpanded, setEquipementsExpanded] = useState(true);
+
+  const zones = [
+    { id: 'zone:Bobinage', label: 'Bobinage', icon: '🔄' },
+    { id: 'zone:Câblage', label: 'Câblage', icon: '✂️' },
+    { id: 'zone:Électronique', label: 'Électronique', icon: '💾' },
+    { id: 'zone:Chauvin Arnoux', label: 'Chauvin Arnoux', icon: '⚙️' },
+    { id: 'zone:Embases Relais', label: 'Embases Relais', icon: '🔌' },
+    { id: 'zone:Kuhn', label: 'Kuhn', icon: '🏭' },
+    { id: 'zone:Club', label: 'Club', icon: '🛠️' },
+    { id: 'zone:Maintenance', label: 'Maintenance', icon: '🔧' },
+    { id: 'zone:Électro-aimant', label: 'Électro-aimant', icon: '⚡' },
+  ];
 
   const inventaireCategories = [
-    { id: 'equipement-all', label: 'Tous les équipements FC', icon: '📋' },
-    { id: 'pinces', label: 'Pinces', icon: '🔨' },
-    { id: 'applicateurs', label: 'Applicateurs', icon: '⚡' },
+    { id: 'equipement-all', label: 'Tous les équipements', icon: '📋' },
   ];
 
   return (
@@ -48,19 +59,62 @@ const App = () => {
             </button>
             {inventaireExpanded && (
               <div className="ml-4 mt-1 space-y-1">
-                {inventaireCategories.map((cat) => (
+                {/* All Equipment section */}
+                <div>
                   <NavLink
-                    key={cat.id}
-                    to={`/inventaire?categorie=${cat.id}`}
+                    to="/inventaire?categorie=equipement-all"
                     className={({ isActive }) =>
-                      `block px-3 py-2 rounded-md text-sm ${
+                      `block px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
                         isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
                       }`
                     }
+                    onClick={() => setEquipementsExpanded(!equipementsExpanded)}
                   >
-                    {cat.icon} {cat.label}
+                    📋 Tous les équipements
+                    <span className={`transform transition-transform text-xs ${equipementsExpanded ? 'rotate-180' : ''}`}>▼</span>
                   </NavLink>
-                ))}
+                  {equipementsExpanded && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {zones.map((zone) => (
+                        <NavLink
+                          key={zone.id}
+                          to={`/inventaire?categorie=${zone.id}`}
+                          className={({ isActive }) =>
+                            `block px-3 py-2 rounded-md text-xs ${
+                              isActive ? 'bg-teal-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                            }`
+                          }
+                        >
+                          {zone.icon} {zone.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Pinces */}
+                <NavLink
+                  to="/inventaire?categorie=pinces"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  🔨 Pinces
+                </NavLink>
+
+                {/* Applicateurs */}
+                <NavLink
+                  to="/inventaire?categorie=applicateurs"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  ⚡ Applicateurs
+                </NavLink>
               </div>
             )}
           </div>
