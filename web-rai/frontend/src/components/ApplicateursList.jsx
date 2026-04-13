@@ -3,7 +3,15 @@ import { applicateurService } from '../services/api';
 import ApplicateurDetailModal from './ApplicateurDetailModal';
 import ApplicateurForm from './ApplicateurForm';
 
-const ApplicateursList = () => {
+const normalizeText = (value = '') =>
+  value
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const ApplicateursList = ({ searchQuery = '' }) => {
   const [applicateurs, setApplicateurs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedApplicateur, setSelectedApplicateur] = useState(null);
@@ -58,6 +66,25 @@ const ApplicateursList = () => {
     fetchApplicateurs();
   };
 
+  const normalizedSearch = normalizeText(searchQuery);
+  const filteredApplicateurs = applicateurs.filter((applicateur) => {
+    if (!normalizedSearch) return true;
+
+    return [
+      applicateur.numero_outil,
+      applicateur.designation,
+      applicateur.constructeur_outil,
+      applicateur.numero_serie,
+      applicateur.site,
+      applicateur.statut,
+      ...(applicateur.variants || []).map((variant) => `${variant.reference_constructeur || ''} ${variant.reference_tec || ''}`),
+    ].some((field) => normalizeText(field).includes(normalizedSearch));
+  });
+
+  const sortedApplicateurs = [...filteredApplicateurs].sort((a, b) =>
+    (a.numero_outil || '').localeCompare(b.numero_outil || '', 'fr', { numeric: true })
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -84,7 +111,7 @@ const ApplicateursList = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-orange-100">
-            {applicateurs.map((applicateur, idx) => (
+            {sortedApplicateurs.map((applicateur, idx) => (
               <tr key={applicateur.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-orange-50'}>
                 <td className="px-4 py-3 text-sm font-bold text-orange-700">{applicateur.numero_outil}</td>
                 <td className="px-4 py-3 text-sm text-gray-800">{applicateur.designation || '-'}</td>
@@ -142,7 +169,7 @@ const ApplicateursList = () => {
         </table>
       </div>
 
-      {applicateurs.length === 0 && (
+      {sortedApplicateurs.length === 0 && (
         <div className="p-4 rounded bg-gray-100 text-center text-sm text-gray-600">
           ⚠️ Aucun applicateur trouvé
         </div>

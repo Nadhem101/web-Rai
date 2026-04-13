@@ -28,6 +28,22 @@ export const pinceService = {
   delete: (id) => API.delete(`/pinces/${id}`),
 };
 
+export const pincePreventiveService = {
+  getAll: () => API.get('/pince-preventive-records').then((res) => res.data),
+  getById: (id) => API.get(`/pince-preventive-records/${id}`).then((res) => res.data),
+  create: (data) => API.post('/pince-preventive-records', data).then((res) => res.data),
+  update: (id, data) => API.put(`/pince-preventive-records/${id}`, data).then((res) => res.data),
+  delete: (id) => API.delete(`/pince-preventive-records/${id}`).then((res) => res.data),
+};
+
+export const cosseService = {
+  getAll: () => API.get('/cosses').then((res) => res.data),
+  getById: (id) => API.get(`/cosses/${id}`).then((res) => res.data),
+  create: (data) => API.post('/cosses', data).then((res) => res.data),
+  update: (id, data) => API.put(`/cosses/${id}`, data).then((res) => res.data),
+  delete: (id) => API.delete(`/cosses/${id}`).then((res) => res.data),
+};
+
 export const maintenanceEventService = {
   // fetch all events for a given year
   getByYear: (year) => API.get('/maintenance-events', { params: { year } }),

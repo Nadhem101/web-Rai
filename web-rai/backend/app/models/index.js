@@ -8,9 +8,11 @@ const EcmeIntervention = require('./ecme_intervention.model');
 const Pince = require('./pince.model');
 const PinceVariant = require('./pince_variant.model');
 const PinceMaintenanceRecord = require('./pince_maintenance_record.model');
+const PincePreventiveRecord = require('./pince_preventive_record.model');
 const Applicateur = require('./applicateur.model');
 const ApplicateurVariant = require('./applicateur_variant.model');
 const ApplicateurMaintenanceRecord = require('./applicateur_maintenance_record.model');
+const Cosse = require('./cosse.model');
 
 // Equipement relationships
 Zone.hasMany(Equipement, { foreignKey: 'zone_id' });
@@ -67,8 +69,10 @@ module.exports = {
   Pince,
   PinceVariant,
   PinceMaintenanceRecord,
+  PincePreventiveRecord,
   Applicateur,
   ApplicateurVariant,
   ApplicateurMaintenanceRecord,
+  Cosse,
   syncDatabase,
 };

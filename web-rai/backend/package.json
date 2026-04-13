@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "import:pinces": "node scripts/import_pinces.js"
+    "import:pinces": "node scripts/import_pinces.js",
+    "import:cosses": "node scripts/import_cosses.js",
+    "import:pince-preventive": "node scripts/import_pince_preventive.js"
   },
   "keywords": [],
   "author": "",

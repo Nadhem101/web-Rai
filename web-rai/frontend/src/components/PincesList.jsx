@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { pinceService } from '../services/api';
-import PinceDetailModal from './PinceDetailModal';
 import PinceForm from './PinceForm';
 
 const PincesList = ({ searchQuery = '' }) => {
   const [pinces, setPinces] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedPince, setSelectedPince] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPince, setEditingPince] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -46,16 +43,6 @@ const PincesList = ({ searchQuery = '' }) => {
     return (a.numero_pince || '').localeCompare(b.numero_pince || '', 'fr', { numeric: true });
   });
 
-  const openModal = (pince) => {
-    setSelectedPince(pince);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedPince(null);
-  };
-
   const handleEditClick = (pince) => {
     setEditingPince(pince);
     setIsFormOpen(true);
@@ -82,89 +69,59 @@ const PincesList = ({ searchQuery = '' }) => {
     loadPinces();
   };
 
-  const getStatutColor = (statut) => {
-    switch (statut) {
-      case 'En service':
-        return 'bg-green-100 text-green-800';
-      case 'Hors service':
-        return 'bg-red-100 text-red-800';
-      case 'À vérifier':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Manque cosse':
-        return 'bg-orange-100 text-orange-800';
-      case 'Vérification visuelle':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   if (loading) {
     return <div className="text-center py-8 text-gray-500">Chargement des pinces...</div>;
-  }
-
-  if (filteredPinces.length === 0) {
-    return <div className="text-center py-8 text-gray-500">Aucune pince trouvée</div>;
   }
 
   return (
     <>
       <div className="bg-white rounded-lg shadow overflow-hidden flex-1 min-h-0 flex flex-col">
+        <div className="px-6 py-4 border-b border-orange-100 bg-orange-50/70 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-orange-800">🔨 Pinces</h2>
+            <p className="text-sm text-orange-900/70">Informations essentielles des pinces</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-sm font-semibold text-orange-700">{sortedPinces.length} pince(s)</div>
+            <button
+              onClick={() => {
+                setEditingPince(null);
+                setIsFormOpen(true);
+              }}
+              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
+            >
+              ➕ Nouvelle Pince
+            </button>
+          </div>
+        </div>
+
         <div className="overflow-auto flex-1">
           <table className="min-w-full">
             <thead className="bg-orange-50 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">N° Pince</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Fabricant</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Constructeur</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Référence</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Variantes</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Vérifications</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Statut</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Dernière Verif.</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Remarque</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {sortedPinces.map((pince) => {
-                const lastRecord = pince.variants?.[0]?.maintenanceRecords?.[0];
-                return (
+              {sortedPinces.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    Aucune pince trouvée
+                  </td>
+                </tr>
+              ) : (
+                sortedPinces.map((pince) => (
                   <tr key={pince.id} className="hover:bg-orange-50 transition">
                     <td className="px-6 py-4 font-bold text-orange-600">{pince.numero_pince}</td>
                     <td className="px-6 py-4 text-sm">{pince.Fabricant?.nom || '-'}</td>
                     <td className="px-6 py-4 text-xs font-mono text-gray-600">{pince.reference_pince || '-'}</td>
-                    <td className="px-6 py-4">
-                      <span className="inline-block bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-semibold">
-                        {pince.variants?.length || 0}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-block bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs font-semibold">
-                        {pince.variants?.reduce((acc, v) => acc + (v.maintenanceRecords?.length || 0), 0) || 0}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatutColor(pince.statut)}`}>
-                        {pince.statut}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {lastRecord?.date_verification ? (
-                        <div>
-                          <div className="font-mono">{lastRecord.date_verification}</div>
-                          <div className="text-xs text-gray-500">{lastRecord.moyenne}N moy.</div>
-                        </div>
-                      ) : (
-                        '-'
-                      )}
-                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700">{pince.remarque || '-'}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => openModal(pince)}
-                          className="text-orange-600 hover:text-orange-900 font-semibold hover:underline"
-                        >
-                          Détails →
-                        </button>
                         <button
                           onClick={() => handleEditClick(pince)}
                           className="text-blue-600 hover:text-blue-900"
@@ -182,14 +139,13 @@ const PincesList = ({ searchQuery = '' }) => {
                       </div>
                     </td>
                   </tr>
-                );
-              })}
+                ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      <PinceDetailModal pince={selectedPince} isOpen={isModalOpen} onClose={closeModal} />
       <PinceForm 
         pince={editingPince} 
         isOpen={isFormOpen} 

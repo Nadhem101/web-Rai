@@ -47,3 +47,25 @@ Ouvrir ensuite http://localhost:5173.
 cd database/scripts
 node import_zones.js
 ```
+
+## Import des cosses
+
+Le backend expose maintenant un catalogue des cosses alimenté par le CSV fourni.
+
+```bash
+cd backend
+npm run import:cosses
+```
+
+Le script cherche automatiquement `Liste Outillage Faisceaux 05-03-2026.csv` dans `database/`, ou utilise `COSS_FILE_PATH` si vous voulez pointer vers un autre emplacement.
+
+## Import de la maintenance preventive des pinces
+
+La page inventaire des pinces affiche maintenant les informations essentielles uniquement, suivies d'un calendrier de maintenance preventive alimente par le CSV fourni.
+
+```bash
+cd backend
+npm run import:pince-preventive
+```
+
+Le script lit `Suivi mesures de force d'extraction des pinces (2) (1).csv` depuis le bureau Windows de l'utilisateur. Les cellules vides reprennent la valeur de la ligne precedente, comme dans le fichier source.

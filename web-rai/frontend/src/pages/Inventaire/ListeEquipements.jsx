@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { equipementService } from '../../services/api';
 import PincesList from '../../components/PincesList';
 import ApplicateursList from '../../components/ApplicateursList';
+import CossesList from '../../components/CossesList';
 import PinceForm from '../../components/PinceForm';
 import ApplicateurForm from '../../components/ApplicateurForm';
 
@@ -25,6 +26,7 @@ const ListeEquipements = () => {
   
   const rawCategorie = searchParams.get('categorie') || 'equipement-all';
   const categorie = rawCategorie === 'all' || rawCategorie === 'equipement' ? 'equipement-all' : rawCategorie;
+  const isSpecialCatalogue = ['pinces', 'applicateurs', 'cosses'].includes(categorie);
 
   // Zone mapping for display
   const zoneMap = {
@@ -43,12 +45,31 @@ const ListeEquipements = () => {
     'equipement-all': { label: '📋 Tous les équipements', icon: '📋' },
     'pinces': { label: '🔨 Pinces', icon: '🔨' },
     'applicateurs': { label: '⚡ Applicateurs', icon: '⚡' },
+    'cosses': { label: '🔗 Cosses', icon: '🔗' },
     ...zoneMap,
   };
 
   const currentCategory = categoryMap[categorie] || { label: 'Équipements', icon: '📋' };
 
+  const searchPlaceholder = (() => {
+    switch (categorie) {
+      case 'pinces':
+        return '🔍 Rechercher une pince, un fabricant ou une référence...';
+      case 'applicateurs':
+        return '🔍 Rechercher un applicateur, une référence ou un constructeur...';
+      case 'cosses':
+        return '🔍 Rechercher une cosse, une référence ou un outillage...';
+      default:
+        return '🔍 Rechercher par code ou désignation...';
+    }
+  })();
+
   useEffect(() => {
+    if (isSpecialCatalogue) {
+      setLoading(false);
+      return;
+    }
+
     loadEquipements();
   }, [categorie]);
 
@@ -67,7 +88,7 @@ const ListeEquipements = () => {
   const getFilteredEquipements = () => {
     let filtered = equipements;
     
-    if (categorie === 'pinces' || categorie === 'applicateurs') {
+    if (categorie === 'pinces' || categorie === 'applicateurs' || categorie === 'cosses') {
       return [];
     }
 
@@ -95,6 +116,19 @@ const ListeEquipements = () => {
   };
 
   const filteredEquipements = getFilteredEquipements();
+
+  const categorySummary = (() => {
+    switch (categorie) {
+      case 'pinces':
+        return 'Catalogue des pinces de sertissage';
+      case 'applicateurs':
+        return 'Catalogue des applicateurs faisceaux';
+      case 'cosses':
+        return 'Références extraites du CSV fourni';
+      default:
+        return `${filteredEquipements.length} équipement(s)`;
+    }
+  })();
 
   const colorClasses = {
     blue: 'bg-blue-50 border-blue-200',
@@ -127,14 +161,14 @@ const ListeEquipements = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">{currentCategory.label}</h1>
-          <p className="text-sm text-gray-500">{filteredEquipements.length} équipement(s)</p>
+          <p className="text-sm text-gray-500">{categorySummary}</p>
         </div>
       </div>
 
       <div className="mb-4">
         <input
           type="text"
-          placeholder="🔍 Rechercher par code ou désignation..."
+          placeholder={searchPlaceholder}
           className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -147,6 +181,8 @@ const ListeEquipements = () => {
         <PincesList searchQuery={search} />
       ) : categorie === 'applicateurs' ? (
         <ApplicateursList searchQuery={search} />
+      ) : categorie === 'cosses' ? (
+        <CossesList searchQuery={search} />
       ) : filteredEquipements.length === 0 ? (
         <div className="flex items-center justify-center py-12">
           <p className="text-gray-500">Aucun équipement trouvé</p>

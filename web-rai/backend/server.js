@@ -15,7 +15,9 @@ app.use('/api/fabricants',         require('./app/routes/fabricant.routes'));
 app.use('/api/maintenance-events', require('./app/routes/maintenance_event.routes'));
 app.use('/api/ecme',               require('./app/routes/ecme_etat.routes'));
 app.use('/api/pinces',             require('./app/routes/pince.routes'));
+app.use('/api/pince-preventive-records', require('./app/routes/pince_preventive_record.routes'));
 app.use('/api/applicateurs',       require('./app/routes/applicateur.routes'));
+app.use('/api/cosses',              require('./app/routes/cosse.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API WEB-RAI fonctionne' });

@@ -3,12 +3,14 @@ import { Routes, Route, Link, NavLink } from 'react-router-dom';
 import ListeEquipements from './pages/Inventaire/ListeEquipements.jsx';
 import Dashboard from './pages/Dashboard/Dashboard.jsx';
 import CalendrierPreventif from './pages/Preventif/CalendrierPreventif.jsx';
+import SuiviPreventifPinces from './pages/Preventif/SuiviPreventifPinces.jsx';
 import EtatECME from './pages/ECME/EtatECME.jsx';
 import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
 
 const App = () => {
   const [inventaireExpanded, setInventaireExpanded] = useState(false);
   const [equipementsExpanded, setEquipementsExpanded] = useState(true);
+  const [maintenanceExpanded, setMaintenanceExpanded] = useState(false);
 
   const zones = [
     { id: 'zone:Bobinage', label: 'Bobinage', icon: '🔄' },
@@ -115,20 +117,58 @@ const App = () => {
                 >
                   ⚡ Applicateurs
                 </NavLink>
+
+                {/* Cosses */}
+                <NavLink
+                  to="/inventaire?categorie=cosses"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  🔗 Cosses
+                </NavLink>
               </div>
             )}
           </div>
 
-          <NavLink
-            to="/preventif"
-            className={({ isActive }) =>
-              `block px-3 py-2 rounded-md text-sm font-medium ${
-                isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'
-              }`
-            }
-          >
-            🗓️ Calendrier préventif
-          </NavLink>
+          <div>
+            <button
+              onClick={() => setMaintenanceExpanded(!maintenanceExpanded)}
+              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
+                maintenanceExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              🗓️ Maintenance préventive
+              <span className={`transform transition-transform ${maintenanceExpanded ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            {maintenanceExpanded && (
+              <div className="ml-4 mt-1 space-y-1">
+                <NavLink
+                  to="/preventif"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  🗓️ Calendrier préventif
+                </NavLink>
+
+                <NavLink
+                  to="/preventif/suivi-pinces"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  🔨 Suivi preventive des pinces
+                </NavLink>
+              </div>
+            )}
+          </div>
           <NavLink
             to="/ecme"
             className={({ isActive }) =>
@@ -158,6 +198,7 @@ const App = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/inventaire" element={<ListeEquipements />} />
               <Route path="/preventif" element={<CalendrierPreventif />} />
+              <Route path="/preventif/suivi-pinces" element={<SuiviPreventifPinces />} />
               <Route path="/ecme" element={<EtatECME />} />
               <Route path="/ecme/:code" element={<FicheDeVie />} />
             </Routes>
