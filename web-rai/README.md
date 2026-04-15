@@ -69,3 +69,9 @@ npm run import:pince-preventive
 ```
 
 Le script lit `Suivi mesures de force d'extraction des pinces (2) (1).csv` depuis le bureau Windows de l'utilisateur. Les cellules vides reprennent la valeur de la ligne precedente, comme dans le fichier source.
+
+## Fiches de maintenance machine
+
+Une nouvelle page permet d'ouvrir une fiche de maintenance pour les machines de production, de renseigner les taches, les pieces utilisees, le matricule, puis de sauvegarder les dates de debut et de fin en base.
+
+Depuis l'application, ouvrez `Maintenance préventive` puis `Fiches machines`.

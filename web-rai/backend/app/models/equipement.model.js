@@ -23,6 +23,9 @@ const Equipement = sequelize.define(
     numero_serie: {
       type: DataTypes.STRING(100),
     },
+    pdr_details: {
+      type: DataTypes.JSON,
+    },
     date_acquisition: {
       type: DataTypes.DATEONLY,
     },
@@ -40,9 +43,9 @@ const Equipement = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: 'equipement',
       validate: {
-        isIn: [['equipement', 'pinces', 'applicateurs']],
+        isIn: [['equipement', 'pdr', 'pinces', 'applicateurs']],
       },
-      comment: 'Catégorie de l\'équipement: equipement (général), pinces (de sertissage), ou applicateurs (faisceaux)',
+      comment: 'Catégorie de l\'équipement: equipement (général), pdr (pièces de rechange), pinces (de sertissage), ou applicateurs (faisceaux)',
     },
   },
   {

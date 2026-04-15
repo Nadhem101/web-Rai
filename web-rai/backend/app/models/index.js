@@ -3,6 +3,7 @@ const Zone = require('./zone.model');
 const Fabricant = require('./fabricant.model');
 const Equipement = require('./equipement.model');
 const MaintenanceEvent = require('./maintenance_event.model');
+const MaintenanceSheet = require('./maintenance_sheet.model');
 const EcmeEtat = require('./ecme_etat.model');
 const EcmeIntervention = require('./ecme_intervention.model');
 const Pince = require('./pince.model');
@@ -64,6 +65,7 @@ module.exports = {
   Fabricant,
   Equipement,
   MaintenanceEvent,
+  MaintenanceSheet,
   EcmeEtat,
   EcmeIntervention,
   Pince,

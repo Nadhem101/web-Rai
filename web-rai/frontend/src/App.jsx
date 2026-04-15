@@ -1,16 +1,45 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Routes, Route, Link, NavLink } from 'react-router-dom';
 import ListeEquipements from './pages/Inventaire/ListeEquipements.jsx';
 import Dashboard from './pages/Dashboard/Dashboard.jsx';
 import CalendrierPreventif from './pages/Preventif/CalendrierPreventif.jsx';
 import SuiviPreventifPinces from './pages/Preventif/SuiviPreventifPinces.jsx';
+import FichesMaintenance from './pages/Preventif/FichesMaintenance.jsx';
 import EtatECME from './pages/ECME/EtatECME.jsx';
 import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
+import { maintenanceSheetService } from './services/api';
 
 const App = () => {
   const [inventaireExpanded, setInventaireExpanded] = useState(false);
   const [equipementsExpanded, setEquipementsExpanded] = useState(true);
   const [maintenanceExpanded, setMaintenanceExpanded] = useState(false);
+  const [completedMaintenanceCount, setCompletedMaintenanceCount] = useState(0);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadMaintenanceAlerts = async () => {
+      try {
+        const completedSheets = await maintenanceSheetService.getAll({ status: 'completed' });
+        if (isMounted) {
+          setCompletedMaintenanceCount(Array.isArray(completedSheets) ? completedSheets.length : 0);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setCompletedMaintenanceCount(0);
+        }
+        console.error('Erreur chargement alertes maintenance:', error);
+      }
+    };
+
+    loadMaintenanceAlerts();
+    const intervalId = window.setInterval(loadMaintenanceAlerts, 60000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const zones = [
     { id: 'zone:Bobinage', label: 'Bobinage', icon: '🔄' },
@@ -129,6 +158,28 @@ const App = () => {
                 >
                   🔗 Cosses
                 </NavLink>
+
+                <NavLink
+                  to="/inventaire?categorie=fer-et-bain"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  🔥 Fer et bain
+                </NavLink>
+
+                <NavLink
+                  to="/inventaire?categorie=pdr"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  🧰 PDR
+                </NavLink>
               </div>
             )}
           </div>
@@ -140,7 +191,14 @@ const App = () => {
                 maintenanceExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
-              🗓️ Maintenance préventive
+              <span className="flex items-center gap-2">
+                🗓️ Maintenance préventive
+                {completedMaintenanceCount > 0 && (
+                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                    {completedMaintenanceCount}
+                  </span>
+                )}
+              </span>
               <span className={`transform transition-transform ${maintenanceExpanded ? 'rotate-180' : ''}`}>▼</span>
             </button>
             {maintenanceExpanded && (
@@ -165,6 +223,24 @@ const App = () => {
                   }
                 >
                   🔨 Suivi preventive des pinces
+                </NavLink>
+
+                <NavLink
+                  to="/preventif/fiches-maintenance"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span>🧾 Fiches machines</span>
+                    {completedMaintenanceCount > 0 && (
+                      <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">
+                        {completedMaintenanceCount}
+                      </span>
+                    )}
+                  </span>
                 </NavLink>
               </div>
             )}
@@ -199,6 +275,9 @@ const App = () => {
               <Route path="/inventaire" element={<ListeEquipements />} />
               <Route path="/preventif" element={<CalendrierPreventif />} />
               <Route path="/preventif/suivi-pinces" element={<SuiviPreventifPinces />} />
+              <Route path="/preventif/fiches-maintenance" element={<FichesMaintenance />} />
+              <Route path="/preventif/fiches-maintenance/:machineKey" element={<FichesMaintenance />} />
+              <Route path="/preventif/fiches-maintenance/fiche/:sheetId" element={<FichesMaintenance />} />
               <Route path="/ecme" element={<EtatECME />} />
               <Route path="/ecme/:code" element={<FicheDeVie />} />
             </Routes>

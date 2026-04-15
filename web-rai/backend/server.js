@@ -16,6 +16,7 @@ app.use('/api/maintenance-events', require('./app/routes/maintenance_event.route
 app.use('/api/ecme',               require('./app/routes/ecme_etat.routes'));
 app.use('/api/pinces',             require('./app/routes/pince.routes'));
 app.use('/api/pince-preventive-records', require('./app/routes/pince_preventive_record.routes'));
+app.use('/api/maintenance-sheets',  require('./app/routes/maintenance_sheet.routes'));
 app.use('/api/applicateurs',       require('./app/routes/applicateur.routes'));
 app.use('/api/cosses',              require('./app/routes/cosse.routes'));
 

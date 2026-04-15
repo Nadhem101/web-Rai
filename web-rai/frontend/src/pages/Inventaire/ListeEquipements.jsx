@@ -17,6 +17,23 @@ const normalizeZoneName = (value) => {
     .trim();
 };
 
+const formatPdrCell = (value) => value || '-';
+
+const normalizeText = (value) => {
+  if (!value) return '';
+  return value
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+};
+
+const isFerEtBainItem = (equipement) => {
+  const designation = normalizeText(equipement.designation);
+  return designation.includes('fer a souder') || designation.includes('bain creuset');
+};
+
 const ListeEquipements = () => {
   const [searchParams] = useSearchParams();
   const [equipements, setEquipements] = useState([]);
@@ -46,6 +63,8 @@ const ListeEquipements = () => {
     'pinces': { label: '🔨 Pinces', icon: '🔨' },
     'applicateurs': { label: '⚡ Applicateurs', icon: '⚡' },
     'cosses': { label: '🔗 Cosses', icon: '🔗' },
+    'fer-et-bain': { label: '🔥 Fer et bain', icon: '🔥' },
+    'pdr': { label: '🧰 PDR', icon: '🧰' },
     ...zoneMap,
   };
 
@@ -59,6 +78,10 @@ const ListeEquipements = () => {
         return '🔍 Rechercher un applicateur, une référence ou un constructeur...';
       case 'cosses':
         return '🔍 Rechercher une cosse, une référence ou un outillage...';
+      case 'fer-et-bain':
+        return '🔍 Rechercher un fer à souder ou un bain creuset...';
+      case 'pdr':
+        return '🔍 Rechercher une piece de rechange, une reference ou un applicateur...';
       default:
         return '🔍 Rechercher par code ou désignation...';
     }
@@ -92,8 +115,18 @@ const ListeEquipements = () => {
       return [];
     }
 
-    // FC equipment: filter by categorie
-    filtered = filtered.filter((eq) => eq.categorie === 'equipement');
+    const allowedCategories =
+      categorie === 'pdr'
+        ? ['pdr']
+        : categorie === 'fer-et-bain'
+          ? ['equipement', 'pdr']
+        : ['equipement', 'pdr'];
+
+    filtered = filtered.filter((eq) => allowedCategories.includes(eq.categorie));
+
+    if (categorie === 'fer-et-bain') {
+      filtered = filtered.filter((eq) => isFerEtBainItem(eq));
+    }
 
     // If zone is selected, filter by zone
     if (categorie.startsWith('zone:')) {
@@ -109,7 +142,10 @@ const ListeEquipements = () => {
     // Filter by search
     filtered = filtered.filter((eq) =>
       eq.code_rai?.toLowerCase().includes(search.toLowerCase()) ||
-      eq.designation?.toLowerCase().includes(search.toLowerCase())
+      eq.designation?.toLowerCase().includes(search.toLowerCase()) ||
+      eq.numero_serie?.toLowerCase().includes(search.toLowerCase()) ||
+      eq.remarque?.toLowerCase().includes(search.toLowerCase()) ||
+      JSON.stringify(eq.pdr_details || {}).toLowerCase().includes(search.toLowerCase())
     );
     
     return filtered;
@@ -125,6 +161,10 @@ const ListeEquipements = () => {
         return 'Catalogue des applicateurs faisceaux';
       case 'cosses':
         return 'Références extraites du CSV fourni';
+      case 'fer-et-bain':
+        return 'Regroupement des fers à souder et bains creusets';
+      case 'pdr':
+        return 'Stock des pièces de rechange extrait du CSV';
       default:
         return `${filteredEquipements.length} équipement(s)`;
     }
@@ -185,7 +225,9 @@ const ListeEquipements = () => {
         <CossesList searchQuery={search} />
       ) : filteredEquipements.length === 0 ? (
         <div className="flex items-center justify-center py-12">
-          <p className="text-gray-500">Aucun équipement trouvé</p>
+          <p className="text-gray-500">
+            {categorie === 'pdr' ? 'Aucune pièce de rechange trouvée' : 'Aucun équipement trouvé'}
+          </p>
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow overflow-hidden flex-1 flex flex-col">
@@ -196,6 +238,18 @@ const ListeEquipements = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code RAI</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Désignation</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">N° Série</th>
+                  {categorie === 'pdr' && (
+                    <>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lame cuivre réf.</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lame cuivre qté</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lame isolant réf.</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lame isolant qté</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enclume cuivre réf.</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enclume cuivre qté</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enclume isolant réf.</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enclume isolant qté</th>
+                    </>
+                  )}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Zone</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fabricant</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
@@ -208,6 +262,18 @@ const ListeEquipements = () => {
                     <td className="px-6 py-4 font-mono text-sm">{eq.code_rai}</td>
                     <td className="px-6 py-4">{eq.designation}</td>
                     <td className="px-6 py-4">{eq.numero_serie || '-'}</td>
+                    {categorie === 'pdr' && (
+                      <>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_cuivre?.reference)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_cuivre?.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_isolant?.reference)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_isolant?.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_cuivre?.reference)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_cuivre?.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_isolant?.reference)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_isolant?.quantity)}</td>
+                      </>
+                    )}
                     <td className="px-6 py-4">{eq.Zone?.nom_zone || '-'}</td>
                     <td className="px-6 py-4">{eq.Fabricant?.nom || '-'}</td>
                     <td className="px-6 py-4">

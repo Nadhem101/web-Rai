@@ -53,6 +53,15 @@ export const maintenanceEventService = {
   remove: (data) => API.delete('/maintenance-events', { data }),
 };
 
+export const maintenanceSheetService = {
+  getAll: (params = {}) => API.get('/maintenance-sheets', { params }).then((res) => res.data),
+  getById: (id) => API.get(`/maintenance-sheets/${id}`).then((res) => res.data),
+  getLatestByMachine: (machineKey) => API.get(`/maintenance-sheets/latest/${machineKey}`).then((res) => res.data),
+  create: (data) => API.post('/maintenance-sheets', data).then((res) => res.data),
+  update: (id, data) => API.put(`/maintenance-sheets/${id}`, data).then((res) => res.data),
+  finish: (id, data) => API.post(`/maintenance-sheets/${id}/finish`, data).then((res) => res.data),
+};
+
 export const ecmeService = {
   getAll:          (params) => API.get('/ecme', { params }),
   getOne:          (code)   => API.get(`/ecme/${code}`),
