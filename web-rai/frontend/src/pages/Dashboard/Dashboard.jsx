@@ -15,6 +15,79 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
+const PDR_LOW_STOCK_THRESHOLD = 1;
+
+const normalizeCategory = (value = '') => String(value).toLowerCase().trim();
+
+const parseQuantity = (value) => {
+  const normalized = String(value ?? '').replace(',', '.').trim();
+  if (!normalized) return null;
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const getStockSeverityClasses = (level) => {
+  if (level === 'critical') {
+    return {
+      badge: 'bg-red-100 text-red-700 border-red-200',
+      number: 'text-red-700',
+      panel: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
+    };
+  }
+
+  return {
+    badge: 'bg-amber-100 text-amber-800 border-amber-200',
+    number: 'text-amber-700',
+    panel: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
+  };
+};
+
+const buildPdrStockAlerts = (equipements = []) => {
+  return equipements
+    .filter((equipement) => normalizeCategory(equipement.categorie) === 'pdr' && equipement.pdr_details)
+    .map((equipement) => {
+      const details = equipement.pdr_details || {};
+      const parts = [
+        { key: 'lame_cuivre', label: 'Lame cuivre', reference: details.lame_cuivre?.reference, quantity: details.lame_cuivre?.quantity },
+        { key: 'lame_isolant', label: 'Lame isolant', reference: details.lame_isolant?.reference, quantity: details.lame_isolant?.quantity },
+        { key: 'enclume_cuivre', label: 'Enclume cuivre', reference: details.enclume_cuivre?.reference, quantity: details.enclume_cuivre?.quantity },
+        { key: 'enclume_isolant', label: 'Enclume isolant', reference: details.enclume_isolant?.reference, quantity: details.enclume_isolant?.quantity },
+        { key: 'lame_denudage_jeux', label: 'Lame de denudage', reference: null, quantity: details.lame_denudage_jeux },
+      ];
+
+      const lowParts = parts
+        .map((part) => {
+          const quantity = parseQuantity(part.quantity);
+          if (quantity === null || quantity > PDR_LOW_STOCK_THRESHOLD) return null;
+
+          return {
+            ...part,
+            quantity,
+            level: quantity === 0 ? 'critical' : 'warning',
+          };
+        })
+        .filter(Boolean);
+
+      if (lowParts.length === 0) return null;
+
+      return {
+        id: equipement.id,
+        codeRai: equipement.code_rai,
+        designation: equipement.designation,
+        fabricant: equipement.Fabricant?.nom || '-',
+        zone: equipement.Zone?.nom_zone || '-',
+        level: lowParts.some((part) => part.level === 'critical') ? 'critical' : 'warning',
+        lowParts,
+      };
+    })
+    .filter(Boolean)
+    .sort((left, right) => {
+      if (left.level !== right.level) return left.level === 'critical' ? -1 : 1;
+      return String(left.codeRai || '').localeCompare(String(right.codeRai || ''), 'fr', { numeric: true, sensitivity: 'base' });
+    });
+};
+
 const Dashboard = () => {
   const currentWeek = getCurrentWeek();
   const currentYear = new Date().getFullYear();
@@ -37,6 +110,7 @@ const Dashboard = () => {
   const [ecmeToVerif,   setEcmeToVerif]   = useState([]);  // ECMEs with alerte=VERIFICATION
   const [ecmeOverdue,   setEcmeOverdue]   = useState([]);  // subset: past prochaine verif date
   const [loadingEcme,   setLoadingEcme]   = useState(true);
+  const [pdrStockAlerts, setPdrStockAlerts] = useState([]);
 
   const navigate = useNavigate();
 
@@ -44,13 +118,14 @@ const Dashboard = () => {
   useEffect(() => {
     equipementService.getAll()
       .then(({ data: equipements }) => {
-        const total        = equipements.length;
-        const enService    = equipements.filter((e) => e.statut === 'En service').length;
-        const horsService  = equipements.filter((e) => e.statut === 'Hors service').length;
-        const enMaintenance = equipements.filter((e) => e.statut === 'En maintenance').length;
+        const equipmentList = Array.isArray(equipements) ? equipements : [];
+        const total        = equipmentList.length;
+        const enService    = equipmentList.filter((e) => e.statut === 'En service').length;
+        const horsService  = equipmentList.filter((e) => e.statut === 'Hors service').length;
+        const enMaintenance = equipmentList.filter((e) => e.statut === 'En maintenance').length;
 
         const zonesMap = {};
-        equipements.forEach((eq) => {
+        equipmentList.forEach((eq) => {
           const zoneName = eq.Zone?.nom_zone || 'Non affecte';
           if (!zonesMap[zoneName]) zonesMap[zoneName] = { name: zoneName, total: 0, enService: 0 };
           zonesMap[zoneName].total++;
@@ -61,6 +136,7 @@ const Dashboard = () => {
           taux: Math.round((z.enService / z.total) * 100) || 0,
         }));
         setStats({ total, enService, horsService, enMaintenance, parZone });
+        setPdrStockAlerts(buildPdrStockAlerts(equipmentList));
       })
       .catch((e) => console.error('Erreur stats:', e))
       .finally(() => setLoading(false));
@@ -115,6 +191,10 @@ const Dashboard = () => {
     { name: 'Hors service',  value: stats.horsService,  color: '#ef4444' },
     { name: 'En maintenance',value: stats.enMaintenance,color: '#f59e0b' },
   ].filter((item) => item.value > 0);
+
+  const pdrCriticalCount = pdrStockAlerts.filter((item) => item.level === 'critical').length;
+  const pdrWarningCount = pdrStockAlerts.filter((item) => item.level === 'warning').length;
+  const pdrAlertHasCritical = pdrCriticalCount > 0;
 
   const progressPct = weekTotal > 0 ? Math.round((weekDone / weekTotal) * 100) : 0;
 
@@ -352,6 +432,76 @@ const Dashboard = () => {
             </div>
           )}
 
+          {/* PDR low stock alerts */}
+          {!loading && pdrStockAlerts.length > 0 && (
+            <div className="border border-amber-200 rounded overflow-hidden">
+              <div
+                className={`p-3 flex items-center justify-between gap-2 cursor-pointer transition-colors ${
+                  pdrAlertHasCritical
+                    ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                    : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
+                }`}
+                onClick={() => navigate('/inventaire?categorie=pdr')}
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-base">🧰</span>
+                  <span>
+                    <strong className="text-red-700">{pdrCriticalCount}</strong> PDR en rupture
+                    {pdrWarningCount > 0 && (
+                      <>
+                        {' '}
+                        et <strong className="text-amber-700">{pdrWarningCount}</strong> à surveiller
+                      </>
+                    )}
+                  </span>
+                </div>
+                <span className="text-xs underline whitespace-nowrap">Voir le stock →</span>
+              </div>
+              <div className="bg-white divide-y divide-amber-50 max-h-44 overflow-y-auto">
+                {pdrStockAlerts.slice(0, 6).map((item) => (
+                  <div
+                    key={item.id}
+                    className="px-4 py-2 flex flex-col gap-1 text-xs hover:bg-amber-50 cursor-pointer"
+                    onClick={() => navigate('/inventaire?categorie=pdr')}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-mono font-semibold text-amber-700">{item.codeRai}</span>
+                      <span
+                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                          item.level === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {item.level === 'critical' ? 'Rupture' : 'Faible'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="flex-1 truncate text-gray-600">{item.designation}</span>
+                      <div className="flex flex-wrap justify-end gap-1">
+                        {item.lowParts.map((part) => {
+                          const severity = getStockSeverityClasses(part.level);
+                          return (
+                            <span
+                              key={`${item.id}-${part.key}`}
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${severity.badge}`}
+                            >
+                              <span className="text-slate-600">{part.label}</span>
+                              <span className={`font-bold ${severity.number}`}>{part.quantity}</span>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {pdrStockAlerts.length > 6 && (
+                  <div className="px-4 py-2 text-xs text-gray-400 text-center">
+                    +{pdrStockAlerts.length - 6} autres — <button className="underline text-blue-600" onClick={() => navigate('/inventaire?categorie=pdr')}>voir tous</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* ECME overdue verifications */}
           {!loadingEcme && ecmeOverdue.length > 0 && (
             <div className="border border-red-200 rounded overflow-hidden">
@@ -419,7 +569,7 @@ const Dashboard = () => {
           )}
 
           {/* No alerts at all */}
-          {!loadingMaint && !loadingEcme && overdueTasks.length === 0 && weekPending === 0 && weekRescheduled === 0 && stats.horsService === 0 && ecmeToVerif.length === 0 && (
+          {!loadingMaint && !loadingEcme && overdueTasks.length === 0 && weekPending === 0 && weekRescheduled === 0 && stats.horsService === 0 && ecmeToVerif.length === 0 && pdrStockAlerts.length === 0 && (
             <div className="p-3 bg-blue-50 text-blue-700 rounded border border-blue-200 flex items-center gap-2">
               <span>🔵</span>
               <span>Aucune alerte — situation nominale</span>

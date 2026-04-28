@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { maintenanceSheetService } from '../../services/api';
 import {
   MAINTENANCE_MACHINES,
@@ -98,11 +98,13 @@ const normalizeSpareParts = (sheetSpareParts = []) => {
   ];
 };
 
-const buildDraftFromTemplate = (template) => ({
+const buildDraftFromTemplate = (template, equipment = null) => ({
   machine_key: template.machineKey,
-  machine_label: template.machineLabel,
+  machine_label: buildEquipmentLabel(equipment) || template.machineLabel,
   reference: template.reference || '',
   template,
+  tasks: buildInitialTasks(template),
+  spare_parts: buildInitialSpareParts(),
   observations: '',
   operator_matricule: '',
   operator_signature: '',
@@ -111,9 +113,9 @@ const buildDraftFromTemplate = (template) => ({
   status: 'in_progress',
 });
 
-const buildDraftFromSheet = (sheet, template) => ({
+const buildDraftFromSheet = (sheet, template, equipment = null) => ({
   machine_key: sheet.machine_key,
-  machine_label: sheet.machine_label,
+  machine_label: buildEquipmentLabel(equipment) || sheet.machine_label,
   reference: sheet.reference || template.reference || '',
   template: sheet.template || template,
   tasks: normalizeTasks(template, sheet.tasks || []),
@@ -125,6 +127,15 @@ const buildDraftFromSheet = (sheet, template) => ({
   finished_at: sheet.finished_at || null,
   status: sheet.status || 'in_progress',
 });
+
+const buildEquipmentLabel = (equipment, fallbackLabel = '') => {
+  if (!equipment) return fallbackLabel;
+
+  const equipmentIdentity = String(equipment.code_rai || equipment.code || equipment.designation || '').trim();
+  if (!equipmentIdentity) return fallbackLabel;
+
+  return fallbackLabel ? `${equipmentIdentity} • ${fallbackLabel}` : equipmentIdentity;
+};
 
 const buildPayload = (draft) => ({
   machine_key: draft.machine_key,
@@ -205,13 +216,16 @@ const MachineCard = ({ machine, latestSheet, onOpen }) => {
 };
 
 const FichesMaintenance = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { machineKey, sheetId } = useParams();
   const template = useMemo(() => getMaintenanceMachineTemplate(machineKey), [machineKey]);
+  const equipmentContext = location.state?.equipment || null;
+  const equipmentLabel = buildEquipmentLabel(equipmentContext, template?.machineLabel || '');
   const [activeTab, setActiveTab] = useState('machines');
   const [latestSheet, setLatestSheet] = useState(null);
   const [selectedSheet, setSelectedSheet] = useState(null);
-  const [draft, setDraft] = useState(template ? buildDraftFromTemplate(template) : null);
+  const [draft, setDraft] = useState(template ? buildDraftFromTemplate(template, equipmentContext) : null);
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -230,7 +244,7 @@ const FichesMaintenance = () => {
 
           setSelectedSheet(sheet);
           setLatestSheet(sheet);
-          setDraft(buildDraftFromSheet(sheet, sheetTemplate));
+          setDraft(buildDraftFromSheet(sheet, sheetTemplate, equipmentContext));
           setHistory(relatedHistory || []);
           setActiveTab('completed');
         } catch (loadError) {
@@ -297,10 +311,10 @@ const FichesMaintenance = () => {
 
         if (latestResponse) {
           setLatestSheet(latestResponse);
-          setDraft(buildDraftFromSheet(latestResponse, template));
+          setDraft(buildDraftFromSheet(latestResponse, template, equipmentContext));
         } else {
           setLatestSheet(null);
-          setDraft(buildDraftFromTemplate(template));
+          setDraft(buildDraftFromTemplate(template, equipmentContext));
         }
 
         setHistory(historyResponse || []);
@@ -308,7 +322,7 @@ const FichesMaintenance = () => {
         setError('Impossible de charger la fiche de maintenance.');
         setLatestSheet(null);
         setSelectedSheet(null);
-        setDraft(buildDraftFromTemplate(template));
+        setDraft(buildDraftFromTemplate(template, equipmentContext));
         setHistory([]);
         console.error(loadError);
       } finally {
@@ -317,13 +331,16 @@ const FichesMaintenance = () => {
     };
 
     loadSheet();
-  }, [machineKey, sheetId, template]);
+  }, [equipmentContext, machineKey, sheetId, template]);
 
   const displayTemplate = template || (selectedSheet ? resolveSheetTemplate(selectedSheet) : null);
+  const activeMachineLabel = equipmentLabel || selectedSheet?.machine_label || latestSheet?.machine_label || draft?.machine_label || displayTemplate?.machineLabel || '';
   const isInspectionMode = Boolean(sheetId);
+  const isSummaryView = !machineKey && !sheetId;
+  const isSummaryLoading = isSummaryView && loading;
 
   const groupedTasks = useMemo(() => {
-    if (!draft || !displayTemplate) return [];
+    if (!draft || !displayTemplate || !Array.isArray(draft.tasks)) return [];
 
     return displayTemplate.sections.map((section) => ({
       ...section,
@@ -350,7 +367,7 @@ const FichesMaintenance = () => {
       });
       const createdSheet = await maintenanceSheetService.create(payload);
       setLatestSheet(createdSheet);
-      setDraft(buildDraftFromSheet(createdSheet, template));
+      setDraft(buildDraftFromSheet(createdSheet, template, equipmentContext));
       navigate(`/preventif/fiches-maintenance/${template.machineKey}`, { replace: true });
     } catch (createError) {
       setError('Impossible de demarrer cette fiche.');
@@ -399,7 +416,7 @@ const FichesMaintenance = () => {
 
       const response = await maintenanceSheetService.update(latestSheet.id, payload);
       setLatestSheet(response);
-      setDraft(buildDraftFromSheet(response, template));
+      setDraft(buildDraftFromSheet(response, template, equipmentContext));
       setHistory((current) => [response, ...current.filter((entry) => entry.id !== response.id)]);
       return response;
     } catch (saveError) {
@@ -445,7 +462,7 @@ const FichesMaintenance = () => {
         finished_at: new Date().toISOString(),
       });
       setLatestSheet(response);
-      setDraft(buildDraftFromSheet(response, template));
+      setDraft(buildDraftFromSheet(response, template, equipmentContext));
       setHistory((current) => [response, ...current.filter((entry) => entry.id !== response.id)]);
       navigate(`/preventif/fiches-maintenance/fiche/${response.id}`, { replace: true });
     } catch (finishError) {
@@ -456,11 +473,7 @@ const FichesMaintenance = () => {
     }
   };
 
-  if (!machineKey && !sheetId) {
-    if (loading) {
-      return <div className="flex flex-1 items-center justify-center text-sm text-slate-500">Chargement des machines...</div>;
-    }
-
+  if (isSummaryView) {
     return (
       <div className="flex flex-1 flex-col overflow-auto bg-slate-50 p-6">
         <div className="mb-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-amber-700 p-8 text-white shadow-xl">
@@ -469,6 +482,11 @@ const FichesMaintenance = () => {
           <p className="mt-3 max-w-3xl text-sm text-slate-100/90">
             Ouvrir une machine, demarrer une nouvelle fiche avec la date exacte de debut, puis sauvegarder ou cloturer la maintenance dans la base de donnees.
           </p>
+          {isSummaryLoading && (
+            <div className="mt-4 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">
+              Chargement des fiches...
+            </div>
+          )}
         </div>
 
         {completedSheets.length > 0 && (
@@ -600,8 +618,18 @@ const FichesMaintenance = () => {
               <Link to="/preventif/fiches-maintenance" className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-200 hover:text-amber-100">
                 ← Retour aux machines
               </Link>
-              <h1 className="mt-2 text-3xl font-bold">{displayTemplate.machineLabel}</h1>
+              <h1 className="mt-2 text-3xl font-bold">{activeMachineLabel || displayTemplate.machineLabel}</h1>
+              {activeMachineLabel && activeMachineLabel !== displayTemplate.machineLabel && (
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-amber-200/90">
+                  Modèle général: {displayTemplate.machineLabel}
+                </p>
+              )}
               <p className="mt-2 text-sm text-slate-100/90">{displayTemplate.subtitle}</p>
+              {equipmentLabel && (
+                <div className="mt-3 inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white">
+                  Équipement ciblé: {equipmentLabel}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2 text-xs font-semibold">

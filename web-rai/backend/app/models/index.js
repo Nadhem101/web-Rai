@@ -13,7 +13,9 @@ const PincePreventiveRecord = require('./pince_preventive_record.model');
 const Applicateur = require('./applicateur.model');
 const ApplicateurVariant = require('./applicateur_variant.model');
 const ApplicateurMaintenanceRecord = require('./applicateur_maintenance_record.model');
+const ApplicateurThreshold = require('./applicateur_threshold.model');
 const Cosse = require('./cosse.model');
+const CurativeMaintenanceRecord = require('./curative_maintenance_record.model');
 
 // Equipement relationships
 Zone.hasMany(Equipement, { foreignKey: 'zone_id' });
@@ -25,6 +27,9 @@ Equipement.belongsTo(Fabricant, { foreignKey: 'fabricant_id' });
 // ECME relationships
 EcmeEtat.hasMany(EcmeIntervention, { foreignKey: 'ecme_code', sourceKey: 'code', as: 'interventions' });
 EcmeIntervention.belongsTo(EcmeEtat, { foreignKey: 'ecme_code', targetKey: 'code', as: 'ecme' });
+
+// Curative maintenance relationships
+Equipement.hasMany(CurativeMaintenanceRecord, { foreignKey: 'equipement_id' });
 
 // Pince relationships
 Fabricant.hasMany(Pince, { foreignKey: 'fabricant_id' });
@@ -75,6 +80,8 @@ module.exports = {
   Applicateur,
   ApplicateurVariant,
   ApplicateurMaintenanceRecord,
+  ApplicateurThreshold,
   Cosse,
+  CurativeMaintenanceRecord,
   syncDatabase,
 };

@@ -6,6 +6,7 @@ import ApplicateursList from '../../components/ApplicateursList';
 import CossesList from '../../components/CossesList';
 import PinceForm from '../../components/PinceForm';
 import ApplicateurForm from '../../components/ApplicateurForm';
+import EquipementForm from '../../components/EquipementForm';
 
 const normalizeZoneName = (value) => {
   if (!value) return '';
@@ -17,7 +18,35 @@ const normalizeZoneName = (value) => {
     .trim();
 };
 
+const PDR_LOW_STOCK_THRESHOLD = 1;
+
 const formatPdrCell = (value) => value || '-';
+
+const parsePdrQuantity = (value) => {
+  const normalized = String(value ?? '').replace(',', '.').trim();
+  if (!normalized) return null;
+
+  const parsed = Number(normalized);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const getPdrQuantityClassName = (value) => {
+  const quantity = parsePdrQuantity(value);
+
+  if (quantity === null) {
+    return 'inline-flex min-w-12 items-center justify-center rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 font-semibold text-slate-500';
+  }
+
+  if (quantity === 0) {
+    return 'inline-flex min-w-12 items-center justify-center rounded-full border border-red-200 bg-red-100 px-2 py-0.5 font-semibold text-red-700';
+  }
+
+  if (quantity <= PDR_LOW_STOCK_THRESHOLD) {
+    return 'inline-flex min-w-12 items-center justify-center rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 font-semibold text-amber-800';
+  }
+
+  return 'inline-flex min-w-12 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-semibold text-emerald-700';
+};
 
 const normalizeText = (value) => {
   if (!value) return '';
@@ -29,9 +58,12 @@ const normalizeText = (value) => {
     .trim();
 };
 
+const hasPdrDetails = (equipement) => Boolean(equipement.pdr_details && Object.keys(equipement.pdr_details).length > 0);
+
 const isFerEtBainItem = (equipement) => {
   const designation = normalizeText(equipement.designation);
-  return designation.includes('fer a souder') || designation.includes('bain creuset');
+  const category = normalizeText(equipement.categorie);
+  return category === 'fer-et-bain' || designation.includes('fer a souder') || designation.includes('bain creuset');
 };
 
 const ListeEquipements = () => {
@@ -40,6 +72,7 @@ const ListeEquipements = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isCreatingNew, setIsCreatingNew] = useState(false);
+  const [editingEquipement, setEditingEquipement] = useState(null);
   
   const rawCategorie = searchParams.get('categorie') || 'equipement-all';
   const categorie = rawCategorie === 'all' || rawCategorie === 'equipement' ? 'equipement-all' : rawCategorie;
@@ -69,6 +102,9 @@ const ListeEquipements = () => {
   };
 
   const currentCategory = categoryMap[categorie] || { label: 'Équipements', icon: '📋' };
+  const canUseGenericCrud = !isSpecialCatalogue;
+  const defaultEquipmentCategory = categorie === 'pdr' ? 'pdr' : categorie === 'fer-et-bain' ? 'fer-et-bain' : 'equipement';
+  const defaultZoneName = categorie.startsWith('zone:') ? categorie.slice(5) : '';
 
   const searchPlaceholder = (() => {
     switch (categorie) {
@@ -119,10 +155,18 @@ const ListeEquipements = () => {
       categorie === 'pdr'
         ? ['pdr']
         : categorie === 'fer-et-bain'
-          ? ['equipement', 'pdr']
-        : ['equipement', 'pdr'];
+          ? ['equipement', 'pdr', 'fer-et-bain']
+        : ['equipement', 'pdr', 'fer-et-bain'];
 
-    filtered = filtered.filter((eq) => allowedCategories.includes(eq.categorie));
+    filtered = filtered.filter((eq) => {
+      const normalizedCategory = normalizeText(eq.categorie);
+
+      if (categorie === 'pdr') {
+        return normalizedCategory === 'pdr' || hasPdrDetails(eq);
+      }
+
+      return allowedCategories.includes(normalizedCategory);
+    });
 
     if (categorie === 'fer-et-bain') {
       filtered = filtered.filter((eq) => isFerEtBainItem(eq));
@@ -160,7 +204,7 @@ const ListeEquipements = () => {
       case 'applicateurs':
         return 'Catalogue des applicateurs faisceaux';
       case 'cosses':
-        return 'Références extraites du CSV fourni';
+        return 'Références groupées par constructeur, réf. TEC, désignation et outillage';
       case 'fer-et-bain':
         return 'Regroupement des fers à souder et bains creusets';
       case 'pdr':
@@ -190,10 +234,35 @@ const ListeEquipements = () => {
 
   const handleFormClose = () => {
     setIsCreatingNew(false);
+    setEditingEquipement(null);
   };
 
   const handleFormSuccess = () => {
     setIsCreatingNew(false);
+    setEditingEquipement(null);
+    loadEquipements();
+  };
+
+  const handleCreateEquipementClick = () => {
+    setEditingEquipement(null);
+    setIsCreatingNew(true);
+  };
+
+  const handleEditEquipementClick = (equipement) => {
+    setEditingEquipement(equipement);
+    setIsCreatingNew(true);
+  };
+
+  const handleDeleteEquipementClick = async (equipement) => {
+    if (!window.confirm(`Êtes-vous sûr de vouloir supprimer ${equipement.code_rai} ?`)) return;
+
+    try {
+      await equipementService.delete(equipement.id);
+      loadEquipements();
+    } catch (error) {
+      console.error('Erreur suppression équipement:', error);
+      alert('Erreur lors de la suppression');
+    }
   };
 
   return (
@@ -203,6 +272,15 @@ const ListeEquipements = () => {
           <h1 className="text-2xl font-bold">{currentCategory.label}</h1>
           <p className="text-sm text-gray-500">{categorySummary}</p>
         </div>
+        {canUseGenericCrud && (
+          <button
+            type="button"
+            onClick={handleCreateEquipementClick}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
+          >
+            ➕ Nouvel équipement
+          </button>
+        )}
       </div>
 
       <div className="mb-4">
@@ -265,13 +343,29 @@ const ListeEquipements = () => {
                     {categorie === 'pdr' && (
                       <>
                         <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_cuivre?.reference)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_cuivre?.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          <span className={getPdrQuantityClassName(eq.pdr_details?.lame_cuivre?.quantity)}>
+                            {formatPdrCell(eq.pdr_details?.lame_cuivre?.quantity)}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_isolant?.reference)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.lame_isolant?.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          <span className={getPdrQuantityClassName(eq.pdr_details?.lame_isolant?.quantity)}>
+                            {formatPdrCell(eq.pdr_details?.lame_isolant?.quantity)}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_cuivre?.reference)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_cuivre?.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          <span className={getPdrQuantityClassName(eq.pdr_details?.enclume_cuivre?.quantity)}>
+                            {formatPdrCell(eq.pdr_details?.enclume_cuivre?.quantity)}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_isolant?.reference)}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{formatPdrCell(eq.pdr_details?.enclume_isolant?.quantity)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700">
+                          <span className={getPdrQuantityClassName(eq.pdr_details?.enclume_isolant?.quantity)}>
+                            {formatPdrCell(eq.pdr_details?.enclume_isolant?.quantity)}
+                          </span>
+                        </td>
                       </>
                     )}
                     <td className="px-6 py-4">{eq.Zone?.nom_zone || '-'}</td>
@@ -286,8 +380,22 @@ const ListeEquipements = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button className="text-blue-600 hover:text-blue-900 mr-2">✏️</button>
-                      <button className="text-red-600 hover:text-red-900">🗑️</button>
+                      <button
+                        type="button"
+                        onClick={() => handleEditEquipementClick(eq)}
+                        className="text-blue-600 hover:text-blue-900 mr-2"
+                        title="Modifier"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteEquipementClick(eq)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Supprimer"
+                      >
+                        🗑️
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -313,6 +421,17 @@ const ListeEquipements = () => {
           isOpen={isCreatingNew} 
           onClose={handleFormClose}
           onSuccess={handleFormSuccess}
+        />
+      )}
+
+      {canUseGenericCrud && (
+        <EquipementForm
+          equipement={editingEquipement}
+          isOpen={isCreatingNew}
+          onClose={handleFormClose}
+          onSuccess={handleFormSuccess}
+          defaultCategory={defaultEquipmentCategory}
+          defaultZoneName={defaultZoneName}
         />
       )}
     </div>

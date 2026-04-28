@@ -1,4 +1,24 @@
-const { Applicateur, ApplicateurVariant } = require('../models');
+const { Applicateur, ApplicateurVariant, Cosse } = require('../models');
+
+const buildPrimaryVariantPayload = (cosse) => ({
+  reference_constructeur: cosse.reference_constructeur || null,
+  reference_tec: cosse.reference_tec || null,
+  remarque: cosse.designation_tec || cosse.observation || null,
+});
+
+const upsertPrimaryVariant = async (applicateurId, variantPayload) => {
+  const existingVariant = await ApplicateurVariant.findOne({
+    where: { applicateur_id: applicateurId },
+    order: [['id', 'ASC']],
+  });
+
+  if (existingVariant) {
+    await existingVariant.update(variantPayload);
+    return existingVariant;
+  }
+
+  return ApplicateurVariant.create({ applicateur_id: applicateurId, ...variantPayload });
+};
 
 exports.findAll = async (req, res) => {
   try {
@@ -39,7 +59,19 @@ exports.findOne = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const applicateur = await Applicateur.create(req.body);
+    const { cosse_id: cosseId, ...payload } = req.body;
+
+    if (!cosseId) {
+      return res.status(400).json({ message: 'Une cosse existante doit être sélectionnée pour créer un applicateur.' });
+    }
+
+    const cosse = await Cosse.findByPk(cosseId);
+    if (!cosse) {
+      return res.status(400).json({ message: 'Cosse introuvable.' });
+    }
+
+    const applicateur = await Applicateur.create(payload);
+    await upsertPrimaryVariant(applicateur.id, buildPrimaryVariantPayload(cosse));
     res.status(201).json(applicateur);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -48,9 +80,21 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const [updated] = await Applicateur.update(req.body, {
+    const { cosse_id: cosseId, ...payload } = req.body;
+
+    const [updated] = await Applicateur.update(payload, {
       where: { id: req.params.id },
     });
+
+    if (cosseId) {
+      const cosse = await Cosse.findByPk(cosseId);
+      if (!cosse) {
+        return res.status(400).json({ message: 'Cosse introuvable.' });
+      }
+
+      await upsertPrimaryVariant(req.params.id, buildPrimaryVariantPayload(cosse));
+    }
+
     if (updated) {
       const updatedApplicateur = await Applicateur.findByPk(req.params.id);
       res.json(updatedApplicateur);

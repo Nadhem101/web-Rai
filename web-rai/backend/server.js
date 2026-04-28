@@ -18,7 +18,9 @@ app.use('/api/pinces',             require('./app/routes/pince.routes'));
 app.use('/api/pince-preventive-records', require('./app/routes/pince_preventive_record.routes'));
 app.use('/api/maintenance-sheets',  require('./app/routes/maintenance_sheet.routes'));
 app.use('/api/applicateurs',       require('./app/routes/applicateur.routes'));
+app.use('/api/applicateur-thresholds', require('./app/routes/applicateur_threshold.routes'));
 app.use('/api/cosses',              require('./app/routes/cosse.routes'));
+app.use('/api/curative-maintenance-records', require('./app/routes/curative_maintenance_record.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API WEB-RAI fonctionne' });

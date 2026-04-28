@@ -1,8 +1,43 @@
 ﻿import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { maintenanceEventService } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
+import { equipementService, maintenanceEventService } from '../../services/api';
 import { EQUIPEMENTS, WEEKS, getCurrentWeek, isMaintenance } from '../../utils/maintenanceSchedule';
+import { getMaintenanceMachineTemplate, resolveMaintenanceMachineKeyFromEquipment } from '../../data/maintenanceMachines';
 
 const DEFAULT_INTERVALS = [{ type: '1M', freq: 4, start: 1, color: 'blue' }];
+
+const SCHEDULE_LOOKUP = new Map(EQUIPEMENTS.map((equipement) => [equipement.code, equipement]));
+
+const normalizeText = (value = '') =>
+  String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const normalizeCode = (value = '') => String(value ?? '').replace(/\uFEFF/g, '').trim().toUpperCase();
+
+const isMainCalendarEquipment = (equipement) => {
+  const category = normalizeText(equipement?.categorie);
+  return category === '' || category === 'equipement';
+};
+
+const isStandardCalendarEquipment = (equipement) => {
+  return isMainCalendarEquipment(equipement) && !isFerEtBainEquipment(equipement);
+};
+
+const isFerEtBainEquipment = (equipement) => {
+  const designation = normalizeText(equipement?.designation);
+  const category = normalizeText(equipement?.categorie);
+  const zone = normalizeText(equipement?.Zone?.nom_zone || equipement?.zone);
+
+  return (
+    category === 'fer-et-bain' ||
+    designation.includes('fer a souder') ||
+    designation.includes('bain creuset') ||
+    zone === 'fer et bain'
+  );
+};
 
 const CALENDAR_VIEWS = [
   {
@@ -11,42 +46,10 @@ const CALENDAR_VIEWS = [
     title: 'Calendrier des preventives systematiques de Cablage & Electronique',
     subtitle: '" KW01 ===> KW53 "',
     reference: 'FQ024/00',
-    items: [
-      { code: 'EQUIP347', designation: 'Machine de coupe', zone: 'Cablage' },
-      { code: 'EQUIP210', designation: 'Marquage a chaud', zone: 'Cablage' },
-      { code: 'EQUIP395', designation: 'Machine de coupe', zone: 'Cablage' },
-      { code: 'EQUIP432', designation: 'Machine de coupe', zone: 'Cablage' },
-      { code: 'EQUIP355', designation: 'Machine de coupe', zone: 'Cablage' },
-      { code: 'EQUIP349', designation: 'Machine de marquage', zone: 'Cablage' },
-      { code: 'EQUIP451', designation: 'Machine de marquage', zone: 'Cablage' },
-      { code: 'EQUIP476', designation: 'Machine de degraissage', zone: 'Cablage' },
-      { code: 'EQUIP475', designation: 'Machine de coupe', zone: 'Cablage' },
-      { code: 'EQUIP353', designation: 'Bottleuse', zone: 'Cablage' },
-      { code: 'EQUIP457', designation: 'Bottleuse', zone: 'Cablage' },
-      { code: 'EQUIP444', designation: 'Machine de sertissage', zone: 'Cablage' },
-      { code: 'EQUIP386', designation: 'Press manuel', zone: 'Cablage' },
-      { code: 'EQUIP405', designation: 'Machine de sertissage', zone: 'Cablage' },
-      { code: 'EQUIP342', designation: 'Machine de sertissage', zone: 'Cablage' },
-      { code: 'EQUIP343', designation: 'Machine de sertissage', zone: 'Cablage' },
-      { code: 'EQUIP450', designation: 'Machine de sertissage', zone: 'Cablage' },
-      { code: 'EQUIP194', designation: 'Machine de sertissage', zone: 'Cablage' },
-      { code: 'EQUIP391', designation: 'Machine coupe gain', zone: 'Cablage' },
-      { code: 'EQUIP458', designation: 'Machine de sertissage', zone: 'Cablage' },
-      { code: 'EQUIP340', designation: 'Machine de denudage', zone: 'Cablage' },
-      { code: 'EQUIP463', designation: 'Machine de denudage', zone: 'Cablage' },
-      { code: 'EQUIP459', designation: 'Machine de denudage', zone: 'Cablage' },
-      { code: 'EQUIP460', designation: 'Machine de denudage', zone: 'Cablage' },
-      { code: 'EQUIP461', designation: 'Machine de denudage', zone: 'Cablage' },
-      { code: 'EQUIP462', designation: 'Machine de denudage', zone: 'Cablage' },
-      { code: 'EQUIP464', designation: 'Machine de denudage', zone: 'Cablage' },
-      { code: 'EQUIP341', designation: 'Machine insertion embout', zone: 'Electronique' },
-      { code: 'EQUIP384', designation: 'Machine ULTRASON', zone: 'Electronique' },
-      { code: 'EQUIP473', designation: 'Machine ULTRASON', zone: 'Electronique' },
-      { code: 'EQUIP346', designation: 'Machine Vague', zone: 'Electronique' },
-      { code: 'EQUIP466', designation: 'Machine de lavage', zone: 'Electronique' },
-      { code: 'EQUIP495', designation: 'Machine de coupe PCB', zone: 'Electronique' },
-      { code: 'EQUIP005', designation: 'Insertion cosse', zone: 'Electronique' },
-    ],
+    matches: (equipement) => {
+      const zone = normalizeText(equipement?.Zone?.nom_zone || equipement?.zone);
+      return isStandardCalendarEquipment(equipement) && ['cablage', 'electronique'].includes(zone);
+    },
   },
   {
     id: 'bobinage-assemblage',
@@ -54,73 +57,45 @@ const CALENDAR_VIEWS = [
     title: 'Calendrier des preventives systematiques de Bobinage & Assemblage Mecanique',
     subtitle: '" KW01 ===> KW53 "',
     reference: 'FQ024/00',
-    items: [
-      { code: 'EQUIP151', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP152', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP154', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP155', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP156', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP157', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP158', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP159', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP161', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP162', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP168', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP230', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP231', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP367', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP308', designation: 'Soudure a ultrasons', zone: 'Bobinage' },
-      { code: 'EQUIP148', designation: 'Machine de bobinage', zone: 'Bobinage' },
-      { code: 'EQUIP094', designation: 'Soudeuse electrique', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP297', designation: 'Poste coupe lame', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP147', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP144', designation: 'Poste marquage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP061', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP254', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP039', designation: 'Presse sertissage broche', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP046', designation: 'Presse insertion broche CA', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP082', designation: 'Presse montage volet CAP', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP092', designation: 'Machine soudage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP090', designation: 'Marquage a chaud', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP312', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP038', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP057', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP316', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP196', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP197', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP198', designation: 'Presse de sertissage Torniquet', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP193', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP189', designation: 'Poste d insertion', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP191', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP202', designation: 'Perseuse noyau', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP203', designation: 'Poste d insertion noyau', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP201', designation: 'Presse de sertissage Torniquet', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP199', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP200', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-      { code: 'EQUIP220', designation: 'Presse de sertissage', zone: 'Assemblage mecanique' },
-    ],
+    matches: (equipement) => {
+      const zone = normalizeText(equipement?.Zone?.nom_zone || equipement?.zone);
+      return isStandardCalendarEquipment(equipement) && ['bobinage', 'assemblage mecanique'].includes(zone);
+    },
+  },
+  {
+    id: 'fer-et-bain',
+    label: 'Fer et bain',
+    title: 'Calendrier des preventives systematiques de Fer et Bain',
+    subtitle: '" KW01 ===> KW53 "',
+    reference: 'FQ024/00',
+    matches: (equipement) => isFerEtBainEquipment(equipement),
   },
 ];
 
 function resolveEquipement(item) {
-  const fromSchedule = EQUIPEMENTS.find((eq) => eq.code === item.code);
+  const code = normalizeCode(item.code_rai || item.code);
+  const fromSchedule = SCHEDULE_LOOKUP.get(code);
+
   if (fromSchedule) {
     return {
       ...fromSchedule,
+      code,
+      code_rai: code,
       designation: item.designation || fromSchedule.designation,
-      zone: item.zone || fromSchedule.zone,
+      zone: item.Zone?.nom_zone || item.zone || fromSchedule.zone,
     };
   }
 
   return {
-    code: item.code,
+    code,
+    code_rai: code,
     designation: item.designation,
-    zone: item.zone,
+    zone: item.Zone?.nom_zone || item.zone,
     intervals: DEFAULT_INTERVALS,
   };
 }
 
-function CellMenu({ popup, onDone, onReschedule, onReset, onClose }) {
+function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
@@ -128,15 +103,23 @@ function CellMenu({ popup, onDone, onReschedule, onReset, onClose }) {
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
   if (!popup) return null;
-  const { x, y, equip, week, intType, currentStatus } = popup;
+  const { x, y, equip, week, intType, currentStatus, machineKey, machineLabel } = popup;
   return (
     <div ref={ref} className="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-xl py-1 w-56" style={{ top: y, left: x }}>
       <div className="px-3 py-2 border-b border-gray-100 text-xs">
         <div className="font-bold text-gray-800">{equip.code}</div>
         <div className="text-gray-500 truncate">{equip.designation}</div>
         <div className="text-gray-400 mt-0.5">KW{String(week).padStart(2,'0')}  {intType}</div>
+        <div className="mt-1 text-[11px] text-slate-500">
+          {machineKey ? `Fiche: ${machineLabel || machineKey}` : 'Aucune fiche machine correspondante'}
+        </div>
       </div>
       <div className="py-1">
+        {machineKey && (
+          <button className="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center gap-2 text-blue-700" onClick={onOpenMachineSheet}>
+            <span></span> Démarrer la fiche machine
+          </button>
+        )}
         {currentStatus !== 'done' && (
           <button className="w-full text-left px-3 py-2 text-sm hover:bg-green-50 flex items-center gap-2 text-green-700" onClick={onDone}>
             <span></span> Marquer comme fait
@@ -201,18 +184,48 @@ function RescheduleModal({ modal, onConfirm, onClose }) {
 }
 
 const CalendrierPreventif = () => {
+  const navigate = useNavigate();
   const currentWeek = getCurrentWeek();
   const currentYear = new Date().getFullYear();
 
   const [viewFilter, setViewFilter]             = useState(CALENDAR_VIEWS[0].id);
+  const [equipements, setEquipements]           = useState([]);
   const [searchCode, setSearchCode]             = useState('');
   const [highlightedEquip, setHighlightedEquip] = useState(null);
   const [cellStates, setCellStates]             = useState({});
   const [popup, setPopup]                       = useState(null);
   const [rescheduleModal, setRescheduleModal]   = useState(null);
+  const [loadingEquipements, setLoadingEquipements] = useState(true);
   const [loadingEvents, setLoadingEvents]       = useState(true);
   const [savingKeys, setSavingKeys]             = useState(new Set());
   const [apiError, setApiError]                 = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoadingEquipements(true);
+
+    equipementService
+      .getAll()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setEquipements(Array.isArray(data) ? data : []);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEquipements([]);
+        setApiError('Impossible de charger les equipements du calendrier.');
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoadingEquipements(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Load saved events from DB on mount
   useEffect(() => {
@@ -241,8 +254,17 @@ const CalendrierPreventif = () => {
   }, [viewFilter]);
 
   const viewEquipements = useMemo(() => {
-    return selectedView.items.map(resolveEquipement);
-  }, [selectedView]);
+    return equipements
+      .filter((equipement) => selectedView.matches(equipement))
+      .slice()
+      .sort((left, right) =>
+        String(left.code_rai || '').localeCompare(String(right.code_rai || ''), 'fr', {
+          numeric: true,
+          sensitivity: 'base',
+        })
+      )
+      .map(resolveEquipement);
+  }, [equipements, selectedView]);
 
   const filteredEquipements = useMemo(() => {
     return viewEquipements.filter((e) => {
@@ -291,7 +313,20 @@ const CalendrierPreventif = () => {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.min(rect.right + 4, window.innerWidth - 234);
     const y = Math.min(rect.top, window.innerHeight - 210);
-    setPopup({ key, equip: cellData.equip, week: cellData.week, intType: cellData.intType, currentStatus: cellStates[key]?.status || null, x, y });
+    const machineKey = resolveMaintenanceMachineKeyFromEquipment(cellData.equip);
+    const machineTemplate = machineKey ? getMaintenanceMachineTemplate(machineKey) : null;
+
+    setPopup({
+      key,
+      equip: cellData.equip,
+      week: cellData.week,
+      intType: cellData.intType,
+      currentStatus: cellStates[key]?.status || null,
+      machineKey,
+      machineLabel: machineTemplate?.machineLabel || null,
+      x,
+      y,
+    });
   }, [cellStates]);
 
   const handleMarkDone = () => {
@@ -313,6 +348,21 @@ const CalendrierPreventif = () => {
   const handleOpenReschedule = () => {
     setRescheduleModal({ key: popup.key, equip: popup.equip, week: popup.week, intType: popup.intType });
     setPopup(null);
+  };
+
+  const handleOpenMachineSheet = () => {
+    if (!popup?.machineKey) {
+      return;
+    }
+
+    const targetPath = `/preventif/fiches-maintenance/${popup.machineKey}`;
+    setPopup(null);
+    navigate(targetPath, {
+      state: {
+        equipment: popup.equip,
+        machineKey: popup.machineKey,
+      },
+    });
   };
 
   const handleReset = () => {
@@ -377,9 +427,9 @@ const CalendrierPreventif = () => {
       )}
 
       {/* Loading overlay */}
-      {loadingEvents && (
+      {(loadingEvents || loadingEquipements) && (
         <div className="absolute inset-0 bg-white/70 z-40 flex items-center justify-center">
-          <div className="text-sm text-gray-500 animate-pulse">Chargement des evenements…</div>
+          <div className="text-sm text-gray-500 animate-pulse">Chargement du calendrier…</div>
         </div>
       )}
 
@@ -508,7 +558,14 @@ const CalendrierPreventif = () => {
       </div>
 
       {popup && (
-        <CellMenu popup={popup} onDone={handleMarkDone} onReschedule={handleOpenReschedule} onReset={handleReset} onClose={() => setPopup(null)} />
+        <CellMenu
+          popup={popup}
+          onDone={handleMarkDone}
+          onReschedule={handleOpenReschedule}
+          onReset={handleReset}
+          onOpenMachineSheet={handleOpenMachineSheet}
+          onClose={() => setPopup(null)}
+        />
       )}
       <RescheduleModal modal={rescheduleModal} onConfirm={handleRescheduleConfirm} onClose={() => setRescheduleModal(null)} />
     </div>

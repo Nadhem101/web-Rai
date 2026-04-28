@@ -80,7 +80,7 @@ async function main() {
   console.log(`📂 Interventions: ${INTERVENTIONS_FILE}`);
   console.log(`📂 Summary:       ${SUMMARY_FILE}\n`);
 
-  await sequelize.sync({ alter: true });
+  await sequelize.sync();
 
   // ── Load verif_type from ecme_summary ────────────────────────────────────
   const verifMap = {};

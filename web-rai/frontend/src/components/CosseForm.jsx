@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { cosseService } from '../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { applicateurService, cosseService, pinceService } from '../services/api';
 
 const initialState = {
   reference_constructeur: '',
@@ -13,10 +13,19 @@ const initialState = {
   observation: '',
 };
 
+const normalizeToolCode = (value = '') =>
+  String(value ?? '')
+    .replace(/\uFEFF/g, '')
+    .trim()
+    .replace(/\s+/g, '')
+    .toUpperCase();
+
 const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [toolSuggestions, setToolSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -24,6 +33,65 @@ const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
     setFormData(cosse ? { ...initialState, ...cosse } : initialState);
     setError(null);
   }, [cosse, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    let cancelled = false;
+
+    const loadToolSuggestions = async () => {
+      setLoadingSuggestions(true);
+
+      try {
+        const [pinceResponse, applicateurRecords] = await Promise.all([
+          pinceService.getAll(),
+          applicateurService.getAll(),
+        ]);
+
+        const pinceRecords = Array.isArray(pinceResponse?.data) ? pinceResponse.data : [];
+        const applicateurs = Array.isArray(applicateurRecords) ? applicateurRecords : [];
+        const nextSuggestions = [];
+        const seen = new Set();
+
+        const addSuggestion = (value) => {
+          const label = String(value ?? '').trim();
+          const normalized = normalizeToolCode(label);
+
+          if (!normalized || seen.has(normalized)) return;
+          seen.add(normalized);
+          nextSuggestions.push(label);
+        };
+
+        pinceRecords.forEach((pince) => addSuggestion(pince.numero_pince));
+        applicateurs.forEach((applicateur) => addSuggestion(applicateur.numero_outil));
+
+        nextSuggestions.sort((left, right) => left.localeCompare(right, 'fr', { numeric: true, sensitivity: 'base' }));
+
+        if (!cancelled) {
+          setToolSuggestions(nextSuggestions);
+        }
+      } catch (fetchError) {
+        console.error('Erreur chargement suggestions outillage:', fetchError);
+        if (!cancelled) {
+          setToolSuggestions([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingSuggestions(false);
+        }
+      }
+    };
+
+    loadToolSuggestions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
+  const toolSuggestionMap = useMemo(() => {
+    return new Map(toolSuggestions.map((value) => [normalizeToolCode(value), value]));
+  }, [toolSuggestions]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -38,11 +106,25 @@ const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
     setLoading(true);
     setError(null);
 
+    const normalizedOutillage = formData.outillage.trim();
+    const shouldValidateOutillage = !loadingSuggestions && toolSuggestionMap.size > 0;
+
+    if (shouldValidateOutillage && normalizedOutillage && !toolSuggestionMap.has(normalizeToolCode(normalizedOutillage))) {
+      setLoading(false);
+      setError('L\'outillage doit correspondre à une pince ou un applicateur existant.');
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      outillage: normalizedOutillage ? toolSuggestionMap.get(normalizeToolCode(normalizedOutillage)) || normalizedOutillage : '',
+    };
+
     try {
       if (cosse?.id) {
-        await cosseService.update(cosse.id, formData);
+        await cosseService.update(cosse.id, payload);
       } else {
-        await cosseService.create(formData);
+        await cosseService.create(payload);
       }
 
       onSuccess();
@@ -116,9 +198,19 @@ const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
               name="outillage"
               value={formData.outillage}
               onChange={handleChange}
+              list="cosse-outillage-options"
               className="w-full px-4 py-2 border-2 border-amber-200 rounded-lg focus:outline-none focus:border-amber-500"
-              placeholder="ex: P137 / A45 / E45-1"
+              placeholder="ex: P1, P10, A1"
             />
+            <p className="mt-1 text-xs text-gray-500">
+              Choisis une pince ou un applicateur existant dans la base.{' '}
+              {loadingSuggestions ? 'Chargement des suggestions...' : `${toolSuggestions.length} suggestion(s) disponibles`}
+            </p>
+            <datalist id="cosse-outillage-options">
+              {toolSuggestions.map((toolCode) => (
+                <option key={toolCode} value={toolCode} />
+              ))}
+            </datalist>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

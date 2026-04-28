@@ -1,12 +1,13 @@
 const path = require('path');
 const fs = require('fs');
+const csv = require('csv-parser');
 
 // Get the correct path to the database
 const { sequelize, Applicateur, ApplicateurVariant } = require('../app/models');
 
 // Try multiple locations for the CSV file
 const possiblePaths = [
-  path.join(__dirname, '../database/Suivi des equipments FQ030.csv'),
+  path.join(__dirname, '../../database/Suivi des equipments FQ030.csv'),
   path.join('C:', 'Users', 'user', 'Desktop', 'Suivi des equipments FQ030.csv'),
 ];
 
@@ -23,64 +24,58 @@ if (!CSV_FILE) {
   process.exit(1);
 }
 
-function parseCSVLine(line) {
-  const result = [];
-  let current = '';
-  let insideQuotes = false;
+const CSV_HEADERS = [
+  'numero_outil',
+  'site',
+  'designation',
+  'numero_serie',
+  'constructeur_outil',
+  'reference_cosse_constructeur',
+  'reference_cosse_tec',
+  'statut',
+  'remarque',
+];
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    const nextChar = line[i + 1];
+const normalizeCell = (value) => String(value ?? '').replace(/\r/g, '').replace(/\uFEFF/g, '').trim();
 
-    if (char === '"') {
-      if (insideQuotes && nextChar === '"') {
-        current += '"';
-        i++;
-      } else {
-        insideQuotes = !insideQuotes;
-      }
-    } else if (char === ',' && !insideQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
+const readRows = () =>
+  new Promise((resolve, reject) => {
+    const rows = [];
 
-  result.push(current.trim());
-  return result;
-}
+    fs.createReadStream(CSV_FILE)
+      .pipe(
+        csv({
+          skipLines: 4,
+          headers: CSV_HEADERS,
+          mapValues: ({ value }) => normalizeCell(value),
+        })
+      )
+      .on('data', (row) => rows.push(row))
+      .on('end', () => resolve(rows))
+      .on('error', reject);
+  });
 
 async function importApplicateurs() {
   try {
-    console.log('Reading CSV file...');
-    const content = fs.readFileSync(CSV_FILE, 'utf-8');
-    const lines = content.split('\n');
-
-    // Skip header lines (first 3 lines)
-    const dataLines = lines.slice(3);
-
     const applicateursMap = new Map(); // Store applicateurs data temporarily
     let currentApplicateur = null;
 
+    console.log('Reading CSV file...');
+    const dataLines = await readRows();
+
     // Parse CSV
     for (let i = 0; i < dataLines.length; i++) {
-      const line = dataLines[i].trim();
+      const row = dataLines[i];
 
-      if (!line) continue; // Skip empty lines
-
-      const fields = parseCSVLine(line);
-
-      // Fields: N° Outil | Site | Désignation | N° Serie | Constructeur | Ref Cosse Constructor | Ref Cosse TEC | Statut | Remarque
-      const numeroOutil = fields[0];
-      const site = fields[1];
-      const designation = fields[2];
-      const numeroSerie = fields[3];
-      const constructeurOutil = fields[4];
-      const refCosseConstructeur = fields[5];
-      const refCosseTec = fields[6];
-      const statut = fields[7] ? fields[7].toLowerCase() : 'en service';
-      const remarque = fields[8];
+      const numeroOutil = normalizeCell(row.numero_outil);
+      const site = normalizeCell(row.site);
+      const designation = normalizeCell(row.designation);
+      const numeroSerie = normalizeCell(row.numero_serie);
+      const constructeurOutil = normalizeCell(row.constructeur_outil);
+      const refCosseConstructeur = normalizeCell(row.reference_cosse_constructeur);
+      const refCosseTec = normalizeCell(row.reference_cosse_tec);
+      const statut = normalizeCell(row.statut).toLowerCase() || 'en service';
+      const remarque = normalizeCell(row.remarque);
 
       if (numeroOutil) {
         // New applicateur

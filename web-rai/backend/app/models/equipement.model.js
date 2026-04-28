@@ -43,9 +43,9 @@ const Equipement = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: 'equipement',
       validate: {
-        isIn: [['equipement', 'pdr', 'pinces', 'applicateurs']],
+        isIn: [['equipement', 'pdr', 'pinces', 'applicateurs', 'fer-et-bain']],
       },
-      comment: 'Catégorie de l\'équipement: equipement (général), pdr (pièces de rechange), pinces (de sertissage), ou applicateurs (faisceaux)',
+      comment: 'Catégorie de l\'équipement: equipement (général), pdr (pièces de rechange), pinces (de sertissage), applicateurs (faisceaux), ou fer-et-bain',
     },
   },
   {

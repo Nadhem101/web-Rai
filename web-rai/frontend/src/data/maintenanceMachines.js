@@ -231,7 +231,68 @@ const MACHINE_INDEX = MAINTENANCE_MACHINES.reduce((index, machine) => {
   return index;
 }, {});
 
+const normalizeText = (value = '') =>
+  String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+
+const MACHINE_ALIAS_RULES = [
+  { machineKey: 'ultrason', patterns: ['ultrason', 'soudure a ultrasons', 'soudure ultrasons'] },
+  { machineKey: 'vague', patterns: ['vague'] },
+  { machineKey: 'bobinage', patterns: ['bobinage'] },
+  {
+    machineKey: 'coupe',
+    patterns: [
+      'machine de coupe pcb',
+      'machine de coupe',
+      'machine coupe',
+      'coupe gain',
+      'degunage',
+      'denudage',
+      'dunudage',
+      'desemaillage',
+      'lavage',
+      'perceuse noyau',
+    ],
+  },
+  { machineKey: 'marquage', patterns: ['marquage a chaud', 'marquage chaud', 'marquage'] },
+  { machineKey: 'sertissage', patterns: ['sertissage'] },
+  {
+    machineKey: 'soudure',
+    patterns: ['fer a souder', 'bain creuset', 'soudage', 'soudeuse', 'soudure', 'dessouder'],
+  },
+  {
+    machineKey: 'presse-mecanique',
+    patterns: ['presse', 'poste d insertion', 'poste insertion', 'insertion broche', 'montage volet', 'manuel'],
+  },
+  { machineKey: 'bouteuse', patterns: ['bouteuse', 'bottleuse'] },
+];
+
+const hasAnyPattern = (text, patterns) => patterns.some((pattern) => text.includes(pattern));
+
 export const getMaintenanceMachineTemplate = (machineKey) => MACHINE_INDEX[machineKey] || null;
+
+export const resolveMaintenanceMachineKeyFromEquipment = (equipment = {}) => {
+  const searchableText = normalizeText([
+    equipment.code_rai,
+    equipment.code,
+    equipment.designation,
+    equipment.equipement_label,
+    equipment.zone,
+    equipment.Zone?.nom_zone,
+  ]
+    .filter(Boolean)
+    .join(' '));
+
+  if (!searchableText) {
+    return null;
+  }
+
+  const matchedRule = MACHINE_ALIAS_RULES.find((rule) => hasAnyPattern(searchableText, rule.patterns));
+  return matchedRule ? matchedRule.machineKey : null;
+};
 
 export const buildInitialTasks = (template) =>
   template.sections.flatMap((section) =>

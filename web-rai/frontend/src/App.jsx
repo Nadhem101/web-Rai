@@ -4,7 +4,10 @@ import ListeEquipements from './pages/Inventaire/ListeEquipements.jsx';
 import Dashboard from './pages/Dashboard/Dashboard.jsx';
 import CalendrierPreventif from './pages/Preventif/CalendrierPreventif.jsx';
 import SuiviPreventifPinces from './pages/Preventif/SuiviPreventifPinces.jsx';
+import SuiviPreventifApplicateurs from './pages/Preventif/SuiviPreventifApplicateurs.jsx';
 import FichesMaintenance from './pages/Preventif/FichesMaintenance.jsx';
+import SuiviCuratif from './pages/Curatif/SuiviCuratif.jsx';
+import IndicateurCuratif from './pages/Curatif/IndicateurCuratif.jsx';
 import EtatECME from './pages/ECME/EtatECME.jsx';
 import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
 import { maintenanceSheetService } from './services/api';
@@ -13,6 +16,7 @@ const App = () => {
   const [inventaireExpanded, setInventaireExpanded] = useState(false);
   const [equipementsExpanded, setEquipementsExpanded] = useState(true);
   const [maintenanceExpanded, setMaintenanceExpanded] = useState(false);
+  const [curativeExpanded, setCurativeExpanded] = useState(false);
   const [completedMaintenanceCount, setCompletedMaintenanceCount] = useState(0);
 
   useEffect(() => {
@@ -226,6 +230,17 @@ const App = () => {
                 </NavLink>
 
                 <NavLink
+                  to="/preventif/suivi-applicateurs"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  ⚡ Suivi préventif des applicateurs
+                </NavLink>
+
+                <NavLink
                   to="/preventif/fiches-maintenance"
                   className={({ isActive }) =>
                     `block px-3 py-2 rounded-md text-sm ${
@@ -245,6 +260,44 @@ const App = () => {
               </div>
             )}
           </div>
+
+          <div>
+            <button
+              onClick={() => setCurativeExpanded(!curativeExpanded)}
+              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
+                curativeExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              <span className="flex items-center gap-2">🛠️ Maintenance curative</span>
+              <span className={`transform transition-transform ${curativeExpanded ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            {curativeExpanded && (
+              <div className="ml-4 mt-1 space-y-1">
+                <NavLink
+                  to="/curatif"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  📋 Suivi curatif
+                </NavLink>
+
+                <NavLink
+                  to="/curatif/indicateur"
+                  className={({ isActive }) =>
+                    `block px-3 py-2 rounded-md text-sm ${
+                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
+                    }`
+                  }
+                >
+                  📈 Indicateur curatif
+                </NavLink>
+              </div>
+            )}
+          </div>
+
           <NavLink
             to="/ecme"
             className={({ isActive }) =>
@@ -275,9 +328,13 @@ const App = () => {
               <Route path="/inventaire" element={<ListeEquipements />} />
               <Route path="/preventif" element={<CalendrierPreventif />} />
               <Route path="/preventif/suivi-pinces" element={<SuiviPreventifPinces />} />
+              <Route path="/preventif/suivi-applicateurs" element={<SuiviPreventifApplicateurs />} />
               <Route path="/preventif/fiches-maintenance" element={<FichesMaintenance />} />
               <Route path="/preventif/fiches-maintenance/:machineKey" element={<FichesMaintenance />} />
               <Route path="/preventif/fiches-maintenance/fiche/:sheetId" element={<FichesMaintenance />} />
+              <Route path="/curatif" element={<SuiviCuratif />} />
+              <Route path="/curatif/suivi" element={<SuiviCuratif />} />
+              <Route path="/curatif/indicateur" element={<IndicateurCuratif />} />
               <Route path="/ecme" element={<EtatECME />} />
               <Route path="/ecme/:code" element={<FicheDeVie />} />
             </Routes>

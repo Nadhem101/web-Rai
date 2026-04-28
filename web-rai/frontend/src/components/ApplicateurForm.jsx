@@ -1,20 +1,100 @@
-import React, { useState } from 'react';
-import { applicateurService } from '../services/api';
+import React, { useEffect, useMemo, useState } from 'react';
+import { applicateurService, cosseService } from '../services/api';
+
+const normalizeToolCode = (value = '') =>
+  String(value ?? '')
+    .replace(/\uFEFF/g, '')
+    .trim()
+    .replace(/\s+/g, '')
+    .toUpperCase();
+
+const buildInitialState = (applicateur) => ({
+  numero_outil: applicateur?.numero_outil ?? '',
+  site: applicateur?.site ?? 'RAI',
+  designation: applicateur?.designation ?? '',
+  numero_serie: applicateur?.numero_serie ?? '',
+  constructeur_outil: applicateur?.constructeur_outil ?? '',
+  statut: applicateur?.statut ?? 'en service',
+  remarque: applicateur?.remarque ?? '',
+});
 
 const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
-  const [formData, setFormData] = useState(
-    applicateur || {
-      numero_outil: '',
-      site: 'RAI',
-      designation: '',
-      numero_serie: '',
-      constructeur_outil: '',
-      statut: 'en service',
-      remarque: '',
-    }
-  );
+  const [formData, setFormData] = useState(buildInitialState(applicateur));
+  const [cosses, setCosses] = useState([]);
+  const [selectedCosseId, setSelectedCosseId] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingOptions, setLoadingOptions] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setFormData(buildInitialState(applicateur));
+    setError(null);
+  }, [applicateur, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    let cancelled = false;
+
+    const loadOptions = async () => {
+      setLoadingOptions(true);
+
+      try {
+        const cosseResponse = await cosseService.getAll();
+        const nextCosses = Array.isArray(cosseResponse) ? cosseResponse : [];
+
+        if (!cancelled) {
+          setCosses(nextCosses);
+        }
+      } catch (loadError) {
+        console.error('Erreur chargement cosses applicateur:', loadError);
+        if (!cancelled) {
+          setCosses([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingOptions(false);
+        }
+      }
+    };
+
+    loadOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const firstVariant = applicateur?.variants?.[0];
+    if (!firstVariant || cosses.length === 0) {
+      if (!applicateur?.id) setSelectedCosseId('');
+      return;
+    }
+
+    const normalizedRefTec = normalizeToolCode(firstVariant.reference_tec);
+    const normalizedRefConstructeur = normalizeToolCode(firstVariant.reference_constructeur);
+    const matchedCosse = cosses.find((cosse) => {
+      return (
+        normalizeToolCode(cosse.reference_tec) === normalizedRefTec &&
+        normalizeToolCode(cosse.reference_constructeur) === normalizedRefConstructeur
+      );
+    });
+
+    setSelectedCosseId(matchedCosse ? String(matchedCosse.id) : '');
+  }, [applicateur, cosses, isOpen]);
+
+  const cosseOptions = useMemo(
+    () =>
+      cosses
+        .slice()
+        .sort((left, right) => String(left.reference_tec ?? '').localeCompare(String(right.reference_tec ?? ''), 'fr', { numeric: true, sensitivity: 'base' })),
+    [cosses]
+  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,25 +109,36 @@ const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
     setLoading(true);
     setError(null);
 
+    if (!applicateur?.id && !selectedCosseId) {
+      setLoading(false);
+      setError('Une cosse existante doit être sélectionnée pour créer un applicateur.');
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      numero_outil: formData.numero_outil.trim(),
+      site: formData.site.trim() || 'RAI',
+      designation: formData.designation.trim() || null,
+      numero_serie: formData.numero_serie.trim() || null,
+      constructeur_outil: formData.constructeur_outil.trim() || null,
+      statut: formData.statut,
+      remarque: formData.remarque.trim() || null,
+      ...(selectedCosseId ? { cosse_id: Number(selectedCosseId) } : {}),
+    };
+
     try {
       if (applicateur?.id) {
         // Update existing applicateur
-        await applicateurService.update(applicateur.id, formData);
+        await applicateurService.update(applicateur.id, payload);
       } else {
         // Create new applicateur
-        await applicateurService.create(formData);
+        await applicateurService.create(payload);
       }
       onSuccess();
       onClose();
-      setFormData({
-        numero_outil: '',
-        site: 'RAI',
-        designation: '',
-        numero_serie: '',
-        constructeur_outil: '',
-        statut: 'en service',
-        remarque: '',
-      });
+      setFormData(buildInitialState(null));
+      setSelectedCosseId('');
     } catch (err) {
       setError(err.message || 'Erreur lors de la sauvegarde');
       console.error('Error:', err);
@@ -170,6 +261,28 @@ const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
               <option value="hors service">✗ Hors service</option>
               <option value="à vérifier">⚠ À vérifier</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Cosse associée {applicateur?.id ? '(modifiable)' : '*'}
+            </label>
+            <select
+              value={selectedCosseId}
+              onChange={(event) => setSelectedCosseId(event.target.value)}
+              required={!applicateur?.id}
+              className="w-full px-4 py-2 border-2 border-orange-200 rounded-lg focus:outline-none focus:border-orange-500"
+            >
+              <option value="">Sélectionner une cosse</option>
+              {cosseOptions.map((cosse) => (
+                <option key={cosse.id} value={cosse.id}>
+                  {cosse.reference_tec} • {cosse.reference_constructeur} • {cosse.designation_tec || 'Sans désignation'}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-xs text-gray-500">
+              {loadingOptions ? 'Chargement des cosses...' : `${cosseOptions.length} cosse(s) disponible(s) dans la base.`}
+            </p>
           </div>
 
           <div>

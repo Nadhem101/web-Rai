@@ -48,27 +48,13 @@ cd database/scripts
 node import_zones.js
 ```
 
-## Import des cosses
+## Donnees en base
 
-Le backend expose maintenant un catalogue des cosses alimenté par le CSV fourni.
+Les catalogues de cosses, pinces, applicateurs, seuils applicateurs, PDR et ECME ont ete importes en base PostgreSQL.
+L'application lit maintenant uniquement la base de donnees au runtime.
+Les anciens fichiers CSV sources ne sont plus necessaires pour utiliser l'application.
 
-```bash
-cd backend
-npm run import:cosses
-```
-
-Le script cherche automatiquement `Liste Outillage Faisceaux 05-03-2026.csv` dans `database/`, ou utilise `COSS_FILE_PATH` si vous voulez pointer vers un autre emplacement.
-
-## Import de la maintenance preventive des pinces
-
-La page inventaire des pinces affiche maintenant les informations essentielles uniquement, suivies d'un calendrier de maintenance preventive alimente par le CSV fourni.
-
-```bash
-cd backend
-npm run import:pince-preventive
-```
-
-Le script lit `Suivi mesures de force d'extraction des pinces (2) (1).csv` depuis le bureau Windows de l'utilisateur. Les cellules vides reprennent la valeur de la ligne precedente, comme dans le fichier source.
+Les scripts d'import sont conserves a titre historique uniquement. Ils servent a recharger les donnees si vous disposez encore des fichiers source d'origine.
 
 ## Fiches de maintenance machine
 

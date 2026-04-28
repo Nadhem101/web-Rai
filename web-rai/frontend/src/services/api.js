@@ -62,6 +62,15 @@ export const maintenanceSheetService = {
   finish: (id, data) => API.post(`/maintenance-sheets/${id}/finish`, data).then((res) => res.data),
 };
 
+export const curativeMaintenanceService = {
+  getAll: (params = {}) => API.get('/curative-maintenance-records', { params }).then((res) => res.data),
+  getById: (id) => API.get(`/curative-maintenance-records/${id}`).then((res) => res.data),
+  create: (data) => API.post('/curative-maintenance-records', data).then((res) => res.data),
+  update: (id, data) => API.put(`/curative-maintenance-records/${id}`, data).then((res) => res.data),
+  delete: (id) => API.delete(`/curative-maintenance-records/${id}`).then((res) => res.data),
+  getMonthlySummary: (params = {}) => API.get('/curative-maintenance-records/summary/monthly', { params }).then((res) => res.data),
+};
+
 export const ecmeService = {
   getAll:          (params) => API.get('/ecme', { params }),
   getOne:          (code)   => API.get(`/ecme/${code}`),
@@ -74,4 +83,8 @@ export const applicateurService = {
   create: (data) => API.post('/applicateurs', data).then(res => res.data),
   update: (id, data) => API.put(`/applicateurs/${id}`, data).then(res => res.data),
   delete: (id) => API.delete(`/applicateurs/${id}`).then(res => res.data),
+};
+
+export const applicateurThresholdService = {
+  getAll: () => API.get('/applicateur-thresholds').then((res) => res.data),
 };
