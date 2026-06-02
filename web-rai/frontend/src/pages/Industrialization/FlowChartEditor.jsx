@@ -459,7 +459,7 @@ const FlowChartEditor = () => {
           </select>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-shrink-0 flex-wrap justify-end">
           {/* Zoom */}
           <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-1.5 py-1">
             <button onClick={() => setZoom(z => Math.max(0.4, +(z-0.1).toFixed(1)))}
@@ -473,12 +473,12 @@ const FlowChartEditor = () => {
             </button>
           </div>
           <button onClick={() => fileRef.current?.click()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50">
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50">
             <Upload className="w-3.5 h-3.5" /> Importer
           </button>
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
           <button onClick={handleExport}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50">
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50">
             <Download className="w-3.5 h-3.5" /> Exporter
           </button>
           {/* Save */}
@@ -496,7 +496,7 @@ const FlowChartEditor = () => {
       </div>
 
       {/* Body */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden flex-col md:flex-row">
 
         {/* Canvas */}
         <div className="flex-1 min-w-0 overflow-auto relative"
@@ -528,7 +528,7 @@ const FlowChartEditor = () => {
         </div>
 
         {/* Right panel */}
-        <div className="w-80 flex-shrink-0 border-l border-slate-200 bg-white overflow-y-auto flex flex-col">
+        <div className="w-full md:w-80 flex-shrink-0 border-t md:border-t-0 md:border-l border-slate-200 bg-white overflow-y-auto flex flex-col max-h-[45vh] md:max-h-none">
 
           {/* VIEW */}
           {(panel === 'view' || panel === 'delete') && (

@@ -39,6 +39,8 @@ import {
   ChevronRight,
   List,
   Cable,
+  Menu,
+  X as XIcon,
 } from 'lucide-react';
 
 // ── Design tokens ──────────────────────────────────────────
@@ -141,6 +143,13 @@ const App = () => {
   const location = useLocation();
   const pageName = getPageName(location.pathname);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Close sidebar whenever the route changes (mobile nav)
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
+
   const [inventaireExpanded, setInventaireExpanded] = useState(false);
   const [equipementsExpanded, setEquipementsExpanded] = useState(true);
   const [maintenanceExpanded, setMaintenanceExpanded] = useState(false);
@@ -190,9 +199,19 @@ const App = () => {
   return (
     <div className="min-h-screen h-screen flex overflow-hidden" style={{ background: 'var(--content-bg)' }}>
 
+      {/* ── Mobile backdrop ─────────────────────────────── */}
+      {menuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
       {/* ── Sidebar ─────────────────────────────────────── */}
       <aside
-        className="w-64 hidden md:flex flex-col flex-shrink-0"
+        className={`w-64 flex flex-col flex-shrink-0 fixed inset-y-0 left-0 z-40 transition-transform duration-300 ease-in-out
+          md:static md:translate-x-0
+          ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
         style={{ background: SIDEBAR_BG }}
       >
         {/* Brand */}
@@ -322,13 +341,20 @@ const App = () => {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
 
         {/* Top header */}
-        <header className="bg-white flex-shrink-0 px-6 py-0 flex items-center justify-between h-14"
+        <header className="bg-white flex-shrink-0 px-4 md:px-6 py-0 flex items-center justify-between h-14"
           style={{ borderBottom: '1px solid #e2e8f0' }}>
           <div className="flex items-center gap-2 text-sm">
-            <Link to="/" className="md:hidden font-bold text-slate-800">WEB-RAI</Link>
+            {/* Hamburger — mobile only */}
+            <button
+              onClick={() => setMenuOpen(v => !v)}
+              className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 transition-colors flex-shrink-0"
+              aria-label="Menu"
+            >
+              {menuOpen ? <XIcon className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
             <span className="hidden md:inline text-slate-400 font-medium text-xs uppercase tracking-wider">WEB-RAI</span>
             <ChevronRight className="hidden md:inline w-3.5 h-3.5 text-slate-300" />
-            <span className="hidden md:inline text-slate-700 font-semibold text-sm">{pageName}</span>
+            <span className="text-slate-700 font-semibold text-sm truncate max-w-[160px] md:max-w-none">{pageName}</span>
           </div>
           <div className="flex items-center gap-4">
             <span className="hidden sm:inline text-xs text-slate-400 font-medium">{todayCapitalized}</span>
