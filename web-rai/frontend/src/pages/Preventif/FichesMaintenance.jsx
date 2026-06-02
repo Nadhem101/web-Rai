@@ -183,11 +183,11 @@ const MachineCard = ({ machine, latestSheet, onOpen }) => {
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-600">Fiche machine</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-600">Fiche machine</p>
           <h3 className="mt-2 text-lg font-bold text-slate-900">{machine.machineLabel}</h3>
           <p className="mt-1 text-sm text-slate-500">{machine.subtitle}</p>
         </div>
-        <div className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+        <div className="rounded-full bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700 border border-sky-200">
           {machine.sections.length} section(s)
         </div>
       </div>
@@ -208,7 +208,7 @@ const MachineCard = ({ machine, latestSheet, onOpen }) => {
         </div>
       </div>
 
-      <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-700">
+      <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-sky-600">
         Ouvrir la fiche <span aria-hidden="true">→</span>
       </div>
     </button>
@@ -219,17 +219,32 @@ const FichesMaintenance = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { machineKey, sheetId } = useParams();
-  const template = useMemo(() => getMaintenanceMachineTemplate(machineKey), [machineKey]);
-  const equipmentContext = location.state?.equipment || null;
-  const equipmentLabel = buildEquipmentLabel(equipmentContext, template?.machineLabel || '');
-  const [activeTab, setActiveTab] = useState('machines');
-  const [latestSheet, setLatestSheet] = useState(null);
-  const [selectedSheet, setSelectedSheet] = useState(null);
-  const [draft, setDraft] = useState(template ? buildDraftFromTemplate(template, equipmentContext) : null);
-  const [history, setHistory] = useState([]);
+  const [customTemplates, setCustomTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('machines');
+  const [latestSheet, setLatestSheet] = useState(null);
+  const [selectedSheet, setSelectedSheet] = useState(null);
+
+  useEffect(() => {
+    const templates = JSON.parse(localStorage.getItem('machineTemplates') || '[]');
+    setCustomTemplates(templates);
+  }, []);
+
+  const allMachines = useMemo(() => [...MAINTENANCE_MACHINES, ...customTemplates], [customTemplates]);
+
+  const template = useMemo(() => {
+    if (!machineKey) return null;
+    const defaultTemplate = getMaintenanceMachineTemplate(machineKey);
+    if (defaultTemplate) return defaultTemplate;
+    return customTemplates.find((t) => t.machineKey === machineKey) || null;
+  }, [machineKey, customTemplates]);
+
+  const equipmentContext = location.state?.equipment || null;
+  const equipmentLabel = buildEquipmentLabel(equipmentContext, template?.machineLabel || '');
+  const [draft, setDraft] = useState(template ? buildDraftFromTemplate(template, equipmentContext) : null);
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     if (sheetId) {
@@ -476,28 +491,30 @@ const FichesMaintenance = () => {
   if (isSummaryView) {
     return (
       <div className="flex flex-1 flex-col overflow-auto bg-slate-50 p-6">
-        <div className="mb-8 rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-amber-700 p-8 text-white shadow-xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-amber-200">Maintenance preventive</p>
-          <h1 className="mt-3 text-3xl font-bold">Fiches machines</h1>
-          <p className="mt-3 max-w-3xl text-sm text-slate-100/90">
-            Ouvrir une machine, demarrer une nouvelle fiche avec la date exacte de debut, puis sauvegarder ou cloturer la maintenance dans la base de donnees.
-          </p>
-          {isSummaryLoading && (
-            <div className="mt-4 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-white/90">
-              Chargement des fiches...
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 bg-slate-100">
+              <span className="text-slate-500 text-sm font-bold">FM</span>
             </div>
-          )}
+            <div>
+              <h1 className="text-xl font-bold text-slate-800">Fiches machines</h1>
+              <p className="text-xs text-slate-400 mt-0.5">
+                {isSummaryLoading ? 'Chargement des fiches…' : 'Ouvrez une machine, démarrez une fiche et clôturez la maintenance'}
+              </p>
+            </div>
+          </div>
         </div>
 
         {completedSheets.length > 0 && (
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900">
             <div>
-              <strong>{completedSheets.length}</strong> fiche(s) terminee(s) sont disponibles pour inspection.
+              <strong>{completedSheets.length}</strong> fiche(s) terminée(s) disponibles pour inspection.
             </div>
             <button
               type="button"
               onClick={() => setActiveTab('completed')}
-              className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
             >
               Voir les terminées
             </button>
@@ -508,8 +525,10 @@ const FichesMaintenance = () => {
           <button
             type="button"
             onClick={() => setActiveTab('machines')}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-              activeTab === 'machines' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              activeTab === 'machines'
+                ? 'bg-sky-500 text-white shadow-sm'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
             Machines ({MAINTENANCE_MACHINES.length})
@@ -517,8 +536,10 @@ const FichesMaintenance = () => {
           <button
             type="button"
             onClick={() => setActiveTab('completed')}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-              activeTab === 'completed' ? 'bg-slate-900 text-white' : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
+              activeTab === 'completed'
+                ? 'bg-sky-500 text-white shadow-sm'
+                : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
             Fiches terminées ({completedSheets.length})
@@ -526,16 +547,27 @@ const FichesMaintenance = () => {
         </div>
 
         {activeTab === 'machines' ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {MAINTENANCE_MACHINES.map((machine) => (
-              <MachineCard
-                key={machine.machineKey}
-                machine={machine}
-                latestSheet={latestSheetsByMachine.get(machine.machineKey) || null}
-                onOpen={() => navigate(`/preventif/fiches-maintenance/${machine.machineKey}`)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="mb-6 flex gap-3">
+              <button
+                onClick={() => navigate('/preventif/fiches-maintenance/create')}
+                className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white transition"
+                style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
+              >
+                + Créer une fiche machine
+              </button>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {allMachines.map((machine) => (
+                <MachineCard
+                  key={machine.machineKey}
+                  machine={machine}
+                  latestSheet={latestSheetsByMachine.get(machine.machineKey) || null}
+                  onOpen={() => navigate(`/preventif/fiches-maintenance/${machine.machineKey}`)}
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-200 bg-slate-100 px-4 py-3">
@@ -662,7 +694,7 @@ const FichesMaintenance = () => {
                 type="text"
                 value={draft.operator_matricule}
                 onChange={(e) => updateDraft({ operator_matricule: e.target.value })}
-                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 placeholder="Matricule operateur"
                 disabled={!canModifyDraft}
               />
@@ -674,7 +706,7 @@ const FichesMaintenance = () => {
                 type="text"
                 value={draft.operator_signature}
                 onChange={(e) => updateDraft({ operator_signature: e.target.value })}
-                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-amber-500 focus:outline-none"
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 placeholder="Signature / nom"
                 disabled={!canModifyDraft}
               />
@@ -687,7 +719,8 @@ const FichesMaintenance = () => {
               type="button"
               onClick={openSheet}
               disabled={saving || hasOpenSheet}
-              className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+              className="rounded-xl px-4 py-2 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50"
+            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
             >
               {hasOpenSheet ? 'Fiche deja ouverte' : 'Demarrer la maintenance'}
             </button>
@@ -712,7 +745,7 @@ const FichesMaintenance = () => {
                 type="button"
                 onClick={() => openSheet()}
                 disabled={saving}
-                className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-800 transition hover:bg-amber-100 disabled:cursor-not-allowed"
+                className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-2 text-sm font-semibold text-sky-700 transition hover:bg-sky-100 disabled:cursor-not-allowed"
               >
                 Nouvelle fiche
               </button>
@@ -747,7 +780,7 @@ const FichesMaintenance = () => {
                           <select
                             value={task.status}
                             onChange={(e) => updateTask(section.key, task.number, 'status', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none"
+                            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                             disabled={!canModifyDraft}
                           >
                             {STATUS_OPTIONS.map((option) => (
@@ -801,7 +834,7 @@ const FichesMaintenance = () => {
                             type="text"
                             value={row.designation}
                             onChange={(e) => updateSparePart(index, 'designation', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none"
+                            className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                             disabled={!canModifyDraft}
                           />
                         </td>
@@ -810,7 +843,7 @@ const FichesMaintenance = () => {
                             type="text"
                             value={row.reference}
                             onChange={(e) => updateSparePart(index, 'reference', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none"
+                            className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                             disabled={!canModifyDraft}
                           />
                         </td>
@@ -819,7 +852,7 @@ const FichesMaintenance = () => {
                             type="text"
                             value={row.quantity}
                             onChange={(e) => updateSparePart(index, 'quantity', e.target.value)}
-                            className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-amber-500 focus:outline-none"
+                            className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                             disabled={!canModifyDraft}
                           />
                         </td>

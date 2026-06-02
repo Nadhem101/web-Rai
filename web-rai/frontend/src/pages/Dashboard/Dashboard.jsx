@@ -3,150 +3,173 @@ import { useNavigate } from 'react-router-dom';
 import { equipementService, maintenanceEventService, ecmeService } from '../../services/api';
 import { getCurrentWeek, getTasksForWeek, getOverdueTasks } from '../../utils/maintenanceSchedule';
 import {
-  PieChart,
-  Pie,
-  Cell,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts';
+import {
+  Package, CheckCircle2, XCircle, Wrench,
+  FlaskConical, BoxIcon, ArrowRight, BarChart2,
+  CalendarClock, Clock,
+} from 'lucide-react';
 
+// ── Helpers ────────────────────────────────────────────────
 const PDR_LOW_STOCK_THRESHOLD = 1;
 
-const normalizeCategory = (value = '') => String(value).toLowerCase().trim();
+const normalizeCategory = (v = '') => String(v).toLowerCase().trim();
 
 const parseQuantity = (value) => {
-  const normalized = String(value ?? '').replace(',', '.').trim();
-  if (!normalized) return null;
-
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
+  const n = String(value ?? '').replace(',', '.').trim();
+  if (!n) return null;
+  const p = Number(n);
+  return Number.isFinite(p) ? p : null;
 };
 
-const getStockSeverityClasses = (level) => {
-  if (level === 'critical') {
-    return {
-      badge: 'bg-red-100 text-red-700 border-red-200',
-      number: 'text-red-700',
-      panel: 'border-red-200 bg-red-50 text-red-700 hover:bg-red-100',
-    };
-  }
-
-  return {
-    badge: 'bg-amber-100 text-amber-800 border-amber-200',
-    number: 'text-amber-700',
-    panel: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
-  };
-};
-
-const buildPdrStockAlerts = (equipements = []) => {
-  return equipements
-    .filter((equipement) => normalizeCategory(equipement.categorie) === 'pdr' && equipement.pdr_details)
-    .map((equipement) => {
-      const details = equipement.pdr_details || {};
+const buildPdrStockAlerts = (equipements = []) =>
+  equipements
+    .filter((e) => normalizeCategory(e.categorie) === 'pdr' && e.pdr_details)
+    .map((e) => {
+      const d = e.pdr_details || {};
       const parts = [
-        { key: 'lame_cuivre', label: 'Lame cuivre', reference: details.lame_cuivre?.reference, quantity: details.lame_cuivre?.quantity },
-        { key: 'lame_isolant', label: 'Lame isolant', reference: details.lame_isolant?.reference, quantity: details.lame_isolant?.quantity },
-        { key: 'enclume_cuivre', label: 'Enclume cuivre', reference: details.enclume_cuivre?.reference, quantity: details.enclume_cuivre?.quantity },
-        { key: 'enclume_isolant', label: 'Enclume isolant', reference: details.enclume_isolant?.reference, quantity: details.enclume_isolant?.quantity },
-        { key: 'lame_denudage_jeux', label: 'Lame de denudage', reference: null, quantity: details.lame_denudage_jeux },
+        { key: 'lame_cuivre',      label: 'Lame cuivre',    quantity: d.lame_cuivre?.quantity },
+        { key: 'lame_isolant',     label: 'Lame isolant',   quantity: d.lame_isolant?.quantity },
+        { key: 'enclume_cuivre',   label: 'Encl. cuivre',  quantity: d.enclume_cuivre?.quantity },
+        { key: 'enclume_isolant',  label: 'Encl. isolant', quantity: d.enclume_isolant?.quantity },
+        { key: 'lame_denudage',    label: 'Dénudage',      quantity: d.lame_denudage_jeux },
       ];
-
-      const lowParts = parts
-        .map((part) => {
-          const quantity = parseQuantity(part.quantity);
-          if (quantity === null || quantity > PDR_LOW_STOCK_THRESHOLD) return null;
-
-          return {
-            ...part,
-            quantity,
-            level: quantity === 0 ? 'critical' : 'warning',
-          };
-        })
-        .filter(Boolean);
-
-      if (lowParts.length === 0) return null;
-
+      const lowParts = parts.map((p) => {
+        const qty = parseQuantity(p.quantity);
+        if (qty === null || qty > PDR_LOW_STOCK_THRESHOLD) return null;
+        return { ...p, quantity: qty, level: qty === 0 ? 'critical' : 'warning' };
+      }).filter(Boolean);
+      if (!lowParts.length) return null;
       return {
-        id: equipement.id,
-        codeRai: equipement.code_rai,
-        designation: equipement.designation,
-        fabricant: equipement.Fabricant?.nom || '-',
-        zone: equipement.Zone?.nom_zone || '-',
-        level: lowParts.some((part) => part.level === 'critical') ? 'critical' : 'warning',
+        id: e.id, codeRai: e.code_rai, designation: e.designation,
+        level: lowParts.some((p) => p.level === 'critical') ? 'critical' : 'warning',
         lowParts,
       };
     })
     .filter(Boolean)
-    .sort((left, right) => {
-      if (left.level !== right.level) return left.level === 'critical' ? -1 : 1;
-      return String(left.codeRai || '').localeCompare(String(right.codeRai || ''), 'fr', { numeric: true, sensitivity: 'base' });
+    .sort((a, b) => {
+      if (a.level !== b.level) return a.level === 'critical' ? -1 : 1;
+      return String(a.codeRai || '').localeCompare(String(b.codeRai || ''), 'fr', { numeric: true, sensitivity: 'base' });
     });
+
+// ── KPI Card ───────────────────────────────────────────────
+const KpiCard = ({ label, value, icon: Icon, iconBg, iconColor, badge, loading }) => (
+  <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+    <div className="flex items-start justify-between mb-4">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+        <Icon className={`w-5 h-5 ${iconColor}`} />
+      </div>
+      {badge && <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>{badge.text}</span>}
+    </div>
+    <div className={`text-3xl font-bold mb-1 ${loading ? 'text-slate-200 animate-pulse' : 'text-slate-800'}`}>
+      {loading ? '—' : value}
+    </div>
+    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+  </div>
+);
+
+// ── Alert section wrapper ──────────────────────────────────
+const AlertSection = ({ title, icon: Icon, alertCount, loading, children }) => {
+  const hasAlert = !loading && alertCount > 0;
+  return (
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/60">
+        <div className="flex items-center gap-2">
+          <Icon className={`w-4 h-4 ${hasAlert ? 'text-amber-500' : 'text-slate-400'}`} />
+          <span className="text-sm font-semibold text-slate-700">{title}</span>
+        </div>
+        {loading ? (
+          <div className="w-3.5 h-3.5 border-2 border-slate-200 border-t-sky-400 rounded-full animate-spin" />
+        ) : hasAlert ? (
+          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
+            {alertCount}
+          </span>
+        ) : (
+          <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5" /> À jour
+          </span>
+        )}
+      </div>
+      {loading ? (
+        <div className="px-4 py-3 text-xs text-slate-400 animate-pulse">Chargement…</div>
+      ) : (
+        <div className="divide-y divide-slate-50">{children}</div>
+      )}
+    </div>
+  );
 };
 
+// ── Alert item row ─────────────────────────────────────────
+const AlertItem = ({ severity = 'neutral', children, action, onAction }) => {
+  const cfg = {
+    critical: { bg: 'bg-red-50',     text: 'text-red-700',     dot: 'bg-red-500'    },
+    warning:  { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-400'  },
+    info:     { bg: 'bg-orange-50',  text: 'text-orange-700',  dot: 'bg-orange-400' },
+    ok:       { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
+    neutral:  { bg: 'bg-slate-50',   text: 'text-slate-600',   dot: 'bg-slate-400'  },
+  }[severity];
+  return (
+    <div
+      className={`flex items-start justify-between gap-3 px-4 py-2.5 text-sm ${cfg.bg} ${cfg.text} ${onAction ? 'cursor-pointer hover:brightness-95 transition-all' : ''}`}
+      onClick={onAction}
+    >
+      <div className="flex items-center gap-2.5">
+        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-px ${cfg.dot}`} />
+        <span className="leading-snug">{children}</span>
+      </div>
+      {action && onAction && (
+        <span className="text-xs underline whitespace-nowrap flex items-center gap-0.5 flex-shrink-0 mt-0.5">
+          {action} <ArrowRight className="w-2.5 h-2.5" />
+        </span>
+      )}
+    </div>
+  );
+};
+
+// ── Dashboard ──────────────────────────────────────────────
 const Dashboard = () => {
   const currentWeek = getCurrentWeek();
   const currentYear = new Date().getFullYear();
-
-  const [stats, setStats] = useState({
-    total: 0,
-    enService: 0,
-    horsService: 0,
-    enMaintenance: 0,
-    parZone: [],
-  });
-  const [loading, setLoading] = useState(true);
-
-  // Maintenance schedule state
-  const [weekTasks, setWeekTasks]     = useState([]);   // all tasks scheduled this week
-  const [cellStates, setCellStates]   = useState({});   // { key: { status, newWeek? } }
-  const [loadingMaint, setLoadingMaint] = useState(true);
-
-  // ECME verification state
-  const [ecmeToVerif,   setEcmeToVerif]   = useState([]);  // ECMEs with alerte=VERIFICATION
-  const [ecmeOverdue,   setEcmeOverdue]   = useState([]);  // subset: past prochaine verif date
-  const [loadingEcme,   setLoadingEcme]   = useState(true);
-  const [pdrStockAlerts, setPdrStockAlerts] = useState([]);
-
   const navigate = useNavigate();
 
-  // ── Load equipment stats ────────────────────────────────────
+  const [stats, setStats] = useState({ total: 0, enService: 0, horsService: 0, enMaintenance: 0, parZone: [] });
+  const [loading, setLoading] = useState(true);
+  const [weekTasks, setWeekTasks] = useState([]);
+  const [cellStates, setCellStates] = useState({});
+  const [loadingMaint, setLoadingMaint] = useState(true);
+  const [ecmeToVerif, setEcmeToVerif] = useState([]);
+  const [ecmeOverdue, setEcmeOverdue] = useState([]);
+  const [loadingEcme, setLoadingEcme] = useState(true);
+  const [pdrStockAlerts, setPdrStockAlerts] = useState([]);
+
   useEffect(() => {
     equipementService.getAll()
       .then(({ data: equipements }) => {
-        const equipmentList = Array.isArray(equipements) ? equipements : [];
-        const total        = equipmentList.length;
-        const enService    = equipmentList.filter((e) => e.statut === 'En service').length;
-        const horsService  = equipmentList.filter((e) => e.statut === 'Hors service').length;
-        const enMaintenance = equipmentList.filter((e) => e.statut === 'En maintenance').length;
-
+        const list = Array.isArray(equipements) ? equipements : [];
+        const total = list.length;
+        const enService = list.filter((e) => e.statut === 'En service').length;
+        const horsService = list.filter((e) => e.statut === 'Hors service').length;
+        const enMaintenance = list.filter((e) => e.statut === 'En maintenance').length;
         const zonesMap = {};
-        equipmentList.forEach((eq) => {
-          const zoneName = eq.Zone?.nom_zone || 'Non affecte';
-          if (!zonesMap[zoneName]) zonesMap[zoneName] = { name: zoneName, total: 0, enService: 0 };
-          zonesMap[zoneName].total++;
-          if (eq.statut === 'En service') zonesMap[zoneName].enService++;
+        list.forEach((eq) => {
+          const n = eq.Zone?.nom_zone || 'Non affecté';
+          if (!zonesMap[n]) zonesMap[n] = { name: n, total: 0, enService: 0 };
+          zonesMap[n].total++;
+          if (eq.statut === 'En service') zonesMap[n].enService++;
         });
         const parZone = Object.values(zonesMap).map((z) => ({
-          ...z,
-          taux: Math.round((z.enService / z.total) * 100) || 0,
+          ...z, taux: Math.round((z.enService / z.total) * 100) || 0,
         }));
         setStats({ total, enService, horsService, enMaintenance, parZone });
-        setPdrStockAlerts(buildPdrStockAlerts(equipmentList));
+        setPdrStockAlerts(buildPdrStockAlerts(list));
       })
       .catch((e) => console.error('Erreur stats:', e))
       .finally(() => setLoading(false));
   }, []);
 
-  // ── Load maintenance events ─────────────────────────────────
   useEffect(() => {
-    // Compute tasks scheduled for current week
     setWeekTasks(getTasksForWeek(currentWeek));
-
     maintenanceEventService.getByYear(currentYear)
       .then(({ data }) => {
         const states = {};
@@ -159,422 +182,338 @@ const Dashboard = () => {
       .finally(() => setLoadingMaint(false));
   }, [currentWeek, currentYear]);
 
-  // ── Load ECME verification alerts ──────────────────────────
   useEffect(() => {
     ecmeService.getAll({ alerte: 'VERIFICATION' })
       .then(({ data }) => {
         setEcmeToVerif(data);
         const today = new Date();
-        const overdue = data.filter(e => {
-          if (!e.date_prochaine_verification) return false;
-          return new Date(e.date_prochaine_verification) < today;
-        });
-        setEcmeOverdue(overdue);
+        setEcmeOverdue(data.filter((e) => e.date_prochaine_verification && new Date(e.date_prochaine_verification) < today));
       })
       .catch((e) => console.error('Erreur ECME verif:', e))
       .finally(() => setLoadingEcme(false));
   }, []);
 
-  // ── Derived maintenance stats ───────────────────────────────
-  const weekDone       = weekTasks.filter((t) => cellStates[t.key]?.status === 'done').length;
-  const weekPending    = weekTasks.filter((t) => !cellStates[t.key] || cellStates[t.key].status === 'rescheduled').length;
+  // ── Derived ───────────────────────────────────────────────
+  const weekDone        = weekTasks.filter((t) => cellStates[t.key]?.status === 'done').length;
+  const weekPending     = weekTasks.filter((t) => !cellStates[t.key] || cellStates[t.key].status === 'rescheduled').length;
   const weekRescheduled = weekTasks.filter((t) => cellStates[t.key]?.status === 'rescheduled').length;
-  const weekTotal      = weekTasks.length;
-
-  // Overdue = past weeks scheduled and NOT done and NOT rescheduled
-  const overdueTasks = getOverdueTasks(currentWeek).filter(
+  const weekTotal       = weekTasks.length;
+  const overdueTasks    = getOverdueTasks(currentWeek).filter(
     (t) => !cellStates[t.key] || cellStates[t.key].status === 'rescheduled'
   );
+  const progressPct     = weekTotal > 0 ? Math.round((weekDone / weekTotal) * 100) : 0;
+  const servicePct      = stats.total ? Math.round((stats.enService / stats.total) * 100) : 0;
+  const pdrCriticalCount = pdrStockAlerts.filter((i) => i.level === 'critical').length;
+  const pdrWarningCount  = pdrStockAlerts.filter((i) => i.level === 'warning').length;
 
-  const pieData = [
-    { name: 'En service',    value: stats.enService,    color: '#10b981' },
-    { name: 'Hors service',  value: stats.horsService,  color: '#ef4444' },
-    { name: 'En maintenance',value: stats.enMaintenance,color: '#f59e0b' },
-  ].filter((item) => item.value > 0);
+  // Alert counts per section
+  const maintAlertCount = overdueTasks.length + weekPending + stats.horsService;
+  const allClear = !loadingMaint && !loadingEcme && !loading &&
+    maintAlertCount === 0 && ecmeToVerif.length === 0 && pdrStockAlerts.length === 0;
 
-  const pdrCriticalCount = pdrStockAlerts.filter((item) => item.level === 'critical').length;
-  const pdrWarningCount = pdrStockAlerts.filter((item) => item.level === 'warning').length;
-  const pdrAlertHasCritical = pdrCriticalCount > 0;
-
-  const progressPct = weekTotal > 0 ? Math.round((weekDone / weekTotal) * 100) : 0;
-
-  if (loading) return <div className="p-6 text-center">Chargement du dashboard...</div>;
+  if (loading && loadingMaint && loadingEcme) return (
+    <div className="flex-1 flex items-center justify-center p-8">
+      <div className="text-center">
+        <div className="w-10 h-10 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
+        <p className="text-slate-400 text-sm font-medium">Chargement du tableau de bord…</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="p-6 flex-1 overflow-auto">
-      <h1 className="text-2xl font-bold mb-6">📊 Tableau de bord WEB-RAI</h1>
+    <div className="flex-1 overflow-auto p-6 space-y-5">
 
-      {/* ── KPIs équipements ──────────────────────────────── */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-5 rounded-lg shadow">
-          <div className="text-sm text-gray-500">Total equipements</div>
-          <div className="text-3xl font-bold">{stats.total}</div>
-        </div>
-        <div className="bg-white p-5 rounded-lg shadow border-l-4 border-green-500">
-          <div className="text-sm text-gray-500">En service</div>
-          <div className="text-3xl font-bold text-green-600">{stats.enService}</div>
-          <div className="text-xs text-gray-400">
-            {stats.total ? Math.round((stats.enService / stats.total) * 100) : 0}%
-          </div>
-        </div>
-        <div className="bg-white p-5 rounded-lg shadow border-l-4 border-red-500">
-          <div className="text-sm text-gray-500">Hors service</div>
-          <div className="text-3xl font-bold text-red-600">{stats.horsService}</div>
-        </div>
-        <div className="bg-white p-5 rounded-lg shadow border-l-4 border-yellow-500">
-          <div className="text-sm text-gray-500">En maintenance</div>
-          <div className="text-3xl font-bold text-yellow-600">{stats.enMaintenance}</div>
-        </div>
+      {/* ── Page title ─────────────────────────────────── */}
+      <div>
+        <h1 className="text-xl font-bold text-slate-800">Tableau de bord</h1>
+        <p className="text-sm text-slate-400 mt-0.5">Vue d'ensemble de la gestion des équipements</p>
       </div>
 
-      {/* ── KPIs ECME ─────────────────────────────────────── */}
-      <div
-        className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6 cursor-pointer group"
-        onClick={() => navigate('/ecme')}
-        title="Voir l'État des ECME"
-      >
-        <div className={`bg-white p-5 rounded-lg shadow border-l-4 group-hover:shadow-md transition-shadow ${ecmeOverdue.length > 0 ? 'border-red-500' : 'border-green-500'}`}>
-          <div className="text-sm text-gray-500">ECME en retard</div>
-          <div className={`text-3xl font-bold ${ecmeOverdue.length > 0 ? 'text-red-600' : 'text-green-600'}`}>
-            {loadingEcme ? <span className="text-gray-300 animate-pulse">—</span> : ecmeOverdue.length}
-          </div>
-          <div className="text-xs text-gray-400 mt-1">Date de vérif. dépassée</div>
-        </div>
-        <div className={`bg-white p-5 rounded-lg shadow border-l-4 group-hover:shadow-md transition-shadow ${(ecmeToVerif.length - ecmeOverdue.length) > 0 ? 'border-orange-400' : 'border-green-500'}`}>
-          <div className="text-sm text-gray-500">ECME à vérifier</div>
-          <div className={`text-3xl font-bold ${(ecmeToVerif.length - ecmeOverdue.length) > 0 ? 'text-orange-500' : 'text-green-600'}`}>
-            {loadingEcme ? <span className="text-gray-300 animate-pulse">—</span> : ecmeToVerif.length - ecmeOverdue.length}
-          </div>
-          <div className="text-xs text-gray-400 mt-1">Vérification requise (non échu)</div>
-        </div>
-        <div className="bg-white p-5 rounded-lg shadow group-hover:shadow-md transition-shadow col-span-2 md:col-span-1">
-          <div className="text-sm text-gray-500">Total ECME à vérifier</div>
-          <div className={`text-3xl font-bold ${ecmeToVerif.length > 0 ? 'text-red-600' : 'text-green-600'}`}>
-            {loadingEcme ? <span className="text-gray-300 animate-pulse">—</span> : ecmeToVerif.length}
-          </div>
-          <div className="text-xs text-blue-500 mt-1">🔬 État des ECME →</div>
-        </div>
+      {/* ── Row 1: Equipment KPIs ──────────────────────── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard label="Total équipements" value={stats.total}
+          icon={Package} iconBg="bg-slate-100" iconColor="text-slate-600"
+          loading={loading} />
+        <KpiCard label="En service" value={stats.enService}
+          icon={CheckCircle2} iconBg="bg-emerald-50" iconColor="text-emerald-600"
+          badge={{ text: `${servicePct}%`, cls: 'bg-emerald-50 text-emerald-700' }}
+          loading={loading} />
+        <KpiCard label="Hors service" value={stats.horsService}
+          icon={XCircle} iconBg="bg-red-50" iconColor="text-red-500"
+          loading={loading} />
+        <KpiCard label="En maintenance" value={stats.enMaintenance}
+          icon={Wrench} iconBg="bg-amber-50" iconColor="text-amber-500"
+          loading={loading} />
       </div>
 
-      {/* ── Maintenance KW courante ───────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {/* Progress card */}
-        <div className="bg-white p-5 rounded-lg shadow col-span-1">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-sm font-semibold text-gray-700">
-              Preventives KW{String(currentWeek).padStart(2, '0')}
-            </div>
-            {loadingMaint ? (
-              <span className="text-xs text-gray-400 animate-pulse">chargement…</span>
-            ) : (
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-100 text-amber-700">
-                Semaine courante
-              </span>
-            )}
-          </div>
+      {/* ── Row 2: Alerts (left) + Progress/Chart (right) ── */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
 
-          {/* Big counter */}
-          <div className="flex items-end gap-2 mb-3">
-            <span className="text-4xl font-bold text-slate-800">{weekDone}</span>
-            <span className="text-lg text-gray-400 mb-1">/ {weekTotal} faits</span>
-          </div>
+        {/* ── LEFT: Alert sections ──────────────────────── */}
+        <div className="space-y-4">
 
-          {/* Progress bar */}
-          <div className="w-full bg-gray-100 rounded-full h-2.5 mb-3">
-            <div
-              className={`h-2.5 rounded-full transition-all duration-500 ${
-                progressPct === 100
-                  ? 'bg-green-500'
-                  : progressPct > 50
-                  ? 'bg-blue-500'
-                  : 'bg-amber-400'
-              }`}
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-
-          <div className="flex justify-between text-xs text-gray-500">
-            <span className="text-green-600 font-medium">✓ {weekDone} fait(s)</span>
-            <span className="text-amber-600 font-medium">⏳ {weekPending} restant(s)</span>
-            {weekRescheduled > 0 && (
-              <span className="text-orange-500 font-medium">→ {weekRescheduled} reporte(s)</span>
-            )}
-          </div>
-        </div>
-
-        {/* This week breakdown */}
-        <div className="bg-white p-5 rounded-lg shadow col-span-2">
-          <div className="text-sm font-semibold text-gray-700 mb-3">
-            Detail des taches — KW{String(currentWeek).padStart(2, '0')}
-          </div>
-          {loadingMaint ? (
-            <div className="text-xs text-gray-400 animate-pulse py-4 text-center">Chargement…</div>
-          ) : weekTasks.length === 0 ? (
-            <div className="text-xs text-gray-400 py-4 text-center">Aucune maintenance planifiee cette semaine</div>
-          ) : (
-            <div className="space-y-1 max-h-40 overflow-y-auto pr-1">
-              {weekTasks.map((t) => {
-                const state = cellStates[t.key];
-                const isDone       = state?.status === 'done';
-                const isRescheduled = state?.status === 'rescheduled';
-                return (
-                  <div
-                    key={t.key}
-                    className={`flex items-center justify-between text-xs px-2 py-1 rounded ${
-                      isDone ? 'bg-green-50 text-green-700' : isRescheduled ? 'bg-orange-50 text-orange-700' : 'bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    <span className="font-mono font-medium mr-2">{t.equip.code}</span>
-                    <span className="flex-1 truncate text-gray-500">{t.equip.designation}</span>
-                    <span className={`ml-2 px-1.5 py-0.5 rounded text-xs font-medium ${
-                      t.color === 'blue' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
-                    }`}>{t.intType}</span>
-                    <span className="ml-2 w-14 text-right font-semibold">
-                      {isDone ? '✓ Fait' : isRescheduled ? `→ KW${state.newWeek}` : '⏳'}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* ── Charts ───────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Repartition par statut</h2>
-          <ResponsiveContainer width="100%" height={260}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" labelLine={false}
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                outerRadius={90} dataKey="value">
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-semibold mb-4">Taux de disponibilite par zone</h2>
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={stats.parZone}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" angle={-45} textAnchor="end" height={70} />
-              <YAxis domain={[0, 100]} />
-              <Tooltip />
-              <Bar dataKey="taux" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* ── Alertes ──────────────────────────────────────── */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <span className="text-red-500">⚠️</span> Alertes
-          {(loadingMaint || loadingEcme) && <span className="text-xs text-gray-400 font-normal animate-pulse">chargement…</span>}
-        </h2>
-        <div className="space-y-2">
-
-          {/* Overdue */}
-          {overdueTasks.length > 0 ? (
-            <div className="p-3 bg-red-50 text-red-700 rounded border border-red-200 flex items-start gap-2">
-              <span className="text-base">🔴</span>
-              <span>
-                <strong>{overdueTasks.length}</strong> maintenance(s) preventive(s) en retard
-                (semaines precedentes non realisees)
-              </span>
-            </div>
-          ) : !loadingMaint && (
-            <div className="p-3 bg-green-50 text-green-700 rounded border border-green-200 flex items-center gap-2">
-              <span>🟢</span>
-              <span>Aucun retard — toutes les maintenances passees sont a jour</span>
-            </div>
-          )}
-
-          {/* This week pending */}
-          {weekPending > 0 ? (
-            <div className="p-3 bg-yellow-50 text-yellow-700 rounded border border-yellow-200 flex items-start gap-2">
-              <span className="text-base">🟡</span>
-              <span>
-                <strong>{weekPending}</strong> maintenance(s) preventive(s) a realiser cette semaine
-                (KW{String(currentWeek).padStart(2, '0')})
-              </span>
-            </div>
-          ) : weekTotal > 0 && !loadingMaint && (
-            <div className="p-3 bg-green-50 text-green-700 rounded border border-green-200 flex items-center gap-2">
-              <span>🟢</span>
-              <span>Toutes les maintenances de la semaine sont realisees !</span>
-            </div>
-          )}
-
-          {/* Rescheduled */}
-          {weekRescheduled > 0 && (
-            <div className="p-3 bg-orange-50 text-orange-700 rounded border border-orange-200 flex items-start gap-2">
-              <span className="text-base">🟠</span>
-              <span>
-                <strong>{weekRescheduled}</strong> maintenance(s) ont ete reprogrammees cette semaine
-              </span>
-            </div>
-          )}
-
-          {/* Equipment out of service */}
-          {stats.horsService > 0 && (
-            <div className="p-3 bg-red-50 text-red-700 rounded border border-red-200 flex items-start gap-2">
-              <span className="text-base">🔴</span>
-              <span>
-                <strong>{stats.horsService}</strong> equipement(s) hors service necessitent une attention
-              </span>
-            </div>
-          )}
-
-          {/* PDR low stock alerts */}
-          {!loading && pdrStockAlerts.length > 0 && (
-            <div className="border border-amber-200 rounded overflow-hidden">
-              <div
-                className={`p-3 flex items-center justify-between gap-2 cursor-pointer transition-colors ${
-                  pdrAlertHasCritical
-                    ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                    : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'
-                }`}
-                onClick={() => navigate('/inventaire?categorie=pdr')}
-              >
-                <div className="flex items-start gap-2">
-                  <span className="text-base">🧰</span>
-                  <span>
-                    <strong className="text-red-700">{pdrCriticalCount}</strong> PDR en rupture
-                    {pdrWarningCount > 0 && (
-                      <>
-                        {' '}
-                        et <strong className="text-amber-700">{pdrWarningCount}</strong> à surveiller
-                      </>
-                    )}
-                  </span>
-                </div>
-                <span className="text-xs underline whitespace-nowrap">Voir le stock →</span>
+          {/* All-clear banner */}
+          {allClear && (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-emerald-700">Situation nominale</p>
+                <p className="text-xs text-emerald-600 mt-0.5">Aucune alerte active — tous les systèmes sont à jour</p>
               </div>
-              <div className="bg-white divide-y divide-amber-50 max-h-44 overflow-y-auto">
-                {pdrStockAlerts.slice(0, 6).map((item) => (
-                  <div
-                    key={item.id}
-                    className="px-4 py-2 flex flex-col gap-1 text-xs hover:bg-amber-50 cursor-pointer"
-                    onClick={() => navigate('/inventaire?categorie=pdr')}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="font-mono font-semibold text-amber-700">{item.codeRai}</span>
-                      <span
-                        className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${
-                          item.level === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                        }`}
-                      >
-                        {item.level === 'critical' ? 'Rupture' : 'Faible'}
-                      </span>
+            </div>
+          )}
+
+          {/* ── Maintenance préventive ── */}
+          <AlertSection
+            title="Maintenance préventive"
+            icon={CalendarClock}
+            alertCount={maintAlertCount}
+            loading={loadingMaint || loading}
+          >
+            {/* Overdue tasks */}
+            {overdueTasks.length > 0 ? (
+              <AlertItem severity="critical">
+                <strong>{overdueTasks.length}</strong> maintenance(s) préventive(s) en retard (semaines passées)
+              </AlertItem>
+            ) : (
+              <AlertItem severity="ok">Aucun retard — maintenances passées à jour</AlertItem>
+            )}
+
+            {/* This week */}
+            {weekPending > 0 ? (
+              <AlertItem severity="warning">
+                <strong>{weekPending}</strong> à réaliser cette semaine (KW{String(currentWeek).padStart(2, '0')})
+              </AlertItem>
+            ) : weekTotal > 0 && (
+              <AlertItem severity="ok">
+                Semaine KW{String(currentWeek).padStart(2, '0')} — toutes les maintenances réalisées
+              </AlertItem>
+            )}
+
+            {/* Rescheduled */}
+            {weekRescheduled > 0 && (
+              <AlertItem severity="info">
+                <strong>{weekRescheduled}</strong> maintenance(s) reprogrammée(s) cette semaine
+              </AlertItem>
+            )}
+
+            {/* Equipment hors service */}
+            {stats.horsService > 0 && (
+              <AlertItem severity="critical">
+                <strong>{stats.horsService}</strong> équipement(s) hors service nécessite(nt) une attention
+              </AlertItem>
+            )}
+          </AlertSection>
+
+          {/* ── État des ECME ── */}
+          <AlertSection
+            title="État des ECME"
+            icon={FlaskConical}
+            alertCount={ecmeToVerif.length}
+            loading={loadingEcme}
+          >
+            {ecmeToVerif.length === 0 ? (
+              <AlertItem severity="ok">Tous les ECME sont à jour — aucune vérification requise</AlertItem>
+            ) : (
+              <>
+                {/* Overdue ECME */}
+                {ecmeOverdue.length > 0 && (
+                  <>
+                    <AlertItem severity="critical" action="Voir tout" onAction={() => navigate('/ecme?alerte=VERIFICATION')}>
+                      <strong>{ecmeOverdue.length}</strong> ECME en retard de vérification (date dépassée)
+                    </AlertItem>
+                    <div className="bg-red-50/40 divide-y divide-red-100/60 max-h-36 overflow-y-auto">
+                      {ecmeOverdue.slice(0, 5).map((e) => (
+                        <div key={e.code}
+                          className="flex items-center gap-3 px-4 py-2 text-xs cursor-pointer hover:bg-red-50 transition-colors"
+                          onClick={() => navigate(`/ecme/${e.code}`)}>
+                          <span className="font-mono font-bold text-red-700 flex-shrink-0 w-20 truncate">{e.code}</span>
+                          <span className="flex-1 truncate text-slate-500">{e.designation}</span>
+                          <span className="text-red-600 font-semibold whitespace-nowrap flex-shrink-0">
+                            {e.date_prochaine_verification
+                              ? new Date(e.date_prochaine_verification).toLocaleDateString('fr-FR')
+                              : '—'}
+                          </span>
+                        </div>
+                      ))}
+                      {ecmeOverdue.length > 5 && (
+                        <div className="px-4 py-2 text-xs text-slate-400">
+                          +{ecmeOverdue.length - 5} autres —{' '}
+                          <button className="underline text-sky-600" onClick={() => navigate('/ecme?alerte=VERIFICATION')}>
+                            voir tous
+                          </button>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="flex-1 truncate text-gray-600">{item.designation}</span>
-                      <div className="flex flex-wrap justify-end gap-1">
-                        {item.lowParts.map((part) => {
-                          const severity = getStockSeverityClasses(part.level);
-                          return (
-                            <span
-                              key={`${item.id}-${part.key}`}
-                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold ${severity.badge}`}
-                            >
-                              <span className="text-slate-600">{part.label}</span>
-                              <span className={`font-bold ${severity.number}`}>{part.quantity}</span>
-                            </span>
-                          );
-                        })}
+                  </>
+                )}
+
+                {/* Upcoming (not yet overdue) */}
+                {(ecmeToVerif.length - ecmeOverdue.length) > 0 && (
+                  <AlertItem severity="info" action="Voir" onAction={() => navigate('/ecme?alerte=VERIFICATION')}>
+                    <strong>{ecmeToVerif.length - ecmeOverdue.length}</strong> ECME à vérifier prochainement
+                  </AlertItem>
+                )}
+              </>
+            )}
+          </AlertSection>
+
+          {/* ── Stock PDR ── */}
+          <AlertSection
+            title="Stock PDR"
+            icon={BoxIcon}
+            alertCount={pdrStockAlerts.length}
+            loading={loading}
+          >
+            {pdrStockAlerts.length === 0 ? (
+              <AlertItem severity="ok">Tous les stocks PDR sont à niveau</AlertItem>
+            ) : (
+              <>
+                <AlertItem
+                  severity={pdrCriticalCount > 0 ? 'critical' : 'warning'}
+                  action="Voir le stock"
+                  onAction={() => navigate('/inventaire?categorie=pdr')}
+                >
+                  {pdrCriticalCount > 0 && <><strong>{pdrCriticalCount}</strong> PDR en rupture</>}
+                  {pdrCriticalCount > 0 && pdrWarningCount > 0 && ' et '}
+                  {pdrWarningCount > 0 && <><strong>{pdrWarningCount}</strong> à surveiller</>}
+                </AlertItem>
+                <div className="divide-y divide-amber-50/80 max-h-52 overflow-y-auto">
+                  {pdrStockAlerts.slice(0, 6).map((item) => (
+                    <div key={item.id}
+                      className="flex items-center gap-3 px-4 py-2 text-xs cursor-pointer hover:bg-amber-50 transition-colors"
+                      onClick={() => navigate('/inventaire?categorie=pdr')}>
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
+                        item.level === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {item.level === 'critical' ? '✗' : '!'}
+                      </span>
+                      <span className="font-mono font-semibold text-amber-700 flex-shrink-0">{item.codeRai}</span>
+                      <span className="flex-1 truncate text-slate-500">{item.designation}</span>
+                      <div className="flex gap-1 flex-shrink-0 flex-wrap justify-end">
+                        {item.lowParts.map((part) => (
+                          <span key={part.key}
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
+                              part.level === 'critical'
+                                ? 'bg-red-50 border-red-200 text-red-700'
+                                : 'bg-amber-50 border-amber-200 text-amber-700'
+                            }`}>
+                            {part.label.split(' ')[0]}: {part.quantity}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                  </div>
-                ))}
-                {pdrStockAlerts.length > 6 && (
-                  <div className="px-4 py-2 text-xs text-gray-400 text-center">
-                    +{pdrStockAlerts.length - 6} autres — <button className="underline text-blue-600" onClick={() => navigate('/inventaire?categorie=pdr')}>voir tous</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ECME overdue verifications */}
-          {!loadingEcme && ecmeOverdue.length > 0 && (
-            <div className="border border-red-200 rounded overflow-hidden">
-              <div
-                className="p-3 bg-red-50 text-red-700 flex items-center justify-between gap-2 cursor-pointer hover:bg-red-100 transition-colors"
-                onClick={() => navigate('/ecme?alerte=VERIFICATION')}
-              >
-                <div className="flex items-start gap-2">
-                  <span className="text-base">🔴</span>
-                  <span>
-                    <strong>{ecmeOverdue.length}</strong> ECME en retard de vérification (date dépassée)
-                  </span>
+                  ))}
+                  {pdrStockAlerts.length > 6 && (
+                    <div className="px-4 py-2 text-xs text-slate-400 text-center">
+                      +{pdrStockAlerts.length - 6} autres —{' '}
+                      <button className="underline text-sky-600" onClick={() => navigate('/inventaire?categorie=pdr')}>
+                        voir tous
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <span className="text-xs underline whitespace-nowrap">Voir tout →</span>
-              </div>
-              <div className="bg-white divide-y divide-red-50 max-h-36 overflow-y-auto">
-                {ecmeOverdue.slice(0, 8).map(e => (
-                  <div
-                    key={e.code}
-                    className="px-4 py-2 flex items-center justify-between gap-3 text-xs hover:bg-red-50 cursor-pointer"
-                    onClick={() => navigate(`/ecme/${e.code}`)}
-                  >
-                    <span className="font-mono font-semibold text-red-700">{e.code}</span>
-                    <span className="flex-1 truncate text-gray-600">{e.designation}</span>
-                    <span className="text-gray-400 whitespace-nowrap">{e.affectation}</span>
-                    <span className="text-red-600 font-medium whitespace-nowrap">
-                      {e.date_prochaine_verification
-                        ? new Date(e.date_prochaine_verification).toLocaleDateString('fr-FR')
-                        : '—'}
-                    </span>
-                  </div>
-                ))}
-                {ecmeOverdue.length > 8 && (
-                  <div className="px-4 py-2 text-xs text-gray-400 text-center">
-                    +{ecmeOverdue.length - 8} autres — <button className="underline text-blue-600" onClick={() => navigate('/ecme?alerte=VERIFICATION')}>voir tous</button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </AlertSection>
+        </div>
 
-          {/* ECME upcoming verifications (not yet overdue) */}
-          {!loadingEcme && ecmeToVerif.length > ecmeOverdue.length && (
-            <div
-              className="p-3 bg-orange-50 text-orange-700 rounded border border-orange-200 flex items-center justify-between gap-2 cursor-pointer hover:bg-orange-100 transition-colors"
-              onClick={() => navigate('/ecme?alerte=VERIFICATION')}
-            >
-              <div className="flex items-start gap-2">
-                <span className="text-base">🟠</span>
-                <span>
-                  <strong>{ecmeToVerif.length - ecmeOverdue.length}</strong> ECME supplémentaire(s) à
-                  vérifier prochainement
+        {/* ── RIGHT: Progress + Chart ───────────────────── */}
+        <div className="space-y-4">
+
+          {/* Week maintenance progress */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                Préventives KW{String(currentWeek).padStart(2, '0')}
+              </p>
+              {!loadingMaint && (
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
+                  Semaine en cours
                 </span>
+              )}
+            </div>
+
+            <div className="flex items-end gap-2 mb-3">
+              <span className="text-4xl font-bold text-slate-800">{weekDone}</span>
+              <span className="text-base text-slate-400 mb-1">/ {weekTotal} faits</span>
+            </div>
+
+            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
+              <div className={`h-2 rounded-full transition-all duration-500 ${
+                progressPct === 100 ? 'bg-emerald-500' : progressPct > 50 ? 'bg-sky-500' : 'bg-amber-400'
+              }`} style={{ width: `${progressPct}%` }} />
+            </div>
+
+            <div className="flex justify-between text-xs mb-4">
+              <span className="text-emerald-600 font-semibold">✓ {weekDone}</span>
+              <span className="text-amber-600 font-semibold">⏳ {weekPending} restant(s)</span>
+              {weekRescheduled > 0 && <span className="text-orange-500 font-semibold">→ {weekRescheduled}</span>}
+            </div>
+
+            {/* Compact task list */}
+            {loadingMaint ? (
+              <div className="flex items-center justify-center py-4">
+                <div className="w-4 h-4 border-2 border-slate-200 border-t-sky-400 rounded-full animate-spin" />
               </div>
-              <span className="text-xs underline whitespace-nowrap">Voir →</span>
-            </div>
-          )}
+            ) : weekTasks.length === 0 ? (
+              <div className="flex flex-col items-center py-4 text-slate-400">
+                <Clock className="w-5 h-5 mb-1 opacity-50" />
+                <p className="text-xs">Aucune tâche planifiée</p>
+              </div>
+            ) : (
+              <div className="space-y-1 max-h-44 overflow-y-auto">
+                {weekTasks.map((t) => {
+                  const state = cellStates[t.key];
+                  const isDone = state?.status === 'done';
+                  const isRescheduled = state?.status === 'rescheduled';
+                  return (
+                    <div key={t.key} className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded-md ${
+                      isDone ? 'bg-emerald-50 text-emerald-700' :
+                      isRescheduled ? 'bg-orange-50 text-orange-700' :
+                      'bg-slate-50 text-slate-600'
+                    }`}>
+                      <span className="font-mono font-semibold flex-shrink-0 w-16 truncate">{t.equip.code}</span>
+                      <span className="flex-1 truncate text-slate-400 text-[11px]">{t.equip.designation}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold flex-shrink-0 ${
+                        t.color === 'blue' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'
+                      }`}>{t.intType}</span>
+                      <span className="w-10 text-right font-semibold flex-shrink-0 text-[10px]">
+                        {isDone ? '✓' : isRescheduled ? `→${state.newWeek}` : '⏳'}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
-          {/* ECME all clear */}
-          {!loadingEcme && ecmeToVerif.length === 0 && (
-            <div className="p-3 bg-green-50 text-green-700 rounded border border-green-200 flex items-center gap-2">
-              <span>🟢</span>
-              <span>Tous les ECME sont à jour — aucune vérification requise</span>
-            </div>
-          )}
-
-          {/* No alerts at all */}
-          {!loadingMaint && !loadingEcme && overdueTasks.length === 0 && weekPending === 0 && weekRescheduled === 0 && stats.horsService === 0 && ecmeToVerif.length === 0 && pdrStockAlerts.length === 0 && (
-            <div className="p-3 bg-blue-50 text-blue-700 rounded border border-blue-200 flex items-center gap-2">
-              <span>🔵</span>
-              <span>Aucune alerte — situation nominale</span>
-            </div>
-          )}
+          {/* Availability chart */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <p className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-slate-400" />
+              Disponibilité par zone
+            </p>
+            {loading ? (
+              <div className="h-[200px] flex items-center justify-center">
+                <div className="w-6 h-6 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={stats.parZone} barSize={18}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="name" angle={-35} textAnchor="end" height={55}
+                    tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 11 }}
+                    formatter={(v) => [`${v}%`, 'Disponibilité']}
+                  />
+                  <Bar dataKey="taux" fill="#0ea5e9" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
       </div>
     </div>

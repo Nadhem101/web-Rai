@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:3001/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
 });
 
 export const equipementService = {
@@ -87,4 +87,12 @@ export const applicateurService = {
 
 export const applicateurThresholdService = {
   getAll: () => API.get('/applicateur-thresholds').then((res) => res.data),
+};
+
+export const articleTestService = {
+  getAll:   (params = {}) => API.get('/articles-test', { params }).then((res) => res.data),
+  getById:  (id)          => API.get(`/articles-test/${id}`).then((res) => res.data),
+  create:   (data)        => API.post('/articles-test', data).then((res) => res.data),
+  update:   (id, data)    => API.put(`/articles-test/${id}`, data).then((res) => res.data),
+  delete:   (id)          => API.delete(`/articles-test/${id}`).then((res) => res.data),
 };

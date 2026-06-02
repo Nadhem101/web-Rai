@@ -11,7 +11,6 @@ const Applicateur = sequelize.define(
     },
     numero_outil: {
       type: DataTypes.STRING(100),
-      unique: true,
       allowNull: false,
       comment: 'Numéro d\'outil (A1, A2, A1-1, etc.)',
     },
@@ -46,6 +45,7 @@ const Applicateur = sequelize.define(
   {
     tableName: 'applicateurs',
     timestamps: true,
+    indexes: [{ unique: true, fields: ['numero_outil'] }],
   }
 );
 

@@ -1,96 +1,65 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { cosseService } from '../services/api';
 import CosseForm from './CosseForm';
+import { Plus, Pencil, Trash2, Link2, PackageOpen } from 'lucide-react';
 
 const normalizeText = (value = '') =>
-  String(value ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim();
+  String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
-const formatValue = (value) => (value === null || value === undefined || value === '' ? '-' : value);
+const formatValue = (value) =>
+  (value === null || value === undefined || value === '') ? '—' : value;
 
 const parseNumericValue = (value) => {
-  const normalized = String(value ?? '').replace(',', '.').trim();
-  if (!normalized) return null;
-  const parsed = Number(normalized);
-  return Number.isFinite(parsed) ? parsed : null;
+  const n = String(value ?? '').replace(',', '.').trim();
+  if (!n) return null;
+  const p = Number(n);
+  return Number.isFinite(p) ? p : null;
 };
 
-const compareText = (left, right) =>
-  String(left ?? '').localeCompare(String(right ?? ''), 'fr', { numeric: true, sensitivity: 'base' });
+const compareText = (a, b) =>
+  String(a ?? '').localeCompare(String(b ?? ''), 'fr', { numeric: true, sensitivity: 'base' });
 
-const compareMeasurements = (left, right) => {
-  const leftNumeric = parseNumericValue(left);
-  const rightNumeric = parseNumericValue(right);
-
-  if (leftNumeric !== null && rightNumeric !== null && leftNumeric !== rightNumeric) {
-    return leftNumeric - rightNumeric;
-  }
-
-  return compareText(left, right);
+const compareMeasurements = (a, b) => {
+  const na = parseNumericValue(a);
+  const nb = parseNumericValue(b);
+  if (na !== null && nb !== null && na !== nb) return na - nb;
+  return compareText(a, b);
 };
 
 const getCosseGroupKey = (cosse) => {
-  const keyParts = [
+  const parts = [
     normalizeText(cosse.reference_constructeur),
     normalizeText(cosse.reference_tec),
     normalizeText(cosse.designation_tec),
     normalizeText(cosse.outillage),
   ];
-
-  if (keyParts.every((part) => part === '')) {
-    return `record-${cosse.id}`;
-  }
-
-  return keyParts.join('|');
+  return parts.every((p) => p === '') ? `record-${cosse.id}` : parts.join('|');
 };
 
-const compareGroupRows = (left, right) => {
-  const sectionCompare = compareMeasurements(left.section_mm2, right.section_mm2);
-  if (sectionCompare !== 0) return sectionCompare;
-
-  const awgCompare = compareMeasurements(left.section_awg, right.section_awg);
-  if (awgCompare !== 0) return awgCompare;
-
-  const tractionCompare = compareText(left.tenue_traction_n, right.tenue_traction_n);
-  if (tractionCompare !== 0) return tractionCompare;
-
-  const denudageCompare = compareText(left.longueur_denudage_mm, right.longueur_denudage_mm);
-  if (denudageCompare !== 0) return denudageCompare;
-
-  return compareText(left.id ?? 0, right.id ?? 0);
+const compareGroupRows = (a, b) => {
+  const s = compareMeasurements(a.section_mm2, b.section_mm2);  if (s !== 0) return s;
+  const w = compareMeasurements(a.section_awg, b.section_awg);  if (w !== 0) return w;
+  const t = compareText(a.tenue_traction_n, b.tenue_traction_n); if (t !== 0) return t;
+  const d = compareText(a.longueur_denudage_mm, b.longueur_denudage_mm); if (d !== 0) return d;
+  return compareText(a.id ?? 0, b.id ?? 0);
 };
 
-const compareGroups = (left, right) => {
-  const constructorCompare = compareText(left.reference_constructeur, right.reference_constructeur);
-  if (constructorCompare !== 0) return constructorCompare;
-
-  const tecCompare = compareText(left.reference_tec, right.reference_tec);
-  if (tecCompare !== 0) return tecCompare;
-
-  const designationCompare = compareText(left.designation_tec, right.designation_tec);
-  if (designationCompare !== 0) return designationCompare;
-
-  const outillageCompare = compareText(left.outillage, right.outillage);
-  if (outillageCompare !== 0) return outillageCompare;
-
-  const sectionCompare = compareMeasurements(left.rows[0]?.section_mm2, right.rows[0]?.section_mm2);
-  if (sectionCompare !== 0) return sectionCompare;
-
-  return compareText(left.rows[0]?.id ?? 0, right.rows[0]?.id ?? 0);
+const compareGroups = (a, b) => {
+  const c = compareText(a.reference_constructeur, b.reference_constructeur); if (c !== 0) return c;
+  const t = compareText(a.reference_tec, b.reference_tec);                   if (t !== 0) return t;
+  const d = compareText(a.designation_tec, b.designation_tec);               if (d !== 0) return d;
+  const o = compareText(a.outillage, b.outillage);                            if (o !== 0) return o;
+  const s = compareMeasurements(a.rows[0]?.section_mm2, b.rows[0]?.section_mm2); if (s !== 0) return s;
+  return compareText(a.rows[0]?.id ?? 0, b.rows[0]?.id ?? 0);
 };
 
 const buildGroupedCosses = (cosses) => {
   const groups = new Map();
-
   cosses.forEach((cosse) => {
-    const groupKey = getCosseGroupKey(cosse);
-
-    if (!groups.has(groupKey)) {
-      groups.set(groupKey, {
-        key: groupKey,
+    const key = getCosseGroupKey(cosse);
+    if (!groups.has(key)) {
+      groups.set(key, {
+        key,
         reference_constructeur: cosse.reference_constructeur ?? null,
         reference_tec: cosse.reference_tec ?? null,
         designation_tec: cosse.designation_tec ?? null,
@@ -98,25 +67,10 @@ const buildGroupedCosses = (cosses) => {
         rows: [],
       });
     }
-
-    groups.get(groupKey).rows.push(cosse);
+    groups.get(key).rows.push(cosse);
   });
-
   return Array.from(groups.values())
-    .map((group) => {
-      const rows = [...group.rows].sort(compareGroupRows);
-
-      return {
-        ...group,
-        rows,
-        sharedFields: {
-          reference_constructeur: { shared: true, value: group.reference_constructeur },
-          reference_tec: { shared: true, value: group.reference_tec },
-          designation_tec: { shared: true, value: group.designation_tec },
-          outillage: { shared: true, value: group.outillage },
-        },
-      };
-    })
+    .map((g) => ({ ...g, rows: [...g.rows].sort(compareGroupRows) }))
     .sort(compareGroups);
 };
 
@@ -126,9 +80,7 @@ const CossesList = ({ searchQuery = '' }) => {
   const [editingCosse, setEditingCosse] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  useEffect(() => {
-    loadCosses();
-  }, []);
+  useEffect(() => { loadCosses(); }, []);
 
   const loadCosses = async () => {
     try {
@@ -143,211 +95,163 @@ const CossesList = ({ searchQuery = '' }) => {
   };
 
   const normalizedSearch = normalizeText(searchQuery);
-  const filteredCosses = useMemo(() => {
-    return cosses.filter((cosse) => {
+  const filteredCosses = useMemo(() =>
+    cosses.filter((c) => {
       if (!normalizedSearch) return true;
-
-      return [
-        cosse.reference_constructeur,
-        cosse.reference_tec,
-        cosse.designation_tec,
-        cosse.outillage,
-        cosse.section_awg,
-        cosse.section_mm2,
-        cosse.tenue_traction_n,
-        cosse.longueur_denudage_mm,
-        cosse.observation,
-      ].some((field) => normalizeText(field).includes(normalizedSearch));
-    });
-  }, [cosses, normalizedSearch]);
+      return [c.reference_constructeur, c.reference_tec, c.designation_tec, c.outillage,
+        c.section_awg, c.section_mm2, c.tenue_traction_n, c.longueur_denudage_mm, c.observation,
+      ].some((f) => normalizeText(f).includes(normalizedSearch));
+    }), [cosses, normalizedSearch]);
 
   const groupedCosses = useMemo(() => buildGroupedCosses(filteredCosses), [filteredCosses]);
 
-  const renderMergedCell = (group, field, row, rowIndex, className, renderContent) => {
-    const sharedField = group.sharedFields[field];
-
-    if (sharedField?.shared) {
-      if (rowIndex !== 0) return null;
-      return (
-        <td rowSpan={group.rows.length} className={className}>
-          {renderContent(sharedField.value, true)}
-        </td>
-      );
-    }
-
-    return <td className={className}>{renderContent(row[field], false)}</td>;
-  };
-
-  const handleCreateClick = () => {
-    setEditingCosse(null);
-    setIsFormOpen(true);
-  };
-
-  const handleEditClick = (cosse) => {
-    setEditingCosse(cosse);
-    setIsFormOpen(true);
-  };
+  const handleCreateClick = () => { setEditingCosse(null); setIsFormOpen(true); };
+  const handleEditClick   = (c) => { setEditingCosse(c); setIsFormOpen(true); };
+  const handleFormClose   = () => { setIsFormOpen(false); setEditingCosse(null); };
 
   const handleDeleteClick = async (cosse) => {
     const confirmed = window.confirm(
-      `Êtes-vous sûr de vouloir supprimer ${formatValue(cosse.reference_constructeur)} / ${formatValue(
-        cosse.reference_tec
-      )} / ${formatValue(cosse.designation_tec)} / ${formatValue(cosse.outillage)} ?`
+      `Supprimer ${formatValue(cosse.reference_constructeur)} / ${formatValue(cosse.reference_tec)} ?`
     );
-
     if (!confirmed) return;
-
     try {
       await cosseService.delete(cosse.id);
       loadCosses();
-    } catch (error) {
-      console.error('Erreur suppression cosse:', error);
+    } catch {
       alert('Erreur lors de la suppression');
     }
   };
 
-  if (loading) {
-    return <div className="text-center py-8 text-gray-500">Chargement des cosses...</div>;
-  }
-
-  if (groupedCosses.length === 0) {
+  const renderMergedCell = (group, field, row, rowIndex, className, renderContent) => {
+    if (rowIndex !== 0) return null;
     return (
-      <>
-        <div className="bg-white rounded-xl shadow overflow-hidden flex-1 min-h-0 flex flex-col">
-          <div className="px-4 py-3 border-b border-amber-100 bg-amber-50/70 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold text-amber-800">🔗 Cosses</h2>
-              <p className="text-sm text-amber-900/70">
-                Références groupées par Constructeur, Réf. TEC, Désignation et Outillage.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-amber-700">
-              <span>{groupedCosses.length} groupe(s)</span>
-              <span>{filteredCosses.length} ligne(s)</span>
-              <button
-                onClick={handleCreateClick}
-                className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-              >
-                ➕ Nouvelle cosse
-              </button>
-            </div>
-          </div>
-          <div className="text-center py-8 text-gray-500">Aucune cosse trouvée</div>
-        </div>
+      <td rowSpan={group.rows.length} className={className}>
+        {renderContent(group[field])}
+      </td>
+    );
+  };
 
-        <CosseForm
-          cosse={editingCosse}
-          isOpen={isFormOpen}
-          onClose={() => {
-            setIsFormOpen(false);
-            setEditingCosse(null);
-          }}
-          onSuccess={loadCosses}
-        />
-      </>
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center py-16">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-slate-400">Chargement des cosses…</p>
+        </div>
+      </div>
     );
   }
 
   return (
     <>
-      <div className="bg-white rounded-xl shadow overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="px-4 py-3 border-b border-amber-100 bg-amber-50/70 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-bold text-amber-800">🔗 Cosses</h2>
-            <p className="text-sm text-amber-900/70">
-              Références groupées par Constructeur, Réf. TEC, Désignation et Outillage.
-            </p>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
+        {/* Sub-header */}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center">
+              <Link2 className="w-4 h-4 text-indigo-500" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-800">Cosses de sertissage</p>
+              <p className="text-xs text-slate-400">
+                {groupedCosses.length} groupe(s) · {filteredCosses.length} ligne(s)
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-amber-700">
-            <span>{groupedCosses.length} groupe(s)</span>
-            <span>{filteredCosses.length} ligne(s)</span>
-            <button
-              onClick={handleCreateClick}
-              className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
-              ➕ Nouvelle cosse
-            </button>
-          </div>
+          <button
+            onClick={handleCreateClick}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nouvelle cosse
+          </button>
         </div>
 
-        <div className="overflow-auto flex-1 min-h-0">
-          <table className="min-w-full border-collapse text-sm">
-            <thead className="bg-amber-600 sticky top-0 z-10 text-white">
-              <tr>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Constructeur</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Réf. TEC</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Désignation</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Outillage</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">AWG</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Section mm²</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Traction</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Dénudage</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Observation</th>
-                <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-amber-100 bg-white">
-              {groupedCosses.map((group) =>
-                group.rows.map((cosse, index) => {
-                  const rowKey = cosse.id ?? `${group.key}-${index}`;
+        {groupedCosses.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center py-16 text-slate-400">
+            <PackageOpen className="w-8 h-8 mb-2 opacity-40" />
+            <p className="text-sm font-medium">Aucune cosse trouvée</p>
+          </div>
+        ) : (
+          <div className="overflow-auto flex-1 min-h-0">
+            <table className="min-w-full text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Constructeur</th>
+                  <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Réf. TEC</th>
+                  <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider text-slate-500">Désignation</th>
+                  <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider text-slate-500">Outillage</th>
+                  <th className="px-3 py-3 text-center font-semibold uppercase tracking-wider text-slate-500">AWG</th>
+                  <th className="px-3 py-3 text-center font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">mm²</th>
+                  <th className="px-3 py-3 text-center font-semibold uppercase tracking-wider text-slate-500">Traction</th>
+                  <th className="px-3 py-3 text-center font-semibold uppercase tracking-wider text-slate-500">Dénudage</th>
+                  <th className="px-3 py-3 text-left font-semibold uppercase tracking-wider text-slate-500">Observation</th>
+                  <th className="px-3 py-3 text-center font-semibold uppercase tracking-wider text-slate-500">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {groupedCosses.map((group, groupIdx) =>
+                  group.rows.map((cosse, rowIndex) => {
+                    const rowKey = cosse.id ?? `${group.key}-${rowIndex}`;
+                    const isFirstRow = rowIndex === 0;
+                    const isLastRow  = rowIndex === group.rows.length - 1;
+                    const rowBg = rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
 
-                  return (
-                    <tr key={rowKey} className={index % 2 === 0 ? 'bg-white' : 'bg-amber-50/30'}>
-                      {renderMergedCell(group, 'reference_constructeur', cosse, index, 'px-3 py-2 align-top text-sm font-semibold text-amber-700', (value) => (
-                        <span>{formatValue(value)}</span>
-                      ))}
+                    return (
+                      <tr key={rowKey}
+                        className={`${rowBg} ${isLastRow && groupIdx < groupedCosses.length - 1 ? 'border-b-2 border-slate-200' : 'border-b border-slate-100'} transition-colors hover:bg-sky-50/30`}>
 
-                      {renderMergedCell(group, 'reference_tec', cosse, index, 'px-3 py-2 align-top text-sm font-mono text-slate-700', (value) => (
-                        <span>{formatValue(value)}</span>
-                      ))}
+                        {renderMergedCell(group, 'reference_constructeur', cosse, rowIndex,
+                          'px-3 py-2 align-top font-semibold text-indigo-700 whitespace-nowrap border-l-2 border-indigo-200',
+                          (v) => <span>{formatValue(v)}</span>
+                        )}
+                        {renderMergedCell(group, 'reference_tec', cosse, rowIndex,
+                          'px-3 py-2 align-top font-mono text-slate-700',
+                          (v) => <span>{formatValue(v)}</span>
+                        )}
+                        {renderMergedCell(group, 'designation_tec', cosse, rowIndex,
+                          'px-3 py-2 align-top text-slate-700 max-w-[160px]',
+                          (v) => <span className="break-words">{formatValue(v)}</span>
+                        )}
+                        {renderMergedCell(group, 'outillage', cosse, rowIndex,
+                          'px-3 py-2 align-top',
+                          (v) => v ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200 font-mono font-semibold whitespace-nowrap">{v}</span>
+                          ) : <span className="text-slate-400">—</span>
+                        )}
 
-                      {renderMergedCell(group, 'designation_tec', cosse, index, 'px-3 py-2 align-top text-sm text-slate-800', (value) => (
-                        <span>{formatValue(value)}</span>
-                      ))}
-
-                      {renderMergedCell(group, 'outillage', cosse, index, 'px-3 py-2 align-top text-sm text-slate-700', (value) => (
-                        <span>{formatValue(value)}</span>
-                      ))}
-
-                      <td className="px-3 py-2 align-top text-sm text-slate-700">{formatValue(cosse.section_awg)}</td>
-                      <td className="px-3 py-2 align-top text-sm text-slate-700">{formatValue(cosse.section_mm2)}</td>
-                      <td className="px-3 py-2 align-top text-sm text-slate-700">{formatValue(cosse.tenue_traction_n)}</td>
-                      <td className="px-3 py-2 align-top text-sm text-slate-700">{formatValue(cosse.longueur_denudage_mm)}</td>
-                      <td className="px-3 py-2 align-top text-sm text-slate-600">{formatValue(cosse.observation)}</td>
-                      <td className="px-3 py-2 align-top text-sm">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEditClick(cosse)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="Modifier"
-                          >
-                            ✏️
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(cosse)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Supprimer"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                        <td className="px-3 py-2 text-center text-slate-600">{formatValue(cosse.section_awg)}</td>
+                        <td className="px-3 py-2 text-center text-slate-600 font-mono">{formatValue(cosse.section_mm2)}</td>
+                        <td className="px-3 py-2 text-center text-slate-600">{formatValue(cosse.tenue_traction_n)}</td>
+                        <td className="px-3 py-2 text-center text-slate-600">{formatValue(cosse.longueur_denudage_mm)}</td>
+                        <td className="px-3 py-2 text-slate-500 max-w-[140px] truncate" title={cosse.observation}>{formatValue(cosse.observation)}</td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center justify-center gap-1">
+                            <button onClick={() => handleEditClick(cosse)} title="Modifier"
+                              className="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
+                              <Pencil className="w-3 h-3" />
+                            </button>
+                            <button onClick={() => handleDeleteClick(cosse)} title="Supprimer"
+                              className="w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <CosseForm
         cosse={editingCosse}
         isOpen={isFormOpen}
-        onClose={() => {
-          setIsFormOpen(false);
-          setEditingCosse(null);
-        }}
+        onClose={handleFormClose}
         onSuccess={loadCosses}
       />
     </>

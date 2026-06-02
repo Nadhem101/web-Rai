@@ -5,7 +5,11 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(cors());
+const allowedOrigins = process.env.FRONTEND_URL
+  ? [process.env.FRONTEND_URL, 'http://localhost:5173']
+  : true; // allow all in local dev
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -21,6 +25,7 @@ app.use('/api/applicateurs',       require('./app/routes/applicateur.routes'));
 app.use('/api/applicateur-thresholds', require('./app/routes/applicateur_threshold.routes'));
 app.use('/api/cosses',              require('./app/routes/cosse.routes'));
 app.use('/api/curative-maintenance-records', require('./app/routes/curative_maintenance_record.routes'));
+app.use('/api/articles-test',               require('./app/routes/article_test.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API WEB-RAI fonctionne' });

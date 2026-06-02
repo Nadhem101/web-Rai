@@ -1,187 +1,193 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { curativeMaintenanceService } from '../../services/api';
 import { formatMinutes } from '../../utils/curativeMaintenance';
+import { BarChart2, Clock, Timer, TrendingUp, AlertCircle, CalendarDays } from 'lucide-react';
 
-const buildChartData = (summary = {}) => {
-  return (summary.months || []).map((month) => ({
-    ...month,
-    averageMinutesValue: month.averageMinutes ?? 0,
-  }));
-};
+const buildChartData = (summary = {}) =>
+  (summary.months || []).map((m) => ({ ...m, averageMinutesValue: m.averageMinutes ?? 0 }));
+
+// ── KPI card ───────────────────────────────────────────────
+const KpiCard = ({ label, value, icon: Icon, iconBg, iconColor, sub, loading }) => (
+  <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+    <div className="flex items-start justify-between mb-4">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+        <Icon className={`w-5 h-5 ${iconColor}`} />
+      </div>
+    </div>
+    <div className={`text-3xl font-bold mb-1 ${loading ? 'text-slate-200 animate-pulse' : 'text-slate-800'}`}>
+      {loading ? '—' : value}
+    </div>
+    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
+    {sub && <p className="text-xs text-slate-400 mt-0.5">{sub}</p>}
+  </div>
+);
 
 const IndicateurCuratif = () => {
-  const [summary, setSummary] = useState(null);
+  const [summary,        setSummary]        = useState(null);
   const [availableYears, setAvailableYears] = useState([]);
-  const [selectedYear, setSelectedYear] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [selectedYear,   setSelectedYear]   = useState('');
+  const [loading,        setLoading]        = useState(true);
+  const [error,          setError]          = useState('');
 
   const loadSummary = async (year = null) => {
-    setLoading(true);
-    setError('');
-
+    setLoading(true); setError('');
     try {
       const response = await curativeMaintenanceService.getMonthlySummary(year ? { year } : {});
-
       setSummary(response);
       setAvailableYears(Array.isArray(response?.availableYears) ? response.availableYears : []);
       setSelectedYear(response?.selectedYear ?? '');
-    } catch (loadError) {
-      console.error('Erreur chargement indicateur curatif:', loadError);
-      setSummary(null);
-      setAvailableYears([]);
+    } catch {
+      setSummary(null); setAvailableYears([]);
       setError('Impossible de charger l\'indicateur curatif.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadSummary();
-  }, []);
+  useEffect(() => { loadSummary(); }, []);
 
   const chartData = useMemo(() => buildChartData(summary || {}), [summary]);
+  const hasData   = useMemo(() => chartData.some((m) => m.count > 0), [chartData]);
 
-  const hasData = useMemo(() => {
-    return chartData.some((month) => month.count > 0);
-  }, [chartData]);
-
-  const handleYearChange = (event) => {
-    const nextYear = Number(event.target.value);
-    if (!Number.isFinite(nextYear)) return;
-    loadSummary(nextYear);
+  const handleYearChange = (e) => {
+    const y = Number(e.target.value);
+    if (Number.isFinite(y)) loadSummary(y);
   };
 
   return (
-    <div className="flex flex-1 min-h-0 flex-col overflow-hidden bg-slate-50">
-      <div className="flex-1 overflow-auto p-6">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-orange-600">Indicateur curatif</p>
-            <h1 className="mt-2 text-3xl font-bold text-slate-900">
-              Temps d\'arrêt moyen mensuel {summary ? `• ${summary.selectedYear}` : ''}
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm text-slate-600">
-              Cet écran calcule la moyenne mensuelle à partir des incidents curatifs enregistrés en base pour l\'année civile choisie.
-            </p>
+    <div className="flex flex-1 min-h-0 flex-col overflow-hidden" style={{ background: 'var(--content-bg)' }}>
+      <div className="flex-1 overflow-auto p-6 space-y-6">
+
+        {/* ── Header ── */}
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
+              <BarChart2 className="w-5 h-5 text-slate-500" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-slate-800">
+                Indicateur curatif {summary ? `— ${summary.selectedYear}` : ''}
+              </h1>
+              <p className="text-xs text-slate-400 mt-0.5">Moyenne mensuelle des temps d'arrêt par incident</p>
+            </div>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <label className="block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Année</label>
-            <select
-              value={selectedYear}
-              onChange={handleYearChange}
-              className="mt-2 min-w-48 rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-orange-500 focus:outline-none"
-              disabled={loading}
-            >
-              {(availableYears.length > 0 ? availableYears : [new Date().getFullYear(), new Date().getFullYear() + 1]).map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
+          {/* Year selector */}
+          <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm flex items-center gap-3">
+            <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+              <CalendarDays className="w-3.5 h-3.5 text-slate-500" />
+            </div>
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Année</p>
+              <select
+                value={selectedYear} onChange={handleYearChange} disabled={loading}
+                className="min-w-[6rem] rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 bg-white transition-colors"
+              >
+                {(availableYears.length > 0
+                  ? availableYears
+                  : [new Date().getFullYear(), new Date().getFullYear() + 1]
+                ).map((y) => <option key={y} value={y}>{y}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
+          <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span>{error}</span>
           </div>
         )}
 
-        <div className="grid gap-4 md:grid-cols-3 mb-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="text-sm text-slate-500">Incidents dans la période</div>
-            <div className="mt-2 text-3xl font-bold text-slate-900">{loading ? '—' : summary?.totalCount ?? 0}</div>
-          </div>
-          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-            <div className="text-sm text-amber-700">Temps d\'arrêt moyen</div>
-            <div className="mt-2 text-3xl font-bold text-amber-900">
-              {loading ? '—' : summary?.averageMinutes === null || summary?.averageMinutes === undefined ? '-' : formatMinutes(summary.averageMinutes)}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-orange-200 bg-orange-50 p-5 shadow-sm">
-            <div className="text-sm text-orange-700">Temps d\'arrêt total</div>
-            <div className="mt-2 text-3xl font-bold text-orange-900">
-              {loading ? '—' : formatMinutes(summary?.totalMinutes)}
-            </div>
-          </div>
+        {/* ── KPIs ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <KpiCard label="Incidents dans la période" value={summary?.totalCount ?? 0}
+            icon={TrendingUp} iconBg="bg-slate-100" iconColor="text-slate-500"
+            loading={loading} />
+          <KpiCard
+            label="Temps d'arrêt moyen"
+            value={summary?.averageMinutes === null || summary?.averageMinutes === undefined
+              ? '—' : formatMinutes(summary.averageMinutes)}
+            icon={Clock} iconBg="bg-amber-50" iconColor="text-amber-500"
+            sub="Par incident" loading={loading} />
+          <KpiCard label="Temps d'arrêt total" value={formatMinutes(summary?.totalMinutes)}
+            icon={Timer} iconBg="bg-red-50" iconColor="text-red-400"
+            sub="Tous incidents cumulés" loading={loading} />
         </div>
 
+        {/* ── Chart + Table ── */}
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Moyenne mensuelle</h2>
-            <p className="mt-1 text-sm text-slate-500">Les mois sans incident restent à zéro dans le graphique et vides dans le tableau.</p>
 
-            <div className="mt-6 h-[360px] w-full">
+          {/* Chart */}
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+            <p className="text-sm font-bold text-slate-800 mb-1 flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-slate-400" />
+              Moyenne mensuelle
+            </p>
+            <p className="text-xs text-slate-400 mb-5">Les mois sans incident restent à zéro dans le graphique.</p>
+
+            <div className="h-[320px] w-full">
               {loading ? (
-                <div className="flex h-full items-center justify-center text-sm text-slate-400 animate-pulse">Chargement du graphique…</div>
+                <div className="h-full flex items-center justify-center">
+                  <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
+                </div>
               ) : hasData ? (
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="label" />
-                    <YAxis allowDecimals />
+                  <BarChart data={chartData} barSize={22}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#94a3b8' }} />
+                    <YAxis allowDecimals tick={{ fontSize: 11, fill: '#94a3b8' }} />
                     <Tooltip
-                      formatter={(value, name, props) => {
-                        if (name === 'averageMinutesValue') {
-                          return [formatMinutes(value), 'Moyenne'];
-                        }
-                        return [value, name];
-                      }}
-                      labelFormatter={(label) => `Mois: ${label}`}
+                      contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }}
+                      formatter={(v, name) => name === 'averageMinutesValue' ? [formatMinutes(v), 'Moyenne'] : [v, name]}
+                      labelFormatter={(l) => `Mois : ${l}`}
                     />
-                    <Bar dataKey="averageMinutesValue" fill="#f97316" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="averageMinutesValue" fill="#0ea5e9" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex h-full items-center justify-center rounded-2xl border border-dashed border-slate-300 text-sm text-slate-400">
-                  Aucune donnée disponible pour cette période.
+                <div className="h-full flex items-center justify-center rounded-xl border border-dashed border-slate-200">
+                  <p className="text-sm text-slate-400">Aucune donnée disponible pour cette période</p>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900">Détail par mois</h2>
-            <p className="mt-1 text-sm text-slate-500">Agrégation des incidents curatifs issus de la base de données.</p>
-
-            <div className="mt-4 overflow-auto rounded-2xl border border-slate-200">
+          {/* Table */}
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+            <div className="px-5 py-4 border-b border-slate-100">
+              <p className="text-sm font-bold text-slate-800">Détail par mois</p>
+              <p className="text-xs text-slate-400 mt-0.5">Agrégation des incidents curatifs</p>
+            </div>
+            <div className="overflow-auto flex-1">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-[0.2em] text-slate-500">
-                  <tr>
-                    <th className="px-4 py-3 text-left">Mois</th>
-                    <th className="px-4 py-3 text-left">Incidents</th>
-                    <th className="px-4 py-3 text-left">Total</th>
-                    <th className="px-4 py-3 text-left">Moyenne</th>
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200">
+                    {['Mois','Incidents','Total','Moyenne'].map((h) => (
+                      <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {loading ? (
-                    <tr>
-                      <td colSpan={4} className="px-4 py-8 text-center text-slate-400">Chargement…</td>
+                    <tr><td colSpan={4} className="py-8 text-center text-xs text-slate-400">Chargement…</td></tr>
+                  ) : chartData.map((month) => (
+                    <tr key={month.month} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3 font-medium text-slate-800">{month.label}</td>
+                      <td className="px-4 py-3 text-slate-600">{month.count}</td>
+                      <td className="px-4 py-3 text-slate-600">{formatMinutes(month.totalMinutes)}</td>
+                      <td className="px-4 py-3">
+                        {month.averageMinutes === null || month.averageMinutes === undefined ? (
+                          <span className="text-slate-400">—</span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            {formatMinutes(month.averageMinutes)}
+                          </span>
+                        )}
+                      </td>
                     </tr>
-                  ) : (
-                    chartData.map((month) => (
-                      <tr key={month.month} className="hover:bg-slate-50/70">
-                        <td className="px-4 py-3 font-medium text-slate-900">{month.label}</td>
-                        <td className="px-4 py-3">{month.count}</td>
-                        <td className="px-4 py-3">{formatMinutes(month.totalMinutes)}</td>
-                        <td className="px-4 py-3 font-semibold text-orange-700">
-                          {month.averageMinutes === null || month.averageMinutes === undefined ? '-' : formatMinutes(month.averageMinutes)}
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>

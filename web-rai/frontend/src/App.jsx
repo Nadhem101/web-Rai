@@ -1,18 +1,142 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Link, NavLink } from 'react-router-dom';
+import { Routes, Route, Link, NavLink, useLocation } from 'react-router-dom';
 import ListeEquipements from './pages/Inventaire/ListeEquipements.jsx';
 import Dashboard from './pages/Dashboard/Dashboard.jsx';
 import CalendrierPreventif from './pages/Preventif/CalendrierPreventif.jsx';
 import SuiviPreventifPinces from './pages/Preventif/SuiviPreventifPinces.jsx';
 import SuiviPreventifApplicateurs from './pages/Preventif/SuiviPreventifApplicateurs.jsx';
 import FichesMaintenance from './pages/Preventif/FichesMaintenance.jsx';
+import CreateMachineTemplate from './pages/Preventif/CreateMachineTemplate.jsx';
 import SuiviCuratif from './pages/Curatif/SuiviCuratif.jsx';
 import IndicateurCuratif from './pages/Curatif/IndicateurCuratif.jsx';
 import EtatECME from './pages/ECME/EtatECME.jsx';
 import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
+import IndustrializationIndex from './pages/Industrialization/IndustrializationIndex.jsx';
+import ChiffrageDetail from './pages/Industrialization/ChiffrageDetail.jsx';
+import FlowChartDetail from './pages/Industrialization/FlowChartDetail.jsx';
+import TestCables from './pages/Industrialization/TestCables.jsx';
 import { maintenanceSheetService } from './services/api';
+import {
+  LayoutDashboard,
+  Package,
+  Wrench,
+  Zap,
+  Flame,
+  Box,
+  CalendarCheck,
+  Calendar,
+  FileText,
+  ClipboardList,
+  BarChart2,
+  FlaskConical,
+  Factory,
+  GitBranch,
+  ChevronDown,
+  Link2,
+  ChevronRight,
+  List,
+  Cable,
+} from 'lucide-react';
 
+// ── Design tokens ──────────────────────────────────────────
+const SIDEBAR_BG = '#0f1d35';
+
+// ── Reusable nav components ───────────────────────────────
+const NavItem = ({ to, icon: Icon, label, badge, end }) => (
+  <NavLink
+    to={to}
+    end={end}
+    className={({ isActive }) =>
+      `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
+        isActive
+          ? 'bg-sky-500/15 text-sky-300'
+          : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+      }`
+    }
+  >
+    <Icon className="w-4 h-4 flex-shrink-0" />
+    <span className="flex-1 truncate">{label}</span>
+    {badge > 0 && (
+      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-red-500 text-white">
+        {badge}
+      </span>
+    )}
+  </NavLink>
+);
+
+const SubNavItem = ({ to, label, badge }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `flex items-center gap-2.5 px-3 py-[7px] ml-4 rounded-md text-xs transition-colors duration-150 ${
+        isActive
+          ? 'text-sky-300 bg-sky-500/10 font-semibold'
+          : 'text-slate-500 hover:text-slate-300 hover:bg-white/[0.04]'
+      }`
+    }
+  >
+    <span className="w-1 h-1 rounded-full bg-current opacity-60 flex-shrink-0" />
+    <span className="flex-1 truncate">{label}</span>
+    {badge > 0 && (
+      <span className="inline-flex items-center justify-center min-w-[16px] h-[16px] px-0.5 text-[9px] font-bold rounded-full bg-red-500 text-white">
+        {badge}
+      </span>
+    )}
+  </NavLink>
+);
+
+const ExpandBtn = ({ icon: Icon, label, expanded, onClick, badge }) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150 ${
+      expanded
+        ? 'text-white bg-white/[0.07]'
+        : 'text-slate-400 hover:text-white hover:bg-white/[0.06]'
+    }`}
+  >
+    <Icon className="w-4 h-4 flex-shrink-0" />
+    <span className="flex-1 text-left truncate">{label}</span>
+    {badge > 0 && (
+      <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-bold rounded-full bg-red-500 text-white mr-1">
+        {badge}
+      </span>
+    )}
+    <ChevronDown
+      className={`w-3.5 h-3.5 flex-shrink-0 transition-transform duration-200 ${
+        expanded ? 'rotate-180' : ''
+      }`}
+    />
+  </button>
+);
+
+const SectionLabel = ({ label }) => (
+  <p className="px-3 pt-5 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-600 select-none">
+    {label}
+  </p>
+);
+
+// ── Route → page name mapping ──────────────────────────────
+const getPageName = (pathname) => {
+  if (pathname === '/') return 'Tableau de bord';
+  if (pathname.startsWith('/inventaire')) return 'Inventaire';
+  if (pathname === '/preventif') return 'Calendrier préventif';
+  if (pathname.startsWith('/preventif/suivi-pinces')) return 'Suivi des pinces';
+  if (pathname.startsWith('/preventif/suivi-applicateurs')) return 'Suivi des applicateurs';
+  if (pathname.startsWith('/preventif/fiches-maintenance')) return 'Fiches de maintenance';
+  if (pathname.startsWith('/curatif/indicateur')) return 'Indicateur curatif';
+  if (pathname.startsWith('/curatif')) return 'Suivi curatif';
+  if (pathname.startsWith('/ecme')) return 'État des ECME';
+  if (pathname.startsWith('/industrialization/flow-chart')) return 'Flow Chart';
+  if (pathname.startsWith('/industrialization/test-cables')) return 'Test des câbles';
+  if (pathname.startsWith('/industrialization')) return 'Industrialisation';
+  return 'WEB-RAI';
+};
+
+// ── App ────────────────────────────────────────────────────
 const App = () => {
+  const location = useLocation();
+  const pageName = getPageName(location.pathname);
+
   const [inventaireExpanded, setInventaireExpanded] = useState(false);
   const [equipementsExpanded, setEquipementsExpanded] = useState(true);
   const [maintenanceExpanded, setMaintenanceExpanded] = useState(false);
@@ -21,307 +145,200 @@ const App = () => {
 
   useEffect(() => {
     let isMounted = true;
-
-    const loadMaintenanceAlerts = async () => {
+    const load = async () => {
       try {
-        const completedSheets = await maintenanceSheetService.getAll({ status: 'completed' });
-        if (isMounted) {
-          setCompletedMaintenanceCount(Array.isArray(completedSheets) ? completedSheets.length : 0);
-        }
-      } catch (error) {
-        if (isMounted) {
-          setCompletedMaintenanceCount(0);
-        }
-        console.error('Erreur chargement alertes maintenance:', error);
+        const completed = await maintenanceSheetService.getAll({ status: 'completed' });
+        if (isMounted) setCompletedMaintenanceCount(Array.isArray(completed) ? completed.length : 0);
+      } catch {
+        if (isMounted) setCompletedMaintenanceCount(0);
       }
     };
-
-    loadMaintenanceAlerts();
-    const intervalId = window.setInterval(loadMaintenanceAlerts, 60000);
-
-    return () => {
-      isMounted = false;
-      window.clearInterval(intervalId);
-    };
+    load();
+    const id = window.setInterval(load, 60000);
+    return () => { isMounted = false; window.clearInterval(id); };
   }, []);
 
-  const zones = [
-    { id: 'zone:Bobinage', label: 'Bobinage', icon: '🔄' },
-    { id: 'zone:Câblage', label: 'Câblage', icon: '✂️' },
-    { id: 'zone:Électronique', label: 'Électronique', icon: '💾' },
-    { id: 'zone:Chauvin Arnoux', label: 'Chauvin Arnoux', icon: '⚙️' },
-    { id: 'zone:Embases Relais', label: 'Embases Relais', icon: '🔌' },
-    { id: 'zone:Kuhn', label: 'Kuhn', icon: '🏭' },
-    { id: 'zone:Club', label: 'Club', icon: '🛠️' },
-    { id: 'zone:Maintenance', label: 'Maintenance', icon: '🔧' },
-    { id: 'zone:Électro-aimant', label: 'Électro-aimant', icon: '⚡' },
+  const subZones = [
+    // Assemblage Meca
+    { group: 'Assemblage Meca', id: 'zone:Bobinage', label: 'Bobinage' },
+    { group: 'Assemblage Meca', id: 'zone:Chevain Arnoux', label: 'Chevain Arnoux' },
+    { group: 'Assemblage Meca', id: 'zone:Electro Aimants', label: 'Electro Aimants' },
+    { group: 'Assemblage Meca', id: 'zone:Embases Relais', label: 'Embases Relais' },
+    // Faisceau Cable
+    { group: 'Faisceau Cable', id: 'zone:Khun', label: 'Khun' },
+    { group: 'Faisceau Cable', id: 'zone:Club', label: 'Club' },
+    { group: 'Faisceau Cable', id: 'zone:Cablage', label: 'Cablage' },
+    // Individual zones
+    { group: 'Electronique', id: 'zone:Electronique', label: 'Electronique', standalone: true },
+    { group: 'Maintenance', id: 'zone:Maintenance', label: 'Maintenance', standalone: true },
   ];
 
-  const inventaireCategories = [
-    { id: 'equipement-all', label: 'Tous les équipements', icon: '📋' },
-  ];
+  const zoneGroups = ['Assemblage Meca', 'Faisceau Cable'];
+
+  const today = new Date().toLocaleDateString('fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1);
 
   return (
-    <div className="min-h-screen h-screen bg-gray-100 flex overflow-hidden">
-      <aside className="w-64 bg-white shadow-lg hidden md:flex flex-col">
-        <div className="px-6 py-4 border-b">
-          <h1 className="text-xl font-bold">WEB-RAI</h1>
-          <p className="text-xs text-gray-500">Gestion des équipements</p>
-        </div>
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `block px-3 py-2 rounded-md text-sm font-medium ${
-                isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'
-              }`
-            }
-          >
-            📊 Tableau de bord
-          </NavLink>
+    <div className="min-h-screen h-screen flex overflow-hidden" style={{ background: 'var(--content-bg)' }}>
 
-          {/* Inventaire expandable menu */}
-          <div>
-            <button
-              onClick={() => setInventaireExpanded(!inventaireExpanded)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
-                inventaireExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              📋 Inventaire
-              <span className={`transform transition-transform ${inventaireExpanded ? 'rotate-180' : ''}`}>▼</span>
-            </button>
-            {inventaireExpanded && (
-              <div className="ml-4 mt-1 space-y-1">
-                {/* All Equipment section */}
-                <div>
-                  <NavLink
-                    to="/inventaire?categorie=equipement-all"
-                    className={({ isActive }) =>
-                      `block px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
-                        isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                      }`
-                    }
-                    onClick={() => setEquipementsExpanded(!equipementsExpanded)}
-                  >
-                    📋 Tous les équipements
-                    <span className={`transform transition-transform text-xs ${equipementsExpanded ? 'rotate-180' : ''}`}>▼</span>
-                  </NavLink>
-                  {equipementsExpanded && (
-                    <div className="ml-4 mt-1 space-y-1">
-                      {zones.map((zone) => (
-                        <NavLink
-                          key={zone.id}
-                          to={`/inventaire?categorie=${zone.id}`}
-                          className={({ isActive }) =>
-                            `block px-3 py-2 rounded-md text-xs ${
-                              isActive ? 'bg-teal-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                            }`
-                          }
-                        >
-                          {zone.icon} {zone.label}
-                        </NavLink>
+      {/* ── Sidebar ─────────────────────────────────────── */}
+      <aside
+        className="w-64 hidden md:flex flex-col flex-shrink-0"
+        style={{ background: SIDEBAR_BG }}
+      >
+        {/* Brand */}
+        <div className="flex items-center gap-3 px-5 py-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)' }}>
+            <Factory className="w-5 h-5 text-white" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-white font-bold text-sm leading-tight tracking-wide">WEB-RAI</p>
+            <p className="text-slate-500 text-[10px] leading-tight tracking-wide">Gestion Industrielle</p>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-3 overflow-y-auto sidebar-scroll space-y-0.5">
+
+          <NavItem to="/" icon={LayoutDashboard} label="Tableau de bord" end />
+
+          {/* ── GESTION DES ACTIFS ── */}
+          <SectionLabel label="Gestion des actifs" />
+
+          <ExpandBtn
+            icon={Package}
+            label="Inventaire"
+            expanded={inventaireExpanded}
+            onClick={() => setInventaireExpanded(!inventaireExpanded)}
+          />
+
+          {inventaireExpanded && (
+            <div className="space-y-0.5 mt-0.5">
+              {/* All equipment toggle */}
+              <button
+                onClick={() => setEquipementsExpanded(!equipementsExpanded)}
+                className="w-full flex items-center gap-2.5 px-3 py-[7px] ml-4 rounded-md text-xs text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors"
+              >
+                <List className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="flex-1 text-left truncate">Tous les équipements</span>
+                <ChevronDown className={`w-3 h-3 flex-shrink-0 transition-transform duration-150 ${equipementsExpanded ? 'rotate-180' : ''}`} />
+              </button>
+
+              {equipementsExpanded && (
+                <div className="ml-4 space-y-0.5">
+                  {zoneGroups.map(group => (
+                    <div key={group}>
+                      <p className="px-3 pt-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-600 select-none">
+                        {group}
+                      </p>
+                      {subZones.filter(z => z.group === group).map(zone => (
+                        <SubNavItem key={zone.id} to={`/inventaire?categorie=${zone.id}`} label={zone.label} />
                       ))}
                     </div>
-                  )}
+                  ))}
+                  <div>
+                    <p className="px-3 pt-3 pb-1 text-[9px] font-semibold uppercase tracking-[0.12em] text-slate-600 select-none">
+                      Autres zones
+                    </p>
+                    {subZones.filter(z => z.standalone).map(zone => (
+                      <SubNavItem key={zone.id} to={`/inventaire?categorie=${zone.id}`} label={zone.label} />
+                    ))}
+                  </div>
                 </div>
+              )}
 
-                {/* Pinces */}
-                <NavLink
-                  to="/inventaire?categorie=pinces"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  🔨 Pinces
-                </NavLink>
+              <SubNavItem to="/inventaire?categorie=pinces" label="Pinces" />
+              <SubNavItem to="/inventaire?categorie=applicateurs" label="Applicateurs" />
+              <SubNavItem to="/inventaire?categorie=cosses" label="Cosses" />
+              <SubNavItem to="/inventaire?categorie=fer-et-bain" label="Fer et bain" />
+              <SubNavItem to="/inventaire?categorie=pdr" label="PDR — Pièces de rechange" />
+            </div>
+          )}
 
-                {/* Applicateurs */}
-                <NavLink
-                  to="/inventaire?categorie=applicateurs"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  ⚡ Applicateurs
-                </NavLink>
+          {/* ── MAINTENANCE ── */}
+          <SectionLabel label="Maintenance" />
 
-                {/* Cosses */}
-                <NavLink
-                  to="/inventaire?categorie=cosses"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  🔗 Cosses
-                </NavLink>
+          <ExpandBtn
+            icon={CalendarCheck}
+            label="Préventive"
+            expanded={maintenanceExpanded}
+            onClick={() => setMaintenanceExpanded(!maintenanceExpanded)}
+            badge={completedMaintenanceCount}
+          />
 
-                <NavLink
-                  to="/inventaire?categorie=fer-et-bain"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  🔥 Fer et bain
-                </NavLink>
+          {maintenanceExpanded && (
+            <div className="space-y-0.5 mt-0.5">
+              <SubNavItem to="/preventif" label="Calendrier préventif" />
+              <SubNavItem to="/preventif/suivi-pinces" label="Suivi des pinces" />
+              <SubNavItem to="/preventif/suivi-applicateurs" label="Suivi des applicateurs" />
+              <SubNavItem to="/preventif/fiches-maintenance" label="Fiches machines" badge={completedMaintenanceCount} />
+            </div>
+          )}
 
-                <NavLink
-                  to="/inventaire?categorie=pdr"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  🧰 PDR
-                </NavLink>
-              </div>
-            )}
-          </div>
+          <ExpandBtn
+            icon={Wrench}
+            label="Curative"
+            expanded={curativeExpanded}
+            onClick={() => setCurativeExpanded(!curativeExpanded)}
+          />
 
-          <div>
-            <button
-              onClick={() => setMaintenanceExpanded(!maintenanceExpanded)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
-                maintenanceExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                🗓️ Maintenance préventive
-                {completedMaintenanceCount > 0 && (
-                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
-                    {completedMaintenanceCount}
-                  </span>
-                )}
-              </span>
-              <span className={`transform transition-transform ${maintenanceExpanded ? 'rotate-180' : ''}`}>▼</span>
-            </button>
-            {maintenanceExpanded && (
-              <div className="ml-4 mt-1 space-y-1">
-                <NavLink
-                  to="/preventif"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  🗓️ Calendrier préventif
-                </NavLink>
+          {curativeExpanded && (
+            <div className="space-y-0.5 mt-0.5">
+              <SubNavItem to="/curatif" label="Suivi curatif" />
+              <SubNavItem to="/curatif/indicateur" label="Indicateur curatif" />
+            </div>
+          )}
 
-                <NavLink
-                  to="/preventif/suivi-pinces"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  🔨 Suivi preventive des pinces
-                </NavLink>
+          {/* ── QUALITÉ & CONFORMITÉ ── */}
+          <SectionLabel label="Qualité & Conformité" />
 
-                <NavLink
-                  to="/preventif/suivi-applicateurs"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  ⚡ Suivi préventif des applicateurs
-                </NavLink>
+          <NavItem to="/ecme" icon={FlaskConical} label="État des ECME" />
 
-                <NavLink
-                  to="/preventif/fiches-maintenance"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  <span className="flex items-center justify-between gap-2">
-                    <span>🧾 Fiches machines</span>
-                    {completedMaintenanceCount > 0 && (
-                      <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700">
-                        {completedMaintenanceCount}
-                      </span>
-                    )}
-                  </span>
-                </NavLink>
-              </div>
-            )}
-          </div>
+          {/* ── INDUSTRIALISATION ── */}
+          <SectionLabel label="Industrialisation" />
 
-          <div>
-            <button
-              onClick={() => setCurativeExpanded(!curativeExpanded)}
-              className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium flex items-center justify-between ${
-                curativeExpanded ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              <span className="flex items-center gap-2">🛠️ Maintenance curative</span>
-              <span className={`transform transition-transform ${curativeExpanded ? 'rotate-180' : ''}`}>▼</span>
-            </button>
-            {curativeExpanded && (
-              <div className="ml-4 mt-1 space-y-1">
-                <NavLink
-                  to="/curatif"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  📋 Suivi curatif
-                </NavLink>
-
-                <NavLink
-                  to="/curatif/indicateur"
-                  className={({ isActive }) =>
-                    `block px-3 py-2 rounded-md text-sm ${
-                      isActive ? 'bg-blue-500 text-white' : 'text-gray-600 hover:bg-gray-50'
-                    }`
-                  }
-                >
-                  📈 Indicateur curatif
-                </NavLink>
-              </div>
-            )}
-          </div>
-
-          <NavLink
-            to="/ecme"
-            className={({ isActive }) =>
-              `block px-3 py-2 rounded-md text-sm font-medium ${
-                isActive ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-100'
-              }`
-            }
-          >
-            🔬 État des ECME
-          </NavLink>
+          <NavItem to="/industrialization" icon={Factory} label="Industrialisation" />
+          <NavItem to="/industrialization/flow-chart" icon={GitBranch} label="Flow Chart" />
+          <NavItem to="/industrialization/test-cables" icon={Cable} label="Test des câbles" />
         </nav>
+
+        {/* Sidebar footer */}
+        <div className="px-5 py-3 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <p className="text-[10px] text-slate-600 select-none">RAI © {new Date().getFullYear()} · v1.0</p>
+        </div>
       </aside>
 
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Link to="/" className="md:hidden font-semibold">
-              WEB-RAI
-            </Link>
-            <span className="text-sm text-gray-500">Suivi des équipements ECME</span>
+      {/* ── Main area ───────────────────────────────────── */}
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+
+        {/* Top header */}
+        <header className="bg-white flex-shrink-0 px-6 py-0 flex items-center justify-between h-14"
+          style={{ borderBottom: '1px solid #e2e8f0' }}>
+          <div className="flex items-center gap-2 text-sm">
+            <Link to="/" className="md:hidden font-bold text-slate-800">WEB-RAI</Link>
+            <span className="hidden md:inline text-slate-400 font-medium text-xs uppercase tracking-wider">WEB-RAI</span>
+            <ChevronRight className="hidden md:inline w-3.5 h-3.5 text-slate-300" />
+            <span className="hidden md:inline text-slate-700 font-semibold text-sm">{pageName}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:inline text-xs text-slate-400 font-medium">{todayCapitalized}</span>
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
+              style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%)' }}
+            >
+              R
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-hidden flex flex-col">
+        {/* Page content */}
+        <main className="flex-1 overflow-hidden flex flex-col min-h-0">
           <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
             <Routes>
               <Route path="/" element={<Dashboard />} />
@@ -329,6 +346,7 @@ const App = () => {
               <Route path="/preventif" element={<CalendrierPreventif />} />
               <Route path="/preventif/suivi-pinces" element={<SuiviPreventifPinces />} />
               <Route path="/preventif/suivi-applicateurs" element={<SuiviPreventifApplicateurs />} />
+              <Route path="/preventif/fiches-maintenance/create" element={<CreateMachineTemplate />} />
               <Route path="/preventif/fiches-maintenance" element={<FichesMaintenance />} />
               <Route path="/preventif/fiches-maintenance/:machineKey" element={<FichesMaintenance />} />
               <Route path="/preventif/fiches-maintenance/fiche/:sheetId" element={<FichesMaintenance />} />
@@ -337,6 +355,11 @@ const App = () => {
               <Route path="/curatif/indicateur" element={<IndicateurCuratif />} />
               <Route path="/ecme" element={<EtatECME />} />
               <Route path="/ecme/:code" element={<FicheDeVie />} />
+              <Route path="/industrialization" element={<IndustrializationIndex />} />
+              <Route path="/industrialization/gammes" element={<IndustrializationIndex />} />
+              <Route path="/industrialization/flow-chart" element={<FlowChartDetail />} />
+              <Route path="/industrialization/chiffrage/:id" element={<ChiffrageDetail />} />
+              <Route path="/industrialization/test-cables" element={<TestCables />} />
             </Routes>
           </div>
         </main>

@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { pinceService } from '../services/api';
 import PinceForm from './PinceForm';
+import { Plus, Pencil, Trash2, Wrench, PackageOpen } from 'lucide-react';
+
+const StatusBadge = ({ statut }) => {
+  const cfg = {
+    'En service':           { dot: 'bg-emerald-500', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    'Hors service':         { dot: 'bg-red-500',     cls: 'bg-red-50 text-red-700 border-red-200' },
+    'À vérifier':           { dot: 'bg-amber-400',   cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+    'Manque cosse':         { dot: 'bg-orange-400',  cls: 'bg-orange-50 text-orange-700 border-orange-200' },
+    'Vérification visuelle':{ dot: 'bg-sky-400',     cls: 'bg-sky-50 text-sky-700 border-sky-200' },
+  }[statut] ?? { dot: 'bg-slate-400', cls: 'bg-slate-50 text-slate-600 border-slate-200' };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.cls}`}>
+      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
+      {statut}
+    </span>
+  );
+};
 
 const PincesList = ({ searchQuery = '' }) => {
   const [pinces, setPinces] = useState([]);
@@ -8,9 +25,7 @@ const PincesList = ({ searchQuery = '' }) => {
   const [editingPince, setEditingPince] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
 
-  useEffect(() => {
-    loadPinces();
-  }, []);
+  useEffect(() => { loadPinces(); }, []);
 
   const loadPinces = async () => {
     try {
@@ -24,10 +39,10 @@ const PincesList = ({ searchQuery = '' }) => {
     }
   };
 
-  const filteredPinces = pinces.filter((pince) =>
-    pince.numero_pince?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pince.Fabricant?.nom?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pince.reference_pince?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filtered = pinces.filter((p) =>
+    p.numero_pince?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.Fabricant?.nom?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.reference_pince?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getPinceSortKey = (numero = '') => {
@@ -36,122 +51,115 @@ const PincesList = ({ searchQuery = '' }) => {
     return match ? parseInt(match[1], 10) : Number.MAX_SAFE_INTEGER;
   };
 
-  const sortedPinces = [...filteredPinces].sort((a, b) => {
-    const keyA = getPinceSortKey(a.numero_pince);
-    const keyB = getPinceSortKey(b.numero_pince);
-    if (keyA !== keyB) return keyA - keyB;
+  const sorted = [...filtered].sort((a, b) => {
+    const ka = getPinceSortKey(a.numero_pince);
+    const kb = getPinceSortKey(b.numero_pince);
+    if (ka !== kb) return ka - kb;
     return (a.numero_pince || '').localeCompare(b.numero_pince || '', 'fr', { numeric: true });
   });
 
-  const handleEditClick = (pince) => {
-    setEditingPince(pince);
-    setIsFormOpen(true);
-  };
+  const handleEditClick = (pince) => { setEditingPince(pince); setIsFormOpen(true); };
+  const handleFormClose = () => { setIsFormOpen(false); setEditingPince(null); };
+  const handleFormSuccess = () => { loadPinces(); };
 
   const handleDeleteClick = async (pince) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${pince.numero_pince} ?`)) {
-      try {
-        await pinceService.delete(pince.id);
-        loadPinces();
-      } catch (error) {
-        console.error('Erreur suppression:', error);
-        alert('Erreur lors de la suppression');
-      }
+    if (!window.confirm(`Supprimer ${pince.numero_pince} ?`)) return;
+    try {
+      await pinceService.delete(pince.id);
+      loadPinces();
+    } catch {
+      alert('Erreur lors de la suppression');
     }
   };
 
-  const handleFormClose = () => {
-    setIsFormOpen(false);
-    setEditingPince(null);
-  };
-
-  const handleFormSuccess = () => {
-    loadPinces();
-  };
-
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Chargement des pinces...</div>;
+    return (
+      <div className="flex-1 flex items-center justify-center py-16">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-slate-400">Chargement des pinces…</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow overflow-hidden flex-1 min-h-0 flex flex-col">
-        <div className="px-6 py-4 border-b border-orange-100 bg-orange-50/70 flex items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-orange-800">🔨 Pinces</h2>
-            <p className="text-sm text-orange-900/70">Informations essentielles des pinces</p>
-          </div>
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
+        {/* Sub-header */}
+        <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="text-sm font-semibold text-orange-700">{sortedPinces.length} pince(s)</div>
-            <button
-              onClick={() => {
-                setEditingPince(null);
-                setIsFormOpen(true);
-              }}
-              className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
-              ➕ Nouvelle Pince
-            </button>
+            <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center">
+              <Wrench className="w-4 h-4 text-sky-500" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-800">Pinces de sertissage</p>
+              <p className="text-xs text-slate-400">{sorted.length} pince(s)</p>
+            </div>
           </div>
+          <button
+            onClick={() => { setEditingPince(null); setIsFormOpen(true); }}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Nouvelle pince
+          </button>
         </div>
 
         <div className="overflow-auto flex-1">
-          <table className="min-w-full">
-            <thead className="bg-orange-50 sticky top-0 z-10">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">N° Pince</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Constructeur</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Référence</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Remarque</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase">Actions</th>
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">N° Pince</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Constructeur</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Référence</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Statut</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Remarque</th>
+                <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {sortedPinces.length === 0 ? (
+            <tbody className="divide-y divide-slate-100">
+              {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    Aucune pince trouvée
+                  <td colSpan={6} className="py-14 text-center">
+                    <PackageOpen className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                    <p className="text-sm text-slate-400">Aucune pince trouvée</p>
                   </td>
                 </tr>
-              ) : (
-                sortedPinces.map((pince) => (
-                  <tr key={pince.id} className="hover:bg-orange-50 transition">
-                    <td className="px-6 py-4 font-bold text-orange-600">{pince.numero_pince}</td>
-                    <td className="px-6 py-4 text-sm">{pince.Fabricant?.nom || '-'}</td>
-                    <td className="px-6 py-4 text-xs font-mono text-gray-600">{pince.reference_pince || '-'}</td>
-                    <td className="px-6 py-4 text-sm text-gray-700">{pince.remarque || '-'}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEditClick(pince)}
-                          className="text-blue-600 hover:text-blue-900"
-                          title="Modifier"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClick(pince)}
-                          className="text-red-600 hover:text-red-900"
-                          title="Supprimer"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ) : sorted.map((pince) => (
+                <tr key={pince.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 font-mono font-bold text-sky-600 whitespace-nowrap">{pince.numero_pince}</td>
+                  <td className="px-4 py-3 text-slate-700">{pince.Fabricant?.nom || '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-600">{pince.reference_pince || '—'}</td>
+                  <td className="px-4 py-3 whitespace-nowrap"><StatusBadge statut={pince.statut} /></td>
+                  <td className="px-4 py-3 text-slate-500 max-w-[200px] truncate" title={pince.remarque}>{pince.remarque || '—'}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => handleEditClick(pince)}
+                        title="Modifier"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteClick(pince)}
+                        title="Supprimer"
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       </div>
 
-      <PinceForm 
-        pince={editingPince} 
-        isOpen={isFormOpen} 
-        onClose={handleFormClose}
-        onSuccess={handleFormSuccess}
-      />
+      <PinceForm pince={editingPince} isOpen={isFormOpen} onClose={handleFormClose} onSuccess={handleFormSuccess} />
     </>
   );
 };

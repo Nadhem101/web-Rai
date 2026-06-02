@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { pincePreventiveService } from '../services/api';
+import { Pencil, Trash2, Plus, X, AlertCircle, Wrench } from 'lucide-react';
 
 const normalizeText = (value = '') =>
   String(value ?? '')
@@ -495,53 +496,65 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-gray-500">Chargement du suivi préventif des pinces...</div>;
+    return (
+      <div className="flex-1 flex items-center justify-center py-16">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-slate-400">Chargement du suivi préventif des pinces…</p>
+        </div>
+      </div>
+    );
   }
 
   if (groupedRecords.length === 0) {
     return (
-      <div className="mt-6 flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-sky-100 bg-sky-50/80 px-4 py-3">
-          <h2 className="text-lg font-bold text-slate-900">Tableau de suivi préventif des pinces</h2>
-          <p className="mt-1 text-sm text-slate-600">Aucun enregistrement ne correspond à la recherche actuelle.</p>
+      <div className="mt-4 flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-100 px-5 py-4 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
+            <Wrench className="w-4 h-4 text-sky-500" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-800">Suivi préventif des pinces</p>
+            <p className="text-xs text-slate-400">Aucun enregistrement ne correspond à la recherche.</p>
+          </div>
         </div>
-        <div className="px-4 py-6 text-center text-gray-500">Aucune pince trouvée</div>
+        <div className="flex flex-col items-center justify-center py-14">
+          <Wrench className="w-8 h-8 text-slate-300 mb-2" />
+          <p className="text-sm text-slate-400">Aucune pince trouvée</p>
+        </div>
       </div>
     );
   }
 
   return (
     <>
-    <div className="mt-6 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-sky-100 bg-sky-50/80 px-4 py-3">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900">Tableau de suivi préventif des pinces</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Chaque numéro de pince n&apos;apparaît qu&apos;une seule fois; les valeurs associées restent groupées dans la même ligne.
-          </p>
+    <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
+            <Wrench className="w-4 h-4 text-sky-500" />
+          </div>
+          <div>
+            <p className="text-sm font-bold text-slate-800">Suivi préventif des pinces</p>
+            <p className="text-xs text-slate-400">Groupé par N° pince — valeurs de traction mesurées</p>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-sky-700">
-          <span>{groupedRecords.length} pince(s)</span>
-          <span>{filteredRecords.length} ligne(s)</span>
-          <span>{overdueCount} échéance(s) dépassée(s)</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{groupedRecords.length} pince(s)</span>
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{filteredRecords.length} ligne(s)</span>
+          {overdueCount > 0 && (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">{overdueCount} en retard</span>
+          )}
         </div>
       </div>
 
       <div className="flex-1 min-h-0 overflow-auto">
         <table className="min-w-full border-collapse text-sm">
-          <thead className="sticky top-0 z-10 bg-sky-600 text-white">
-            <tr>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">N° Pince</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Date contrôle</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Référence</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Position</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Cosse</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Fil</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Traction min.</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Valeurs</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Date prochaine</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Remarque</th>
-              <th className="px-3 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.14em]">Actions</th>
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-200">
+              {['N° Pince','Date contrôle','Référence','Position','Cosse','Fil','Traction min.','Valeurs','Prochaine','Remarque','Actions'].map((h) => (
+                <th key={h} className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
+              ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white">
@@ -551,51 +564,54 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                 const schedule = getGroupScheduleInfo(group);
 
                 return (
-                  <tr key={rowKey} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
-                    {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-2 align-top text-sm font-semibold text-sky-700', (value) => (
-                      <div className="flex flex-col gap-2">
-                        <span>{formatValue(value)}</span>
-                        <div className="flex flex-wrap items-center gap-2">
-                          {group.rows.length > 1 && <span className="text-xs font-medium text-slate-400">{group.rows.length} ligne(s)</span>}
-                          <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
-                            {schedule.label}
-                          </span>
-                        </div>
+                  <tr key={rowKey} className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} hover:bg-sky-50/30 transition-colors`}>
+                    {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-2 border-sky-200', (value) => (
+                      <div className="flex flex-col gap-2 min-w-[110px]">
+                        <span className="font-mono font-bold text-sky-700 text-sm">{formatValue(value)}</span>
+                        <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
+                          {schedule.label}
+                        </span>
+                        {group.rows.length > 1 && (
+                          <span className="text-[11px] text-slate-400">{group.rows.length} mesures</span>
+                        )}
                         <button
                           type="button"
                           onClick={() => openAddRowModal(group)}
                           disabled={!schedule.canAdd}
-                          className={`inline-flex w-fit items-center rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
-                            schedule.canAdd ? schedule.buttonClass : schedule.buttonClass
+                          title={schedule.canAdd ? 'Ajouter une nouvelle mesure' : 'Disponible quand la pince est en retard ou prévue cette semaine'}
+                          className={`inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[11px] font-semibold transition ${
+                            schedule.canAdd
+                              ? 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100'
+                              : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
                           }`}
-                          title={schedule.canAdd ? 'Ajouter une nouvelle ligne à cette pince' : 'Disponible quand la pince est en retard ou prévue cette semaine'}
                         >
-                          ＋ Ajouter une valeur
+                          <Plus className="w-3 h-3" />
+                          Ajouter
                         </button>
                       </div>
                     ))}
 
-                    {renderMergedCell(group, 'date_controle', record, rowIndex, 'px-3 py-2 align-top text-sm text-slate-700', (value) => (
+                    {renderMergedCell(group, 'date_controle', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
                       <span>{formatDate(value)}</span>
                     ))}
 
-                    {renderMergedCell(group, 'reference_more', record, rowIndex, 'px-3 py-2 align-top text-sm text-slate-700', (value) => (
+                    {renderMergedCell(group, 'reference_more', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
                       <span>{formatValue(value)}</span>
                     ))}
 
-                    <td className="px-3 py-2 align-top text-sm text-slate-700">{formatValue(record.position)}</td>
+                    <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.position)}</td>
 
-                    {renderMergedCell(group, 'cosse', record, rowIndex, 'px-3 py-2 align-top text-sm text-slate-700', (value) => (
+                    {renderMergedCell(group, 'cosse', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
                       <span>{formatValue(value)}</span>
                     ))}
 
-                    <td className="px-3 py-2 align-top text-sm text-slate-700">{formatValue(record.fil)}</td>
+                    <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.fil)}</td>
 
-                    <td className="px-3 py-2 align-top text-sm text-slate-700">{formatValue(record.traction_minimale_n)}</td>
+                    <td className="px-3 py-3 align-top text-xs font-mono text-slate-600">{formatValue(record.traction_minimale_n)}</td>
 
-                    <td className="px-3 py-2 align-top text-sm text-slate-700">{renderValues(record)}</td>
+                    <td className="px-3 py-3 align-top text-xs text-slate-600">{renderValues(record)}</td>
 
-                    {renderMergedCell(group, 'date_prochaine', record, rowIndex, 'px-3 py-2 align-top text-sm', (value) => (
+                    {renderMergedCell(group, 'date_prochaine', record, rowIndex, 'px-3 py-3 align-top text-xs', (value) => (
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
                           isPastDate(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
@@ -605,27 +621,21 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                       </span>
                     ))}
 
-                    {renderMergedCell(group, 'remarque', record, rowIndex, 'px-3 py-2 align-top text-sm text-slate-700', (value) => (
+                    {renderMergedCell(group, 'remarque', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
                       <span>{formatValue(value)}</span>
                     ))}
 
-                    <td className="px-3 py-2 align-top text-sm">
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => openEditRowModal(group, record)}
-                          className="inline-flex items-center rounded-lg border border-sky-200 bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition hover:bg-sky-100"
+                    <td className="px-3 py-3 align-top">
+                      <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => openEditRowModal(group, record)}
                           title="Modifier cette ligne"
-                        >
-                          ✏️ Modifier
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
+                          <Pencil className="w-3.5 h-3.5" />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteRow(record)}
-                          className="inline-flex items-center rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                        <button type="button" onClick={() => handleDeleteRow(record)}
                           title="Supprimer cette ligne"
-                        >
-                          🗑️ Supprimer
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </td>
@@ -641,21 +651,35 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
     {rowForm.open && rowForm.group && rowForm.data && (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
         <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="flex items-start justify-between gap-4 border-b border-sky-100 bg-sky-600 px-6 py-4 text-white">
-            <div>
-              <h3 className="text-xl font-bold">{isEditingRow ? 'Modifier une valeur préventive' : 'Ajouter une valeur préventive'}</h3>
-              <p className="text-sm text-sky-50/90">
-                {formatValue(rowForm.group.numeroPince)} · {rowForm.group.rows.length} ligne(s) existante(s)
-                {isEditingRow && rowForm.record?.id ? ` · ligne #${rowForm.record.id}` : ''}
-              </p>
+          <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
+            style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center flex-shrink-0">
+                <Wrench className="w-4 h-4 text-sky-300" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white leading-tight">
+                  {isEditingRow ? 'Modifier une valeur préventive' : 'Ajouter une valeur préventive'}
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Pince {formatValue(rowForm.group.numeroPince)} · {rowForm.group.rows.length} mesure(s) existante(s)
+                  {isEditingRow && rowForm.record?.id ? ` · #${rowForm.record.id}` : ''}
+                </p>
+              </div>
             </div>
-            <button type="button" onClick={closeRowModal} className="text-2xl font-bold leading-none hover:opacity-80">
-              ✕
+            <button type="button" onClick={closeRowModal}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0">
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           <form onSubmit={handleRowFormSubmit} className="flex-1 overflow-auto p-6">
-            {rowForm.error && <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{rowForm.error}</div>}
+            {rowForm.error && (
+              <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>{rowForm.error}</span>
+              </div>
+            )}
 
             <div className="mb-5 grid gap-3 md:grid-cols-3">
               <label className="block rounded-xl bg-slate-50 px-4 py-3">
@@ -665,7 +689,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="numero_pince"
                   value={rowForm.data.numero_pince}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 />
               </label>
               <label className="block rounded-xl bg-slate-50 px-4 py-3">
@@ -675,7 +699,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="reference_more"
                   value={rowForm.data.reference_more}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 />
               </label>
               <label className="block rounded-xl bg-slate-50 px-4 py-3">
@@ -685,7 +709,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="cosse"
                   value={rowForm.data.cosse}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 />
               </label>
             </div>
@@ -698,7 +722,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="date_controle"
                   value={rowForm.data.date_controle}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 />
               </label>
 
@@ -709,7 +733,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="date_prochaine"
                   value={rowForm.data.date_prochaine}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 />
               </label>
 
@@ -720,7 +744,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="position"
                   value={rowForm.data.position}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                   placeholder="ex: 0.75"
                 />
               </label>
@@ -732,7 +756,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="fil"
                   value={rowForm.data.fil}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                   placeholder="ex: 1"
                 />
               </label>
@@ -744,7 +768,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   name="traction_minimale_n"
                   value={rowForm.data.traction_minimale_n}
                   onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                   placeholder="ex: 90"
                 />
               </label>
@@ -759,7 +783,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                     name={`test_value_${index}`}
                     value={rowForm.data[`test_value_${index}`]}
                       onChange={handleRowFormChange}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-500 focus:outline-none"
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                     placeholder="0"
                   />
                 </label>
@@ -773,24 +797,19 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                 value={rowForm.data.remarque}
                 onChange={handleRowFormChange}
                 rows={4}
-                className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-500 focus:outline-none"
+                className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
                 placeholder="Commentaires sur cette nouvelle mesure..."
               />
             </label>
 
-            <div className="mt-6 flex flex-wrap gap-3">
-              <button
-                type="submit"
-                disabled={rowForm.saving}
-                className="rounded-xl bg-sky-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-              >
-                {rowForm.saving ? 'Sauvegarde...' : isEditingRow ? 'Enregistrer les modifications' : 'Ajouter la ligne'}
+            <div className="mt-6 flex gap-3">
+              <button type="submit" disabled={rowForm.saving}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
+                style={{ background: rowForm.saving ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                {rowForm.saving ? 'Sauvegarde…' : isEditingRow ? 'Enregistrer les modifications' : 'Ajouter la ligne'}
               </button>
-              <button
-                type="button"
-                onClick={closeRowModal}
-                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-              >
+              <button type="button" onClick={closeRowModal}
+                className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
                 Annuler
               </button>
             </div>
