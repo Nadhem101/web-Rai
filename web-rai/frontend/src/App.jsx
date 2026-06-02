@@ -14,6 +14,9 @@ import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
 import IndustrializationIndex from './pages/Industrialization/IndustrializationIndex.jsx';
 import ChiffrageDetail from './pages/Industrialization/ChiffrageDetail.jsx';
 import FlowChartDetail from './pages/Industrialization/FlowChartDetail.jsx';
+import FlowChartsIndex from './pages/Industrialization/FlowChartsIndex.jsx';
+import FlowChartEditor from './pages/Industrialization/FlowChartEditor.jsx';
+import FlowChartViewer from './pages/Industrialization/FlowChartViewer.jsx';
 import TestCables from './pages/Industrialization/TestCables.jsx';
 import { maintenanceSheetService } from './services/api';
 import {
@@ -126,6 +129,7 @@ const getPageName = (pathname) => {
   if (pathname.startsWith('/curatif/indicateur')) return 'Indicateur curatif';
   if (pathname.startsWith('/curatif')) return 'Suivi curatif';
   if (pathname.startsWith('/ecme')) return 'État des ECME';
+  if (pathname.startsWith('/industrialization/gammes')) return 'Flow Chart';
   if (pathname.startsWith('/industrialization/flow-chart')) return 'Flow Chart';
   if (pathname.startsWith('/industrialization/test-cables')) return 'Test des câbles';
   if (pathname.startsWith('/industrialization')) return 'Industrialisation';
@@ -356,8 +360,9 @@ const App = () => {
               <Route path="/ecme" element={<EtatECME />} />
               <Route path="/ecme/:code" element={<FicheDeVie />} />
               <Route path="/industrialization" element={<IndustrializationIndex />} />
-              <Route path="/industrialization/gammes" element={<IndustrializationIndex />} />
-              <Route path="/industrialization/flow-chart" element={<FlowChartDetail />} />
+              <Route path="/industrialization/flow-chart" element={<FlowChartsIndex />} />
+              <Route path="/industrialization/flow-chart/:id" element={<FlowChartEditor />} />
+              <Route path="/industrialization/flow-chart/:id/view" element={<FlowChartViewer />} />
               <Route path="/industrialization/chiffrage/:id" element={<ChiffrageDetail />} />
               <Route path="/industrialization/test-cables" element={<TestCables />} />
             </Routes>

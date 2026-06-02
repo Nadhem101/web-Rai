@@ -18,6 +18,8 @@ const Cosse = require('./cosse.model');
 const CurativeMaintenanceRecord = require('./curative_maintenance_record.model');
 const ArticleTest   = require('./article_test.model');
 const DetailArticle = require('./detail_article.model');
+const Flowchart     = require('./flowchart.model');
+const Procedure     = require('./procedure.model');
 
 // Equipement relationships
 Zone.hasMany(Equipement, { foreignKey: 'zone_id' });
@@ -91,5 +93,7 @@ module.exports = {
   CurativeMaintenanceRecord,
   ArticleTest,
   DetailArticle,
+  Flowchart,
+  Procedure,
   syncDatabase,
 };

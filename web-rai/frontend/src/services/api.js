@@ -89,6 +89,22 @@ export const applicateurThresholdService = {
   getAll: () => API.get('/applicateur-thresholds').then((res) => res.data),
 };
 
+export const flowchartService = {
+  getAll:  (params = {}) => API.get('/flowcharts', { params }).then(r => r.data),
+  getById: (id)          => API.get(`/flowcharts/${id}`).then(r => r.data),
+  create:  (data)        => API.post('/flowcharts', data).then(r => r.data),
+  update:  (id, data)    => API.put(`/flowcharts/${id}`, data).then(r => r.data),
+  delete:  (id)          => API.delete(`/flowcharts/${id}`).then(r => r.data),
+};
+
+export const procedureService = {
+  getAll:  (params = {}) => API.get('/procedures', { params }).then(r => r.data),
+  getById: (id)          => API.get(`/procedures/${id}`).then(r => r.data),
+  create:  (data)        => API.post('/procedures', data).then(r => r.data),
+  update:  (id, data)    => API.put(`/procedures/${id}`, data).then(r => r.data),
+  delete:  (id)          => API.delete(`/procedures/${id}`).then(r => r.data),
+};
+
 export const articleTestService = {
   getAll:   (params = {}) => API.get('/articles-test', { params }).then((res) => res.data),
   getById:  (id)          => API.get(`/articles-test/${id}`).then((res) => res.data),

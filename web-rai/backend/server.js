@@ -26,6 +26,8 @@ app.use('/api/applicateur-thresholds', require('./app/routes/applicateur_thresho
 app.use('/api/cosses',              require('./app/routes/cosse.routes'));
 app.use('/api/curative-maintenance-records', require('./app/routes/curative_maintenance_record.routes'));
 app.use('/api/articles-test',               require('./app/routes/article_test.routes'));
+app.use('/api/flowcharts',                  require('./app/routes/flowchart.routes'));
+app.use('/api/procedures',                  require('./app/routes/procedure.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API WEB-RAI fonctionne' });
