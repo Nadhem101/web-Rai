@@ -8,13 +8,19 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load existing session on mount
+    if (!supabase) {
+      // Supabase not configured locally — skip auth, let everyone through
+      console.warn('[Auth] Supabase not configured — auth disabled for local dev');
+      setSession({ user: { email: 'dev@local' } }); // fake session
+      setLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
-    // Keep in sync with Supabase auth state
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -23,12 +29,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
+    if (!supabase) throw new Error('Supabase non configuré');
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
   };
 
-  const logout = () => supabase.auth.signOut();
+  const logout = () => {
+    if (!supabase) { setSession(null); return; }
+    return supabase.auth.signOut();
+  };
 
   return (
     <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, login, logout }}>

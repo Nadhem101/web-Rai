@@ -5,15 +5,16 @@ const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
 });
 
-// Attach Supabase JWT to every request
+// Attach Supabase JWT to every request (skipped if Supabase not configured)
 API.interceptors.request.use(async (config) => {
+  if (!supabase) return config;
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
       config.headers.Authorization = `Bearer ${session.access_token}`;
     }
   } catch {
-    // silent — will get 401 from backend if needed
+    // silent
   }
   return config;
 });
