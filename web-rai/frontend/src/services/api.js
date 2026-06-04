@@ -1,7 +1,21 @@
 import axios from 'axios';
+import { supabase } from '../lib/supabase';
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+});
+
+// Attach Supabase JWT to every request
+API.interceptors.request.use(async (config) => {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.access_token) {
+      config.headers.Authorization = `Bearer ${session.access_token}`;
+    }
+  } catch {
+    // silent — will get 401 from backend if needed
+  }
+  return config;
 });
 
 export const equipementService = {
@@ -87,6 +101,42 @@ export const applicateurService = {
 
 export const applicateurThresholdService = {
   getAll: () => API.get('/applicateur-thresholds').then((res) => res.data),
+};
+
+export const fournisseurCatalogueService = {
+  getAll:  (params = {}) => API.get('/fournisseurs-catalogue', { params }).then(r => r.data),
+  create:  (data)        => API.post('/fournisseurs-catalogue', data).then(r => r.data),
+  update:  (id, data)    => API.put(`/fournisseurs-catalogue/${id}`, data).then(r => r.data),
+  delete:  (id)          => API.delete(`/fournisseurs-catalogue/${id}`).then(r => r.data),
+};
+
+export const connecteurCatalogueService = {
+  getAll:  (params = {}) => API.get('/connecteurs-catalogue', { params }).then(r => r.data),
+  getById: (id)          => API.get(`/connecteurs-catalogue/${id}`).then(r => r.data),
+  create:  (data)        => API.post('/connecteurs-catalogue', data).then(r => r.data),
+  update:  (id, data)    => API.put(`/connecteurs-catalogue/${id}`, data).then(r => r.data),
+  delete:  (id)          => API.delete(`/connecteurs-catalogue/${id}`).then(r => r.data),
+};
+
+export const chiffrageService = {
+  getAll:  (params = {}) => API.get('/chiffrages', { params }).then(r => r.data),
+  getById: (id)          => API.get(`/chiffrages/${id}`).then(r => r.data),
+  create:  (data)        => API.post('/chiffrages', data).then(r => r.data),
+  update:  (id, data)    => API.put(`/chiffrages/${id}`, data).then(r => r.data),
+  delete:  (id)          => API.delete(`/chiffrages/${id}`).then(r => r.data),
+};
+
+export const chiffrageLigneService = {
+  create: (data)       => API.post('/chiffrage-lignes', data).then(r => r.data),
+  update: (id, data)   => API.put(`/chiffrage-lignes/${id}`, data).then(r => r.data),
+  delete: (id)         => API.delete(`/chiffrage-lignes/${id}`).then(r => r.data),
+};
+
+export const machineTemplateService = {
+  getAll:  ()          => API.get('/machine-templates').then(r => r.data),
+  create:  (data)      => API.post('/machine-templates', data).then(r => r.data),
+  update:  (id, data)  => API.put(`/machine-templates/${id}`, data).then(r => r.data),
+  delete:  (id)        => API.delete(`/machine-templates/${id}`).then(r => r.data),
 };
 
 export const flowchartService = {

@@ -10,6 +10,10 @@ const allowedOrigins = process.env.FRONTEND_URL
   : true; // allow all in local dev
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+
+// ── Auth middleware (verify Supabase JWT on all /api routes) ──
+const authMiddleware = require('./app/middleware/auth.middleware');
+app.use('/api', authMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,6 +32,11 @@ app.use('/api/curative-maintenance-records', require('./app/routes/curative_main
 app.use('/api/articles-test',               require('./app/routes/article_test.routes'));
 app.use('/api/flowcharts',                  require('./app/routes/flowchart.routes'));
 app.use('/api/procedures',                  require('./app/routes/procedure.routes'));
+app.use('/api/machine-templates',           require('./app/routes/machine_template.routes'));
+app.use('/api/chiffrages',                  require('./app/routes/chiffrage.routes'));
+app.use('/api/chiffrage-lignes',            require('./app/routes/chiffrage_ligne.routes'));
+app.use('/api/fournisseurs-catalogue',      require('./app/routes/fournisseur_catalogue.routes'));
+app.use('/api/connecteurs-catalogue',       require('./app/routes/connecteur_catalogue.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API WEB-RAI fonctionne' });

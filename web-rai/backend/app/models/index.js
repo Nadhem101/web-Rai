@@ -16,10 +16,15 @@ const ApplicateurMaintenanceRecord = require('./applicateur_maintenance_record.m
 const ApplicateurThreshold = require('./applicateur_threshold.model');
 const Cosse = require('./cosse.model');
 const CurativeMaintenanceRecord = require('./curative_maintenance_record.model');
-const ArticleTest   = require('./article_test.model');
-const DetailArticle = require('./detail_article.model');
-const Flowchart     = require('./flowchart.model');
-const Procedure     = require('./procedure.model');
+const ArticleTest       = require('./article_test.model');
+const DetailArticle     = require('./detail_article.model');
+const Flowchart         = require('./flowchart.model');
+const Procedure         = require('./procedure.model');
+const MachineTemplate   = require('./machine_template.model');
+const Chiffrage              = require('./chiffrage.model');
+const ChiffrageLigne         = require('./chiffrage_ligne.model');
+const FournisseurCatalogue   = require('./fournisseur_catalogue.model');
+const ConnecteurCatalogue    = require('./connecteur_catalogue.model');
 
 // Equipement relationships
 Zone.hasMany(Equipement, { foreignKey: 'zone_id' });
@@ -34,6 +39,10 @@ EcmeIntervention.belongsTo(EcmeEtat, { foreignKey: 'ecme_code', targetKey: 'code
 
 // Curative maintenance relationships
 Equipement.hasMany(CurativeMaintenanceRecord, { foreignKey: 'equipement_id' });
+
+// Chiffrage relationships
+Chiffrage.hasMany(ChiffrageLigne, { foreignKey: 'chiffrage_id', as: 'lignes', onDelete: 'CASCADE' });
+ChiffrageLigne.belongsTo(Chiffrage, { foreignKey: 'chiffrage_id', as: 'chiffrage' });
 
 // Article test relationships
 ArticleTest.hasMany(DetailArticle, { foreignKey: 'id_article', as: 'details', onDelete: 'CASCADE' });
@@ -95,5 +104,10 @@ module.exports = {
   DetailArticle,
   Flowchart,
   Procedure,
+  MachineTemplate,
+  Chiffrage,
+  ChiffrageLigne,
+  FournisseurCatalogue,
+  ConnecteurCatalogue,
   syncDatabase,
 };

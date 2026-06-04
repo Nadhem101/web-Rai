@@ -13,14 +13,20 @@ import EtatECME from './pages/ECME/EtatECME.jsx';
 import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
 import IndustrializationIndex from './pages/Industrialization/IndustrializationIndex.jsx';
 import ChiffrageDetail from './pages/Industrialization/ChiffrageDetail.jsx';
+import CatalogueFournisseurs from './pages/Industrialization/CatalogueFournisseurs.jsx';
+import CatalogueConnecteurs from './pages/Industrialization/CatalogueConnecteurs.jsx';
 import FlowChartDetail from './pages/Industrialization/FlowChartDetail.jsx';
 import FlowChartsIndex from './pages/Industrialization/FlowChartsIndex.jsx';
 import FlowChartEditor from './pages/Industrialization/FlowChartEditor.jsx';
 import FlowChartViewer from './pages/Industrialization/FlowChartViewer.jsx';
 import TestCables from './pages/Industrialization/TestCables.jsx';
 import { maintenanceSheetService } from './services/api';
+import { useAuth } from './contexts/AuthContext.jsx';
+import Login from './pages/Login.jsx';
+import { LogOut, User } from 'lucide-react';
 import {
   LayoutDashboard,
+  Truck,
   Package,
   Wrench,
   Zap,
@@ -131,6 +137,8 @@ const getPageName = (pathname) => {
   if (pathname.startsWith('/curatif/indicateur')) return 'Indicateur curatif';
   if (pathname.startsWith('/curatif')) return 'Suivi curatif';
   if (pathname.startsWith('/ecme')) return 'État des ECME';
+  if (pathname.startsWith('/industrialization/connecteurs')) return 'Catalogue connecteurs';
+  if (pathname.startsWith('/industrialization/fournisseurs')) return 'Catalogue fournisseurs';
   if (pathname.startsWith('/industrialization/gammes')) return 'Flow Chart';
   if (pathname.startsWith('/industrialization/flow-chart')) return 'Flow Chart';
   if (pathname.startsWith('/industrialization/test-cables')) return 'Test des câbles';
@@ -142,6 +150,17 @@ const getPageName = (pathname) => {
 const App = () => {
   const location = useLocation();
   const pageName = getPageName(location.pathname);
+  const { session, user, loading: authLoading, logout } = useAuth();
+
+  // Show nothing while checking auth
+  if (authLoading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: '#0f1d35' }}>
+      <div className="w-10 h-10 border-4 border-sky-800 border-t-sky-400 rounded-full animate-spin" />
+    </div>
+  );
+
+  // Not logged in → show login page
+  if (!session) return <Login />;
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -326,14 +345,34 @@ const App = () => {
           {/* ── INDUSTRIALISATION ── */}
           <SectionLabel label="Industrialisation" />
 
-          <NavItem to="/industrialization" icon={Factory} label="Industrialisation" />
+          <NavItem to="/industrialization" icon={Factory} label="Chiffrage" />
+          <NavItem to="/industrialization/connecteurs" icon={Link2} label="Catalogue connecteurs" />
+          <NavItem to="/industrialization/fournisseurs" icon={Truck} label="Catalogue fournisseurs" />
           <NavItem to="/industrialization/flow-chart" icon={GitBranch} label="Flow Chart" />
           <NavItem to="/industrialization/test-cables" icon={Cable} label="Test des câbles" />
         </nav>
 
-        {/* Sidebar footer */}
-        <div className="px-5 py-3 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <p className="text-[10px] text-slate-600 select-none">RAI © {new Date().getFullYear()} · v1.0</p>
+        {/* Sidebar footer — user info + logout */}
+        <div className="px-4 py-3 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+              <User className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-semibold text-slate-300 truncate">
+                {user?.email?.split('@')[0] || 'Utilisateur'}
+              </p>
+              <p className="text-[10px] text-slate-600 truncate">{user?.email || ''}</p>
+            </div>
+            <button
+              onClick={logout}
+              title="Se déconnecter"
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-white/5 transition-colors flex-shrink-0"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -386,6 +425,8 @@ const App = () => {
               <Route path="/ecme" element={<EtatECME />} />
               <Route path="/ecme/:code" element={<FicheDeVie />} />
               <Route path="/industrialization" element={<IndustrializationIndex />} />
+              <Route path="/industrialization/connecteurs" element={<CatalogueConnecteurs />} />
+              <Route path="/industrialization/fournisseurs" element={<CatalogueFournisseurs />} />
               <Route path="/industrialization/flow-chart" element={<FlowChartsIndex />} />
               <Route path="/industrialization/flow-chart/:id" element={<FlowChartEditor />} />
               <Route path="/industrialization/flow-chart/:id/view" element={<FlowChartViewer />} />

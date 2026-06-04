@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { machineTemplateService } from '../../services/api';
 
 const CreateMachineTemplate = () => {
   const navigate = useNavigate();
@@ -79,59 +80,60 @@ const CreateMachineTemplate = () => {
     }));
   };
 
-  const handleSaveTemplate = () => {
+  const [saving, setSaving] = useState(false);
+
+  const handleSaveTemplate = async () => {
     setError('');
     setSuccessMessage('');
 
-    // Validation
     if (!formData.machineLabel.trim()) {
       setError('Le nom de la machine est obligatoire');
       return;
     }
-
     if (formData.monthlyTasks.some((task) => !task.label.trim())) {
       setError('Tous les labels des tâches mensuelles doivent être remplis');
       return;
     }
-
     if (formData.semiannualTasks.some((task) => !task.label.trim())) {
       setError('Tous les labels des tâches semi-annuelles doivent être remplis');
       return;
     }
 
-    // Store in localStorage for now (will be replaced with API call later)
-    const templates = JSON.parse(localStorage.getItem('machineTemplates') || '[]');
-    const newTemplate = {
-      id: Date.now(),
-      machineKey: formData.machineLabel
+    setSaving(true);
+    try {
+      const machineKey = formData.machineLabel
         .toLowerCase()
+        .normalize('NFD').replace(/[̀-ͯ]/g, '')
         .replace(/\s+/g, '-')
-        .replace(/[éèê]/g, 'e')
-        .replace(/[àâ]/g, 'a'),
-      machineLabel: formData.machineLabel,
-      subtitle: formData.subtitle,
-      sections: [
-        {
-          key: 'monthly',
-          title: 'Maintenance preventive systematique mensuelle',
-          tasks: formData.monthlyTasks,
-        },
-        {
-          key: 'semiannual',
-          title: 'Maintenance preventive systematique semestrielle',
-          tasks: formData.semiannualTasks,
-        },
-      ],
-      createdAt: new Date().toISOString(),
-    };
+        .replace(/[^a-z0-9-]/g, '');
 
-    templates.push(newTemplate);
-    localStorage.setItem('machineTemplates', JSON.stringify(templates));
+      await machineTemplateService.create({
+        machineKey,
+        machineLabel: formData.machineLabel,
+        subtitle:     formData.subtitle,
+        sections: [
+          {
+            key:   'monthly',
+            title: 'Maintenance préventive systématique mensuelle',
+            tasks: formData.monthlyTasks,
+          },
+          {
+            key:   'semiannual',
+            title: 'Maintenance préventive systématique semestrielle',
+            tasks: formData.semiannualTasks,
+          },
+        ],
+      });
 
-    setSuccessMessage('✅ Template créé avec succès!');
-    setTimeout(() => {
-      navigate('/preventif/fiches-maintenance?newTemplate=true');
-    }, 1500);
+      setSuccessMessage('✅ Fiche machine créée avec succès !');
+      setTimeout(() => {
+        navigate('/preventif/fiches-maintenance');
+      }, 1200);
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || 'Erreur lors de la création');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -314,9 +316,11 @@ const CreateMachineTemplate = () => {
         </button>
         <button
           onClick={handleSaveTemplate}
-          className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
+          disabled={saving}
+          className="px-6 py-2 rounded-lg text-white transition font-medium disabled:opacity-50"
+          style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
         >
-          💾 Enregistrer le template
+          {saving ? 'Sauvegarde…' : '💾 Enregistrer la fiche machine'}
         </button>
       </div>
     </div>

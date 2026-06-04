@@ -128,10 +128,11 @@ const ProcedureSearch = ({ value, onChange, onSelect }) => {
 // ── Media item ─────────────────────────────────────────────
 const MediaItem = ({ item, onRemove, readOnly }) => (
   <div className="flex items-center gap-2.5 rounded-lg border border-slate-200 bg-white p-2.5">
-    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.type === 'video' ? 'bg-red-50' : 'bg-blue-50'}`}>
-      {item.type === 'video'
-        ? <Video className="w-4 h-4 text-red-500" />
-        : <Image className="w-4 h-4 text-blue-500" />}
+    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+      item.type === 'video' ? 'bg-red-50' : item.type === 'document' ? 'bg-orange-50' : 'bg-blue-50'}`}>
+      {item.type === 'video'    ? <Video  className="w-4 h-4 text-red-500"    />
+      : item.type === 'document'? <span className="text-[9px] font-bold text-orange-600">DOC</span>
+      :                           <Image  className="w-4 h-4 text-blue-500"   />}
     </div>
     <div className="min-w-0 flex-1">
       <p className="text-xs font-semibold text-slate-700 truncate">{item.title || 'Sans titre'}</p>
@@ -175,8 +176,12 @@ const FlowChartEditor = () => {
   const [loading,      setLoading]      = useState(Boolean(id));
   const [editTitle,    setEditTitle]    = useState(false);
   const [pendingTitle, setPendingTitle] = useState('');
-  // For new media row in edit/add panel
-  const [newMedia,     setNewMedia]     = useState({ type: 'image', title: '', url: '', duration: '' });
+  const [newParam,     setNewParam]     = useState('');
+  const [newTool,      setNewTool]      = useState('');
+  const [uploadingFile,setUploadingFile]= useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
+  const mediaFileRef = useRef(null);
+  const canvasRef    = useRef(null);
 
   // ── Load from DB ─────────────────────────────────────────
   useEffect(() => {
@@ -266,19 +271,20 @@ const FlowChartEditor = () => {
       label:       selectedStep.label,
       shape:       selectedStep.shape,
       description: selectedStep.description || '',
-      tools:       (selectedStep.tools || []).join(', '),
-      parameters:  (selectedStep.parameters || []).join('\n'),
+      tools:       [...(selectedStep.tools || [])],
+      parameters:  [...(selectedStep.parameters || [])],
       media:       [...(selectedStep.media || [])],
       saveToLib:   false,
     });
-    setNewMedia({ type: 'image', title: '', url: '', duration: '' });
+    setNewParam('');
+    setNewTool('');
     setPanel('edit');
   };
 
   const saveEdit = async () => {
     if (!draft?.label.trim()) return;
-    const tools      = draft.tools.split(',').map(t => t.trim()).filter(Boolean);
-    const parameters = draft.parameters.split('\n').map(p => p.trim()).filter(Boolean);
+    const tools      = Array.isArray(draft.tools) ? draft.tools : [];
+    const parameters = Array.isArray(draft.parameters) ? draft.parameters : [];
     const updated    = {
       ...selectedStep,
       label: draft.label.trim(), shape: draft.shape,
@@ -306,9 +312,10 @@ const FlowChartEditor = () => {
     setDraft({
       label: '', shape: 'operation', description: '',
       parentId: selectedId || steps[steps.length - 1]?.id || '',
-      tools: '', parameters: '', media: [], saveToLib: false,
+      tools: [], parameters: [], media: [], saveToLib: false,
     });
-    setNewMedia({ type: 'image', title: '', url: '', duration: '' });
+    setNewParam('');
+    setNewTool('');
     setPanel('add');
   };
 
@@ -318,8 +325,8 @@ const FlowChartEditor = () => {
       label:       proc.label,
       shape:       proc.shape,
       description: proc.description || '',
-      tools:       (proc.tools || []).join(', '),
-      parameters:  (proc.parameters || []).join('\n'),
+      tools:       [...(proc.tools || [])],
+      parameters:  [...(proc.parameters || [])],
       media:       [...(proc.media || [])],
       procedure_id: proc.id,
     }));
@@ -330,8 +337,8 @@ const FlowChartEditor = () => {
     const parent   = steps.find(s => s.id === draft.parentId) || steps[steps.length - 1];
     const siblings = steps.filter(s => s.parentId === parent?.id).length;
     const xOff     = [0, 260, -260, 520, -520];
-    const tools      = draft.tools.split(',').map(t => t.trim()).filter(Boolean);
-    const parameters = draft.parameters.split('\n').map(p => p.trim()).filter(Boolean);
+    const tools      = Array.isArray(draft.tools) ? draft.tools : [];
+    const parameters = Array.isArray(draft.parameters) ? draft.parameters : [];
     const newStep = {
       id: createId(), number: steps.length + 1,
       parentId: parent?.id || null,
@@ -370,12 +377,101 @@ const FlowChartEditor = () => {
   };
 
   // ── Media helpers ─────────────────────────────────────────
-  const addMedia = () => {
-    if (!newMedia.url.trim()) return;
-    setDraft(d => ({ ...d, media: [...(d.media || []), { ...newMedia }] }));
-    setNewMedia({ type: 'image', title: '', url: '', duration: '' });
-  };
   const removeMedia = (i) => setDraft(d => ({ ...d, media: d.media.filter((_, idx) => idx !== i) }));
+
+  // ── Parameter helpers ─────────────────────────────────────
+  const addParamToDraft = () => {
+    if (!newParam.trim()) return;
+    setDraft(d => ({ ...d, parameters: [...(d.parameters || []), newParam.trim()] }));
+    setNewParam('');
+  };
+  const removeParamFromDraft = (i) =>
+    setDraft(d => ({ ...d, parameters: (d.parameters || []).filter((_, idx) => idx !== i) }));
+
+  // ── Tool helpers ───────────────────────────────────────────
+  const addToolToDraft = () => {
+    if (!newTool.trim()) return;
+    setDraft(d => ({ ...d, tools: [...(d.tools || []), newTool.trim()] }));
+    setNewTool('');
+  };
+  const removeToolFromDraft = (i) =>
+    setDraft(d => ({ ...d, tools: (d.tools || []).filter((_, idx) => idx !== i) }));
+
+  // ── File upload to Supabase Storage ───────────────────────
+  const uploadFile = async (file) => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseKey) {
+      alert('Supabase non configuré. Ajoutez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY dans les variables Vercel.');
+      return null;
+    }
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    const safeFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const path = `flowchart-media/${id || 'draft'}/${safeFileName}`;
+    const { data, error } = await supabase.storage.from('flowchart-media').upload(path, file, { upsert: false });
+    if (error) { alert('Erreur upload : ' + error.message); return null; }
+    const { data: { publicUrl } } = supabase.storage.from('flowchart-media').getPublicUrl(data.path);
+    return publicUrl;
+  };
+
+  const handleFileUpload = async (e) => {
+    const files = Array.from(e.target.files || []); if (!files.length) return;
+    setUploadingFile(true);
+    try {
+      for (const file of files) {
+        const url = await uploadFile(file);
+        if (url) {
+          const type = file.type.startsWith('image/') ? 'image'
+            : file.type.startsWith('video/') ? 'video'
+            : 'document';
+          setDraft(d => ({
+            ...d,
+            media: [...(d.media || []), { type, title: file.name, url, duration: '' }],
+          }));
+        }
+      }
+    } finally { setUploadingFile(false); e.target.value = ''; }
+  };
+
+  // ── PDF export ────────────────────────────────────────────
+  const exportPDF = async () => {
+    if (!canvasRef.current) return;
+    setExportingPdf(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import('html2canvas'),
+        import('jspdf'),
+      ]);
+      const canvas = await html2canvas(canvasRef.current, {
+        scale: 1.5,
+        useCORS: true,
+        backgroundColor: '#f1f5f9',
+        logging: false,
+      });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf     = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const W       = pdf.internal.pageSize.getWidth();
+      const H       = pdf.internal.pageSize.getHeight();
+      // Title
+      pdf.setFontSize(14);
+      pdf.setTextColor(15, 29, 53);
+      pdf.text(title || 'Flow Chart', 10, 12);
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text(`Exporté le ${new Date().toLocaleDateString('fr-FR')}`, 10, 18);
+      // Canvas image
+      const imgH  = (canvas.height * (W - 20)) / canvas.width;
+      const maxH  = H - 25;
+      const finalH = Math.min(imgH, maxH);
+      const finalW = imgH > maxH ? ((W - 20) * maxH) / imgH : W - 20;
+      pdf.addImage(imgData, 'PNG', 10, 22, finalW, finalH);
+      pdf.save(`${(title || 'flowchart').replace(/\s+/g, '_')}.pdf`);
+    } catch (err) {
+      console.error('Erreur export PDF:', err);
+      alert('Erreur lors de la génération du PDF');
+    } finally { setExportingPdf(false); }
+  };
 
   // ── Export / Import ───────────────────────────────────────
   const handleExport = () => {
@@ -479,7 +575,12 @@ const FlowChartEditor = () => {
           <input ref={fileRef} type="file" accept=".json" className="hidden" onChange={handleImport} />
           <button onClick={handleExport}
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50">
-            <Download className="w-3.5 h-3.5" /> Exporter
+            <Download className="w-3.5 h-3.5" /> JSON
+          </button>
+          <button onClick={exportPDF} disabled={exportingPdf}
+            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 text-xs font-semibold text-red-600 bg-white hover:bg-red-50 disabled:opacity-50 transition-colors">
+            <Download className="w-3.5 h-3.5" />
+            {exportingPdf ? 'Export…' : 'PDF'}
           </button>
           {/* Save */}
           <button onClick={() => save()}  disabled={saving}
@@ -501,7 +602,7 @@ const FlowChartEditor = () => {
         {/* Canvas */}
         <div className="flex-1 min-w-0 overflow-auto relative"
           style={{ backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
-          <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', minWidth: 900, minHeight: 1100, position: 'relative' }}>
+          <div ref={canvasRef} style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', minWidth: 900, minHeight: 1100, position: 'relative' }}>
             <svg className="pointer-events-none absolute inset-0 w-full h-full" aria-hidden>
               <defs>
                 <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
@@ -656,14 +757,49 @@ const FlowChartEditor = () => {
                   <span className={labelCls}>Description</span>
                   <textarea rows={2} value={draft.description} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))} className={fieldCls + ' resize-none'} placeholder="Description courte…" />
                 </label>
-                <label className="block">
-                  <span className={labelCls}>Outils (séparés par virgule)</span>
-                  <input type="text" value={draft.tools} onChange={e => setDraft(d => ({ ...d, tools: e.target.value }))} className={fieldCls} />
-                </label>
-                <label className="block">
-                  <span className={labelCls}>Paramètres (un par ligne)</span>
-                  <textarea rows={4} value={draft.parameters} onChange={e => setDraft(d => ({ ...d, parameters: e.target.value }))} className={fieldCls + ' resize-none'} />
-                </label>
+                <div>
+                  <span className={labelCls}>Équipements / Outils ({(draft.tools||[]).length})</span>
+                  <div className="space-y-1.5 mb-2 max-h-32 overflow-y-auto">
+                    {(draft.tools||[]).map((t,i) => (
+                      <div key={i} className="flex items-center gap-2 bg-amber-50 rounded-lg border border-amber-200 px-3 py-2">
+                        <span className="text-xs text-amber-800 flex-1">{t}</span>
+                        <button type="button" onClick={() => removeToolFromDraft(i)}
+                          className="w-5 h-5 flex items-center justify-center text-amber-400 hover:text-red-500 transition-colors">
+                          <X className="w-3 h-3" /></button>
+                      </div>
+                    ))}
+                    {(draft.tools||[]).length===0 && <p className="text-xs text-slate-400 italic px-1">Aucun équipement</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="text" value={newTool} onChange={e=>setNewTool(e.target.value)}
+                      onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addToolToDraft();}}}
+                      className={fieldCls} placeholder="Nom de l'équipement / outil… (Entrée pour ajouter)" />
+                    <button type="button" onClick={addToolToDraft} disabled={!newTool.trim()}
+                      className="flex-shrink-0 px-3 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 disabled:opacity-40">+</button>
+                  </div>
+                </div>
+                <div>
+                  <span className={labelCls}>Paramètres ({(draft.parameters||[]).length})</span>
+                  <div className="space-y-1.5 mb-2 max-h-40 overflow-y-auto">
+                    {(draft.parameters||[]).map((p,i) => (
+                      <div key={i} className="flex items-center gap-2 bg-slate-50 rounded-lg border border-slate-200 px-3 py-2">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 flex-shrink-0">{i+1}</span>
+                        <span className="flex-1 text-xs text-slate-700">{p}</span>
+                        <button type="button" onClick={() => removeParamFromDraft(i)}
+                          className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors">
+                          <X className="w-3 h-3" /></button>
+                      </div>
+                    ))}
+                    {(draft.parameters||[]).length===0 && <p className="text-xs text-slate-400 italic px-1">Aucun paramètre</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="text" value={newParam} onChange={e=>setNewParam(e.target.value)}
+                      onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addParamToDraft();}}}
+                      className={fieldCls} placeholder="Nouveau paramètre… (Entrée pour ajouter)" />
+                    <button type="button" onClick={addParamToDraft} disabled={!newParam.trim()}
+                      className="flex-shrink-0 px-3 rounded-xl bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 disabled:opacity-40">+</button>
+                  </div>
+                </div>
 
                 {/* Media */}
                 <div>
@@ -671,28 +807,12 @@ const FlowChartEditor = () => {
                   <div className="space-y-2 mb-2">
                     {(draft.media || []).map((m, i) => <MediaItem key={i} item={m} onRemove={() => removeMedia(i)} />)}
                   </div>
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Ajouter un média</p>
-                    <div className="flex gap-2">
-                      <select value={newMedia.type} onChange={e => setNewMedia(m => ({ ...m, type: e.target.value }))}
-                        className="flex-shrink-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none">
-                        <option value="image">Image</option>
-                        <option value="video">Vidéo</option>
-                      </select>
-                      <input type="text" value={newMedia.title} onChange={e => setNewMedia(m => ({ ...m, title: e.target.value }))}
-                        placeholder="Titre" className="flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:border-sky-400" />
-                    </div>
-                    <input type="url" value={newMedia.url} onChange={e => setNewMedia(m => ({ ...m, url: e.target.value }))}
-                      placeholder="URL (image ou lien YouTube…)" className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:border-sky-400" />
-                    {newMedia.type === 'video' && (
-                      <input type="text" value={newMedia.duration} onChange={e => setNewMedia(m => ({ ...m, duration: e.target.value }))}
-                        placeholder="Durée (ex : 02:30)" className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:border-sky-400" />
-                    )}
-                    <button type="button" onClick={addMedia} disabled={!newMedia.url.trim()}
-                      className="w-full py-1.5 rounded-lg text-xs font-semibold text-white bg-sky-500 hover:bg-sky-600 disabled:opacity-40 transition-colors">
-                      + Ajouter
-                    </button>
-                  </div>
+                  <button type="button" onClick={() => mediaFileRef.current?.click()}
+                    disabled={uploadingFile}
+                    className="w-full py-2.5 rounded-xl text-xs font-semibold border-2 border-dashed border-slate-300 text-slate-500 hover:border-sky-400 hover:text-sky-600 transition-colors disabled:opacity-50">
+                    {uploadingFile ? '⏳ Upload en cours…' : '📎 Ajouter fichier — image · vidéo · PDF · Word'}
+                  </button>
+                  <input ref={mediaFileRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx" className="hidden" onChange={handleFileUpload} />
                 </div>
 
                 {/* Save to library */}
@@ -749,14 +869,49 @@ const FlowChartEditor = () => {
                   <span className={labelCls}>Description</span>
                   <textarea rows={2} value={draft.description} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))} className={fieldCls + ' resize-none'} placeholder="Description courte…" />
                 </label>
-                <label className="block">
-                  <span className={labelCls}>Outils (séparés par virgule)</span>
-                  <input type="text" value={draft.tools} onChange={e => setDraft(d => ({ ...d, tools: e.target.value }))} className={fieldCls} />
-                </label>
-                <label className="block">
-                  <span className={labelCls}>Paramètres (un par ligne)</span>
-                  <textarea rows={3} value={draft.parameters} onChange={e => setDraft(d => ({ ...d, parameters: e.target.value }))} className={fieldCls + ' resize-none'} />
-                </label>
+                <div>
+                  <span className={labelCls}>Équipements / Outils ({(draft.tools||[]).length})</span>
+                  <div className="space-y-1.5 mb-2 max-h-32 overflow-y-auto">
+                    {(draft.tools||[]).map((t,i) => (
+                      <div key={i} className="flex items-center gap-2 bg-amber-50 rounded-lg border border-amber-200 px-3 py-2">
+                        <span className="text-xs text-amber-800 flex-1">{t}</span>
+                        <button type="button" onClick={() => removeToolFromDraft(i)}
+                          className="w-5 h-5 flex items-center justify-center text-amber-400 hover:text-red-500 transition-colors">
+                          <X className="w-3 h-3" /></button>
+                      </div>
+                    ))}
+                    {(draft.tools||[]).length===0 && <p className="text-xs text-slate-400 italic px-1">Aucun équipement</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="text" value={newTool} onChange={e=>setNewTool(e.target.value)}
+                      onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addToolToDraft();}}}
+                      className={fieldCls} placeholder="Nom de l'équipement / outil… (Entrée pour ajouter)" />
+                    <button type="button" onClick={addToolToDraft} disabled={!newTool.trim()}
+                      className="flex-shrink-0 px-3 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 disabled:opacity-40">+</button>
+                  </div>
+                </div>
+                <div>
+                  <span className={labelCls}>Paramètres ({(draft.parameters||[]).length})</span>
+                  <div className="space-y-1.5 mb-2 max-h-40 overflow-y-auto">
+                    {(draft.parameters||[]).map((p,i) => (
+                      <div key={i} className="flex items-center gap-2 bg-slate-50 rounded-lg border border-slate-200 px-3 py-2">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-sky-100 text-[9px] font-bold text-sky-700 flex-shrink-0">{i+1}</span>
+                        <span className="flex-1 text-xs text-slate-700">{p}</span>
+                        <button type="button" onClick={() => removeParamFromDraft(i)}
+                          className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors">
+                          <X className="w-3 h-3" /></button>
+                      </div>
+                    ))}
+                    {(draft.parameters||[]).length===0 && <p className="text-xs text-slate-400 italic px-1">Aucun paramètre</p>}
+                  </div>
+                  <div className="flex gap-2">
+                    <input type="text" value={newParam} onChange={e=>setNewParam(e.target.value)}
+                      onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addParamToDraft();}}}
+                      className={fieldCls} placeholder="Nouveau paramètre… (Entrée pour ajouter)" />
+                    <button type="button" onClick={addParamToDraft} disabled={!newParam.trim()}
+                      className="flex-shrink-0 px-3 rounded-xl bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 disabled:opacity-40">+</button>
+                  </div>
+                </div>
 
                 {/* Media */}
                 <div>
@@ -764,28 +919,12 @@ const FlowChartEditor = () => {
                   <div className="space-y-2 mb-2">
                     {(draft.media || []).map((m, i) => <MediaItem key={i} item={m} onRemove={() => removeMedia(i)} />)}
                   </div>
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Ajouter un média</p>
-                    <div className="flex gap-2">
-                      <select value={newMedia.type} onChange={e => setNewMedia(m => ({ ...m, type: e.target.value }))}
-                        className="flex-shrink-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none">
-                        <option value="image">Image</option>
-                        <option value="video">Vidéo</option>
-                      </select>
-                      <input type="text" value={newMedia.title} onChange={e => setNewMedia(m => ({ ...m, title: e.target.value }))}
-                        placeholder="Titre" className="flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:border-sky-400" />
-                    </div>
-                    <input type="url" value={newMedia.url} onChange={e => setNewMedia(m => ({ ...m, url: e.target.value }))}
-                      placeholder="URL (image ou lien YouTube…)" className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:border-sky-400" />
-                    {newMedia.type === 'video' && (
-                      <input type="text" value={newMedia.duration} onChange={e => setNewMedia(m => ({ ...m, duration: e.target.value }))}
-                        placeholder="Durée (ex : 02:30)" className="w-full rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:border-sky-400" />
-                    )}
-                    <button type="button" onClick={addMedia} disabled={!newMedia.url.trim()}
-                      className="w-full py-1.5 rounded-lg text-xs font-semibold text-white bg-sky-500 hover:bg-sky-600 disabled:opacity-40 transition-colors">
-                      + Ajouter
-                    </button>
-                  </div>
+                  <button type="button" onClick={() => mediaFileRef.current?.click()}
+                    disabled={uploadingFile}
+                    className="w-full py-2.5 rounded-xl text-xs font-semibold border-2 border-dashed border-slate-300 text-slate-500 hover:border-sky-400 hover:text-sky-600 transition-colors disabled:opacity-50">
+                    {uploadingFile ? '⏳ Upload en cours…' : '📎 Ajouter fichier — image · vidéo · PDF · Word'}
+                  </button>
+                  <input ref={mediaFileRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx" className="hidden" onChange={handleFileUpload} />
                 </div>
 
                 {/* Save to library — only if not reusing existing */}

@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { maintenanceSheetService } from '../../services/api';
+import { maintenanceSheetService, machineTemplateService } from '../../services/api';
 import {
-  MAINTENANCE_MACHINES,
   buildInitialSpareParts,
   buildInitialTasks,
-  getMaintenanceMachineTemplate,
 } from '../../data/maintenanceMachines';
 
 const STATUS_OPTIONS = [
@@ -220,6 +218,7 @@ const FichesMaintenance = () => {
   const navigate = useNavigate();
   const { machineKey, sheetId } = useParams();
   const [customTemplates, setCustomTemplates] = useState([]);
+  const [loadingTemplates, setLoadingTemplates] = useState(true);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -227,17 +226,19 @@ const FichesMaintenance = () => {
   const [latestSheet, setLatestSheet] = useState(null);
   const [selectedSheet, setSelectedSheet] = useState(null);
 
+  // Load custom templates from DB (replaces localStorage)
   useEffect(() => {
-    const templates = JSON.parse(localStorage.getItem('machineTemplates') || '[]');
-    setCustomTemplates(templates);
+    machineTemplateService.getAll()
+      .then(data => setCustomTemplates(Array.isArray(data) ? data : []))
+      .catch(err => console.error('Erreur chargement fiches machines:', err))
+      .finally(() => setLoadingTemplates(false));
   }, []);
 
-  const allMachines = useMemo(() => [...MAINTENANCE_MACHINES, ...customTemplates], [customTemplates]);
+  // All machines now come from the database (no more hardcoded list)
+  const allMachines = customTemplates;
 
   const template = useMemo(() => {
     if (!machineKey) return null;
-    const defaultTemplate = getMaintenanceMachineTemplate(machineKey);
-    if (defaultTemplate) return defaultTemplate;
     return customTemplates.find((t) => t.machineKey === machineKey) || null;
   }, [machineKey, customTemplates]);
 
@@ -352,7 +353,7 @@ const FichesMaintenance = () => {
   const activeMachineLabel = equipmentLabel || selectedSheet?.machine_label || latestSheet?.machine_label || draft?.machine_label || displayTemplate?.machineLabel || '';
   const isInspectionMode = Boolean(sheetId);
   const isSummaryView = !machineKey && !sheetId;
-  const isSummaryLoading = isSummaryView && loading;
+  const isSummaryLoading = isSummaryView && (loading || loadingTemplates);
 
   const groupedTasks = useMemo(() => {
     if (!draft || !displayTemplate || !Array.isArray(draft.tasks)) return [];
@@ -531,7 +532,7 @@ const FichesMaintenance = () => {
                 : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
             }`}
           >
-            Machines ({MAINTENANCE_MACHINES.length})
+            Machines ({allMachines.length})
           </button>
           <button
             type="button"
