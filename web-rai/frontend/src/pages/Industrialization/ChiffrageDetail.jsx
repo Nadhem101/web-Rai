@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import {
   chiffrageService, chiffrageLigneService,
@@ -6,24 +6,38 @@ import {
 } from '../../services/api';
 import {
   ChevronLeft, Plus, Trash2, Save, Download, Check,
-  Factory, Pencil, X, Image, Search, AlertTriangle,
-  BookOpen,
+  Factory, Pencil, X, Image, Search, BookOpen,
+  Link2, Package, Layers, FileText, ToggleLeft, ToggleRight,
 } from 'lucide-react';
 
 // ── Constants ──────────────────────────────────────────────
 const STATUS_OPTIONS = [
-  { value:'brouillon', label:'Brouillon' },
-  { value:'en_cours',  label:'En cours'  },
-  { value:'valide',    label:'Validé'    },
-  { value:'archive',   label:'Archivé'   },
+  { value: 'brouillon', label: 'Brouillon' },
+  { value: 'en_cours',  label: 'En cours'  },
+  { value: 'valide',    label: 'Validé'    },
+  { value: 'archive',   label: 'Archivé'   },
 ];
 
 const STATUT_OPTS = [
-  { value:'en_stock',    label:'En stock',         cls:'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  { value:'a_commander', label:'À commander',      cls:'bg-amber-100 text-amber-800 border-amber-200'       },
-  { value:'rupture',     label:'Rupture de stock', cls:'bg-red-100 text-red-700 border-red-200'              },
-  { value:'interne',     label:'Solution interne', cls:'bg-purple-100 text-purple-700 border-purple-200'    },
+  { value: 'en_stock',    label: 'En stock',         cls: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
+  { value: 'a_commander', label: 'À commander',      cls: 'bg-amber-100 text-amber-800 border-amber-200'       },
+  { value: 'rupture',     label: 'Rupture de stock', cls: 'bg-red-100 text-red-700 border-red-200'              },
+  { value: 'interne',     label: 'Solution interne', cls: 'bg-purple-100 text-purple-700 border-purple-200'    },
 ];
+
+const COMPOSANT_TYPES = [
+  { value: 'cosse',  label: 'Cosse',  icon: Link2,    color: 'sky'    },
+  { value: 'joint',  label: 'Joint',  icon: Package,  color: 'amber'  },
+  { value: 'cale',   label: 'Cale',   icon: Layers,   color: 'indigo' },
+  { value: 'autre',  label: 'Autre',  icon: FileText, color: 'slate'  },
+];
+
+const TYPE_STYLE = {
+  cosse:  { badge: 'bg-sky-100 text-sky-700 border-sky-200',     bar: 'border-l-sky-400'    },
+  joint:  { badge: 'bg-amber-100 text-amber-700 border-amber-200', bar: 'border-l-amber-400' },
+  cale:   { badge: 'bg-indigo-100 text-indigo-700 border-indigo-200', bar: 'border-l-indigo-400' },
+  autre:  { badge: 'bg-slate-100 text-slate-600 border-slate-200',  bar: 'border-l-slate-300' },
+};
 
 const statutCls   = (v) => STATUT_OPTS.find(o => o.value === v)?.cls   || STATUT_OPTS[1].cls;
 const statutLabel = (v) => STATUT_OPTS.find(o => o.value === v)?.label || 'À commander';
@@ -31,18 +45,45 @@ const statutLabel = (v) => STATUT_OPTS.find(o => o.value === v)?.label || 'À co
 const fieldCls = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors';
 const labelCls = 'mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500';
 
-const rowTot = (l) => (Number(l.quantite)||0) * ((Number(l.prix_unitaire)||0) + (Number(l.prix_cp)||0));
-const grandTot = (ls) => ls.reduce((s,l) => s + rowTot(l), 0);
+const createCmpId = () => `cmp-${Date.now()}-${Math.floor(Math.random()*9999)}`;
+
+const emptyComposant = (type = 'cosse') => ({
+  id: createCmpId(),
+  type,
+  designation: '',
+  ref_fournisseur: '',
+  ref_interne: '',
+  qte_besoin: 1,
+  acheter: true,
+  recu: false,
+  fournisseur: '',
+  prix_unitaire: 0,
+  statut: 'a_commander',
+});
 
 const EMPTY_LIGNE = (chiffrageId, ordre) => ({
   _lid: `new-${Date.now()}`, id: null, chiffrage_id: Number(chiffrageId), ordre,
-  ref_connecteur:'', designation:'', ref_contrepartie:'', photo_url:'',
-  fournisseur:'', ref_fournisseur:'', statut_stock:'a_commander', prix_unitaire:0,
-  fournisseur_cp:'', ref_fournisseur_cp:'', statut_cp:'a_commander', prix_cp:0,
-  solution_interne:'', commentaire_rai:'', quantite:1,
+  ref_connecteur: '', designation: '', ref_interne: '',
+  photo_url: '', fournisseur: '', ref_fournisseur: '',
+  statut_stock: 'a_commander', prix_unitaire: 0,
+  quantite: 1, qte_besoin: 1,
+  besoin_contrepartie: true,
+  composants: [],
+  commentaire_rai: '',
+  // legacy kept for backward compat
+  ref_contrepartie: '', fournisseur_cp: '', ref_fournisseur_cp: '',
+  statut_cp: 'a_commander', prix_cp: 0, solution_interne: '',
 });
 
-// ── Autocomplete ───────────────────────────────────────────
+const rowTot = (l) => {
+  const connTotal = (Number(l.prix_unitaire) || 0) * (Number(l.quantite) || 1);
+  const cmpTotal  = (l.composants || []).reduce((s, c) =>
+    s + (Number(c.prix_unitaire) || 0) * (Number(c.qte_besoin) || 1), 0);
+  return connTotal + cmpTotal;
+};
+const grandTot = (ls) => ls.reduce((s, l) => s + rowTot(l), 0);
+
+// ── Catalogue search ───────────────────────────────────────
 const ConnecteurSearch = ({ value, onChange, onSelect }) => {
   const [results, setResults] = useState([]);
   const [open,    setOpen]    = useState(false);
@@ -74,7 +115,7 @@ const ConnecteurSearch = ({ value, onChange, onSelect }) => {
         <div className="absolute z-50 top-full mt-1 left-0 right-0 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden">
           <div className="px-3 py-1.5 bg-slate-50 border-b border-slate-100 flex items-center gap-1.5">
             <BookOpen className="w-3 h-3 text-slate-400" />
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Catalogue</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Catalogue connecteurs</p>
           </div>
           {results.map(c => (
             <button key={c.id} type="button"
@@ -84,7 +125,6 @@ const ConnecteurSearch = ({ value, onChange, onSelect }) => {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold text-slate-800 font-mono">{c.ref_connecteur}</p>
                 <p className="text-[11px] text-slate-500 truncate">{c.designation}</p>
-                {c.ref_contrepartie && <p className="text-[10px] text-indigo-600">CP: {c.ref_contrepartie}</p>}
               </div>
               <span className="text-[10px] text-sky-500 font-semibold flex-shrink-0">Utiliser →</span>
             </button>
@@ -95,51 +135,119 @@ const ConnecteurSearch = ({ value, onChange, onSelect }) => {
   );
 };
 
-// ── Supply section in edit panel ───────────────────────────
-const SupplySection = ({ title, color, fournisseur, refF, statut, prix, solutionInterne,
-  onFournisseur, onRefF, onStatut, onPrix, onSolutionInterne, fournisseurs }) => {
+// ── Composant card in panel ────────────────────────────────
+const ComposantCard = ({ cmp, index, fournisseurs, onChange, onRemove }) => {
+  const [open, setOpen] = useState(true);
+  const style = TYPE_STYLE[cmp.type] || TYPE_STYLE.autre;
+  const typeCfg = COMPOSANT_TYPES.find(t => t.value === cmp.type) || COMPOSANT_TYPES[3];
+  const IconComp = typeCfg.icon;
 
-  const isInterne = statut === 'interne';
-  const borderCls = color === 'sky' ? 'border-sky-200 bg-sky-50/40' : 'border-indigo-200 bg-indigo-50/40';
-  const titleCls  = color === 'sky' ? 'text-sky-700'                : 'text-indigo-700';
+  const set = (field, val) => onChange(index, { ...cmp, [field]: val });
 
   return (
-    <div className={`rounded-xl border p-4 space-y-3 ${borderCls}`}>
-      <p className={`text-xs font-bold uppercase tracking-wider ${titleCls}`}>{title}</p>
-      <label className="block">
-        <span className={labelCls}>Statut</span>
-        <select value={statut} onChange={e => onStatut(e.target.value)}
-          className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-sky-200 ${statutCls(statut)}`}>
-          {STATUT_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
-      </label>
-      {!isInterne ? (
-        <>
+    <div className={`rounded-xl border border-slate-200 overflow-hidden border-l-4 ${style.bar}`}>
+      {/* Card header */}
+      <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 cursor-pointer" onClick={() => setOpen(o => !o)}>
+        <IconComp className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+        <span className={`text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5 border ${style.badge}`}>
+          {typeCfg.label}
+        </span>
+        <span className="text-xs text-slate-600 flex-1 truncate">
+          {cmp.ref_fournisseur || cmp.designation || <span className="italic text-slate-400">Sans référence</span>}
+        </span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Acheter badge */}
+          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded border ${
+            cmp.acheter ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'
+          }`}>
+            {cmp.acheter ? 'À acheter' : 'En stock'}
+          </span>
+          {cmp.recu && (
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-emerald-100 text-emerald-700 border-emerald-200">Reçu ✓</span>
+          )}
+          <button type="button" onClick={e => { e.stopPropagation(); onRemove(index); }}
+            className="w-5 h-5 flex items-center justify-center text-slate-400 hover:text-red-500 transition-colors">
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div className="p-3 space-y-3 bg-white">
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className={labelCls}>Réf. fournisseur</span>
+              <input type="text" value={cmp.ref_fournisseur} onChange={e => set('ref_fournisseur', e.target.value)}
+                className={fieldCls} placeholder="Ex: 966140-5" />
+            </label>
+            <label className="block">
+              <span className={labelCls}>Réf. interne</span>
+              <input type="text" value={cmp.ref_interne} onChange={e => set('ref_interne', e.target.value)}
+                className={fieldCls} placeholder="Ex: 27062567..." />
+            </label>
+          </div>
+
           <label className="block">
-            <span className={labelCls}>Fournisseur</span>
-            <input type="text" value={fournisseur} onChange={e => onFournisseur(e.target.value)}
-              list={`fourn-list-${color}`} className={fieldCls} placeholder="ex : Mouser Electronics" />
-            <datalist id={`fourn-list-${color}`}>
-              {fournisseurs.map(f => <option key={f.id} value={f.nom} />)}
-            </datalist>
+            <span className={labelCls}>Désignation</span>
+            <input type="text" value={cmp.designation} onChange={e => set('designation', e.target.value)}
+              className={fieldCls} placeholder="Description courte…" />
           </label>
-          <label className="block">
-            <span className={labelCls}>Réf. fournisseur</span>
-            <input type="text" value={refF} onChange={e => onRefF(e.target.value)}
-              className={fieldCls} placeholder="ex : 571-966140-5" />
-          </label>
-          <label className="block">
-            <span className={labelCls}>Prix unitaire (€)</span>
-            <input type="number" min="0" step="0.01" value={prix} onChange={e => onPrix(parseFloat(e.target.value)||0)}
-              className={fieldCls + ' text-right'} />
-          </label>
-        </>
-      ) : (
-        <label className="block">
-          <span className={labelCls}>Description de la solution interne</span>
-          <input type="text" value={solutionInterne} onChange={e => onSolutionInterne(e.target.value)}
-            className={fieldCls} placeholder="ex : Impression 3D, Usinage atelier, Fabrication interne…" />
-        </label>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className={labelCls}>Fournisseur</span>
+              <input type="text" value={cmp.fournisseur} onChange={e => set('fournisseur', e.target.value)}
+                list="fourn-list-cmp" className={fieldCls} placeholder="Ex: Mouser…" />
+              <datalist id="fourn-list-cmp">
+                {fournisseurs.map(f => <option key={f.id} value={f.nom} />)}
+              </datalist>
+            </label>
+            <label className="block">
+              <span className={labelCls}>Prix unitaire (€)</span>
+              <input type="number" min="0" step="0.01" value={cmp.prix_unitaire}
+                onChange={e => set('prix_unitaire', parseFloat(e.target.value) || 0)}
+                className={fieldCls + ' text-right'} />
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className={labelCls}>Qté besoin</span>
+              <input type="number" min="1" step="1" value={cmp.qte_besoin}
+                onChange={e => set('qte_besoin', parseInt(e.target.value) || 1)}
+                className={fieldCls + ' text-right'} />
+            </label>
+            <label className="block">
+              <span className={labelCls}>Statut</span>
+              <select value={cmp.statut} onChange={e => set('statut', e.target.value)}
+                className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none ${statutCls(cmp.statut)}`}>
+                {STATUT_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </label>
+          </div>
+
+          {/* Acheter / Reçu toggles */}
+          <div className="flex items-center gap-4">
+            <button type="button" onClick={() => set('acheter', !cmp.acheter)}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+                cmp.acheter
+                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              }`}>
+              {cmp.acheter ? <ToggleRight className="w-3.5 h-3.5" /> : <ToggleLeft className="w-3.5 h-3.5" />}
+              {cmp.acheter ? 'À acheter' : 'En stock'}
+            </button>
+            <button type="button" onClick={() => set('recu', !cmp.recu)}
+              className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-colors ${
+                cmp.recu
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-slate-50 text-slate-500 border-slate-200'
+              }`}>
+              <Check className="w-3 h-3" />
+              {cmp.recu ? 'Reçu ✓' : 'Non reçu'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -152,28 +260,31 @@ const ChiffrageDetail = () => {
   const tableRef = useRef(null);
   const photoRef = useRef(null);
 
-  const [header,     setHeader]     = useState({ affaire:'', client:'', reference_article:'', status:'brouillon' });
-  const [lignes,     setLignes]     = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [saving,     setSaving]     = useState(false);
-  const [saved,      setSaved]      = useState(false);
-  const [exporting,  setExporting]  = useState(false);
+  const [header,       setHeader]       = useState({ affaire: '', client: '', reference_article: '', status: 'brouillon' });
+  const [lignes,       setLignes]       = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [saving,       setSaving]       = useState(false);
+  const [saved,        setSaved]        = useState(false);
+  const [exporting,    setExporting]    = useState(false);
   const [fournisseurs, setFournisseurs] = useState([]);
+  const [panelLigne,   setPanelLigne]   = useState(null);
+  const [connSearch,   setConnSearch]   = useState('');
+  const [uploading,    setUploading]    = useState(false);
 
-  // Side panel state
-  const [panelLigne, setPanelLigne] = useState(null); // ligne being edited
-  const [connSearch, setConnSearch] = useState('');
-  const [uploading,  setUploading]  = useState(false);
-
-  // Load
   useEffect(() => {
     if (!id) return;
     Promise.all([
       chiffrageService.getById(id),
       fournisseurCatalogueService.getAll(),
     ]).then(([data, fours]) => {
-      setHeader({ affaire: data.affaire||'', client: data.client||'', reference_article: data.reference_article||'', status: data.status||'brouillon' });
-      setLignes((data.lignes||[]).sort((a,b) => (a.ordre??a.id)-(b.ordre??b.id)).map(l => ({ ...l, _lid: String(l.id) })));
+      setHeader({ affaire: data.affaire || '', client: data.client || '', reference_article: data.reference_article || '', status: data.status || 'brouillon' });
+      setLignes((data.lignes || []).sort((a, b) => (a.ordre ?? a.id) - (b.ordre ?? b.id)).map(l => ({
+        ...EMPTY_LIGNE(id, 0),
+        ...l,
+        _lid: String(l.id),
+        composants: Array.isArray(l.composants) ? l.composants : [],
+        besoin_contrepartie: l.besoin_contrepartie !== false,
+      })));
       setFournisseurs(Array.isArray(fours) ? fours : []);
     }).catch(console.error).finally(() => setLoading(false));
   }, [id]);
@@ -186,66 +297,63 @@ const ChiffrageDetail = () => {
     finally { setSaving(false); }
   }, [id, header]);
 
-  // Save a single ligne to DB
   const persistLigne = useCallback(async (l) => {
     const payload = {
       chiffrage_id: Number(id), ordre: l.ordre ?? 0,
-      ref_connecteur: l.ref_connecteur||null, designation: l.designation||null,
-      ref_contrepartie: l.ref_contrepartie||null, photo_url: l.photo_url||null,
-      fournisseur: l.fournisseur||null, ref_fournisseur: l.ref_fournisseur||null,
-      statut_stock: l.statut_stock||'a_commander', prix_unitaire: Number(l.prix_unitaire)||0,
-      fournisseur_cp: l.fournisseur_cp||null, ref_fournisseur_cp: l.ref_fournisseur_cp||null,
-      statut_cp: l.statut_cp||'a_commander', prix_cp: Number(l.prix_cp)||0,
-      solution_interne: l.solution_interne||null,
-      commentaire_rai: l.commentaire_rai||null, quantite: Number(l.quantite)||1,
+      ref_connecteur: l.ref_connecteur || null,
+      designation: l.designation || null,
+      ref_interne: l.ref_interne || null,
+      photo_url: l.photo_url || null,
+      fournisseur: l.fournisseur || null,
+      ref_fournisseur: l.ref_fournisseur || null,
+      statut_stock: l.statut_stock || 'a_commander',
+      prix_unitaire: Number(l.prix_unitaire) || 0,
+      quantite: Number(l.quantite) || 1,
+      qte_besoin: Number(l.qte_besoin) || 1,
+      besoin_contrepartie: l.besoin_contrepartie !== false,
+      composants: Array.isArray(l.composants) ? l.composants : [],
+      commentaire_rai: l.commentaire_rai || null,
+      // legacy fields kept for backward compat
+      ref_contrepartie: l.ref_contrepartie || null,
+      fournisseur_cp: l.fournisseur_cp || null,
+      ref_fournisseur_cp: l.ref_fournisseur_cp || null,
+      statut_cp: l.statut_cp || 'a_commander',
+      prix_cp: Number(l.prix_cp) || 0,
+      solution_interne: l.solution_interne || null,
     };
     if (l.id) {
       const updated = await chiffrageLigneService.update(l.id, payload);
-      setLignes(prev => prev.map(x => x._lid === l._lid ? { ...updated, _lid: String(updated.id) } : x));
-      return { ...updated, _lid: String(updated.id) };
+      setLignes(prev => prev.map(x => x._lid === l._lid ? { ...updated, _lid: String(updated.id), composants: updated.composants || [], besoin_contrepartie: updated.besoin_contrepartie !== false } : x));
+      return updated;
     } else {
       const created = await chiffrageLigneService.create(payload);
-      setLignes(prev => prev.map(x => x._lid === l._lid ? { ...created, _lid: String(created.id) } : x));
-      return { ...created, _lid: String(created.id) };
+      setLignes(prev => prev.map(x => x._lid === l._lid ? { ...created, _lid: String(created.id), composants: created.composants || [], besoin_contrepartie: created.besoin_contrepartie !== false } : x));
+      return created;
     }
   }, [id]);
 
-  // Panel helpers
-  const openPanel = (l) => {
-    setPanelLigne({ ...l });
-    setConnSearch(l.ref_connecteur || '');
-  };
-
+  const openPanel = (l) => { setPanelLigne({ ...l, composants: Array.isArray(l.composants) ? [...l.composants] : [] }); setConnSearch(l.ref_connecteur || ''); };
   const closePanel = () => { setPanelLigne(null); setConnSearch(''); };
-
   const updatePanel = (field, value) => setPanelLigne(p => ({ ...p, [field]: value }));
 
   const savePanel = async () => {
     if (!panelLigne) return;
     setSaving(true);
-    try {
-      const saved = await persistLigne(panelLigne);
-      setPanelLigne(null); setConnSearch('');
-    } catch (err) { console.error(err); }
+    try { await persistLigne(panelLigne); closePanel(); }
+    catch (err) { console.error(err); }
     finally { setSaving(false); }
   };
 
   const handleSelectCatalogue = (c) => {
     const conn = c.approvisionnements_conn?.find(a => a.prioritaire) || c.approvisionnements_conn?.[0];
-    const cp   = c.approvisionnements_cp?.find(a => a.prioritaire)   || c.approvisionnements_cp?.[0];
     setPanelLigne(p => ({
       ...p,
-      ref_connecteur:    c.ref_connecteur   || p.ref_connecteur,
-      designation:       c.designation      || p.designation,
-      ref_contrepartie:  c.ref_contrepartie || p.ref_contrepartie,
-      photo_url:         c.photo_url        || p.photo_url,
-      solution_interne:  c.solution_interne || '',
-      fournisseur:       conn?.fournisseur     || p.fournisseur,
-      ref_fournisseur:   conn?.ref_fournisseur || p.ref_fournisseur,
-      prix_unitaire:     Number(conn?.prix_unitaire) || p.prix_unitaire,
-      fournisseur_cp:    cp?.fournisseur     || p.fournisseur_cp,
-      ref_fournisseur_cp:cp?.ref_fournisseur || p.ref_fournisseur_cp,
-      prix_cp:           Number(cp?.prix_unitaire) || p.prix_cp,
+      ref_connecteur:  c.ref_connecteur  || p.ref_connecteur,
+      designation:     c.designation     || p.designation,
+      photo_url:       c.photo_url       || p.photo_url,
+      fournisseur:     conn?.fournisseur  || p.fournisseur,
+      ref_fournisseur: conn?.ref_fournisseur || p.ref_fournisseur,
+      prix_unitaire:   Number(conn?.prix_unitaire) || p.prix_unitaire,
     }));
     setConnSearch(c.ref_connecteur || '');
   };
@@ -262,6 +370,20 @@ const ChiffrageDetail = () => {
     if (panelLigne?._lid === l._lid) closePanel();
   };
 
+  // Composant helpers
+  const addComposant = (type) => {
+    setPanelLigne(p => ({ ...p, composants: [...(p.composants || []), emptyComposant(type)] }));
+  };
+  const updateComposant = (index, updated) => {
+    setPanelLigne(p => ({
+      ...p,
+      composants: (p.composants || []).map((c, i) => i === index ? updated : c),
+    }));
+  };
+  const removeComposant = (index) => {
+    setPanelLigne(p => ({ ...p, composants: (p.composants || []).filter((_, i) => i !== index) }));
+  };
+
   const uploadPhoto = async (e) => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true);
@@ -271,7 +393,7 @@ const ChiffrageDetail = () => {
       if (!supabaseUrl || !supabaseKey) { alert('Supabase non configuré.'); return; }
       const { createClient } = await import('@supabase/supabase-js');
       const supabase = createClient(supabaseUrl, supabaseKey);
-      const fn = `chiffrage/${id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+      const fn = `chiffrage/${id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
       const { data, error } = await supabase.storage.from('flowchart-media').upload(fn, file, { upsert: false });
       if (error) { alert('Erreur upload : ' + error.message); return; }
       const { data: { publicUrl } } = supabase.storage.from('flowchart-media').getPublicUrl(data.path);
@@ -288,12 +410,12 @@ const ChiffrageDetail = () => {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
-      pdf.setFontSize(13); pdf.setTextColor(15,29,53);
-      pdf.text(`CHIFFRAGE TABLE DE TEST — ${header.reference_article || header.affaire || ''}`, 10, 12);
-      pdf.setFontSize(8); pdf.setTextColor(100,116,139);
-      pdf.text(`Affaire: ${header.affaire||'—'}   Client: ${header.client||'—'}   Total: ${grandTot(lignes).toFixed(2)} €`, 10, 18);
-      const imgH = (canvas.height * (W-20)) / canvas.width;
-      const fH = Math.min(imgH, H-25), fW = imgH > H-25 ? ((W-20)*(H-25))/imgH : W-20;
+      pdf.setFontSize(13); pdf.setTextColor(15, 29, 53);
+      pdf.text(`CHIFFRAGE — ${header.reference_article || header.affaire || ''}`, 10, 12);
+      pdf.setFontSize(8); pdf.setTextColor(100, 116, 139);
+      pdf.text(`Affaire: ${header.affaire || '—'}   Client: ${header.client || '—'}   Total: ${grandTot(lignes).toFixed(2)} €`, 10, 18);
+      const imgH = (canvas.height * (W - 20)) / canvas.width;
+      const fH = Math.min(imgH, H - 25), fW = imgH > H - 25 ? ((W - 20) * (H - 25)) / imgH : W - 20;
       pdf.addImage(imgData, 'PNG', 10, 22, fW, fH);
       pdf.save(`chiffrage-${header.reference_article || id}.pdf`);
     } catch (err) { console.error(err); }
@@ -343,9 +465,9 @@ const ChiffrageDetail = () => {
       {/* Header fields */}
       <div className="flex-shrink-0 px-5 py-4 bg-white border-b border-slate-200">
         <div className="grid gap-4 sm:grid-cols-3">
-          {[{ key:'affaire', label:'AFFAIRE', ph:'OP-25_EA1800-01_Ind A' },
-            { key:'client', label:'CLIENT', ph:'Perciculture' },
-            { key:'reference_article', label:'RÉFÉRENCE ARTICLE', ph:'KUPREEA1800-01AP' }
+          {[{ key: 'affaire', label: 'AFFAIRE', ph: 'OP-25_EA1800-01' },
+            { key: 'client',  label: 'CLIENT',  ph: 'Perciculture'   },
+            { key: 'reference_article', label: 'RÉFÉRENCE ARTICLE', ph: 'KUPREEA1800-01AP' },
           ].map(({ key, label, ph }) => (
             <div key={key}>
               <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">{label}</p>
@@ -358,7 +480,7 @@ const ChiffrageDetail = () => {
         </div>
       </div>
 
-      {/* Body: table + optional side panel */}
+      {/* Body */}
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* Table */}
@@ -371,44 +493,66 @@ const ChiffrageDetail = () => {
             <div className="overflow-x-auto">
               <table className="min-w-full border-collapse text-xs">
                 <thead>
-                  <tr className="bg-sky-600 text-white">
-                    {['Réf. Conn.','Désignation','Contre-partie','Photo','Fourn. Conn.','Réf. Conn.','Prix Conn.','Fourn. CP','Réf. CP','Prix CP','Statuts','Qté','Total',''].map(h => (
-                      <th key={h} className="px-2 py-2.5 text-left font-bold uppercase tracking-wide border-r border-sky-500 last:border-0 whitespace-nowrap text-[10px]">{h}</th>
-                    ))}
+                  <tr className="bg-sky-700 text-white">
+                    <th className="px-3 py-2.5 text-left font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px]">Réf. Connecteur</th>
+                    <th className="px-3 py-2.5 text-left font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px]">Désignation</th>
+                    <th className="px-3 py-2.5 text-left font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px]">Réf. Interne</th>
+                    <th className="px-3 py-2.5 text-left font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px]">Fourn.</th>
+                    <th className="px-3 py-2.5 text-center font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px]">Qté</th>
+                    <th className="px-3 py-2.5 text-center font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px]">Qté besoin</th>
+                    <th className="px-3 py-2.5 text-left font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px] bg-indigo-700">Contrepartie</th>
+                    <th className="px-3 py-2.5 text-right font-bold uppercase tracking-wide border-r border-sky-600 whitespace-nowrap text-[10px]">Total</th>
+                    <th className="px-3 py-2.5 text-center font-bold uppercase tracking-wide whitespace-nowrap text-[10px]"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {lignes.length === 0 ? (
-                    <tr><td colSpan={14} className="py-8 text-center text-slate-400 text-xs">
+                    <tr><td colSpan={9} className="py-10 text-center text-slate-400 text-xs">
                       Aucun connecteur — cliquez «&nbsp;Ajouter&nbsp;» ci-dessous
                     </td></tr>
                   ) : lignes.map((l, idx) => {
                     const isSelected = panelLigne?._lid === l._lid;
+                    const cosses = (l.composants || []).filter(c => c.type === 'cosse');
+                    const joints = (l.composants || []).filter(c => c.type === 'joint');
+                    const cales  = (l.composants || []).filter(c => c.type === 'cale');
+                    const autres = (l.composants || []).filter(c => c.type === 'autre');
                     return (
-                      <tr key={l._lid}
-                        onClick={() => openPanel(l)}
-                        className={`cursor-pointer transition-colors ${isSelected ? 'bg-sky-50' : idx%2===0 ? 'bg-white hover:bg-sky-50/30' : 'bg-slate-50/40 hover:bg-sky-50/30'}`}>
-                        <td className="px-2 py-2 font-mono font-semibold text-indigo-700 whitespace-nowrap">{l.ref_connecteur || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-2 py-2 text-slate-700 max-w-[140px] truncate">{l.designation || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-2 py-2 font-mono text-slate-600 whitespace-nowrap">{l.ref_contrepartie || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-2 py-2 text-center">
-                          {l.photo_url ? <img src={l.photo_url} alt="" className="h-8 w-8 object-contain mx-auto rounded" /> : <span className="text-slate-300">—</span>}
+                      <tr key={l._lid} onClick={() => openPanel(l)}
+                        className={`cursor-pointer transition-colors ${isSelected ? 'bg-sky-50 ring-1 ring-inset ring-sky-200' : idx % 2 === 0 ? 'bg-white hover:bg-sky-50/30' : 'bg-slate-50/40 hover:bg-sky-50/30'}`}>
+                        <td className="px-3 py-2.5 font-mono font-semibold text-indigo-700 whitespace-nowrap">
+                          {l.ref_connecteur || <span className="text-slate-300">—</span>}
                         </td>
-                        <td className="px-2 py-2 text-slate-600 whitespace-nowrap">{l.fournisseur || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-2 py-2 text-slate-500 whitespace-nowrap max-w-[120px] truncate">{l.ref_fournisseur || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-2 py-2 text-right font-semibold text-slate-700 whitespace-nowrap">{Number(l.prix_unitaire)||0 > 0 ? `${Number(l.prix_unitaire).toFixed(2)} €` : '—'}</td>
-                        <td className="px-2 py-2 text-slate-600 whitespace-nowrap">{l.fournisseur_cp || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-2 py-2 text-slate-500 whitespace-nowrap max-w-[120px] truncate">{l.ref_fournisseur_cp || <span className="text-slate-300">—</span>}</td>
-                        <td className="px-2 py-2 text-right font-semibold text-slate-700 whitespace-nowrap">{Number(l.prix_cp)||0 > 0 ? `${Number(l.prix_cp).toFixed(2)} €` : '—'}</td>
-                        <td className="px-2 py-2">
-                          <div className="flex gap-1">
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${statutCls(l.statut_stock)}`}>{l.statut_stock?.[0]?.toUpperCase()}</span>
-                            <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${statutCls(l.statut_cp)}`}>{l.statut_cp?.[0]?.toUpperCase()}</span>
-                          </div>
+                        <td className="px-3 py-2.5 text-slate-700 max-w-[140px] truncate">
+                          {l.designation || <span className="text-slate-300">—</span>}
                         </td>
-                        <td className="px-2 py-2 text-center font-semibold text-slate-700">{l.quantite}</td>
-                        <td className="px-2 py-2 text-right font-bold text-slate-800 whitespace-nowrap">{rowTot(l).toFixed(2)} €</td>
-                        <td className="px-2 py-2" onClick={e => e.stopPropagation()}>
+                        <td className="px-3 py-2.5 font-mono text-slate-500 whitespace-nowrap text-[10px]">
+                          {l.ref_interne || <span className="text-slate-300">—</span>}
+                        </td>
+                        <td className="px-3 py-2.5 text-slate-500 whitespace-nowrap text-[10px]">
+                          {l.fournisseur || <span className="text-slate-300">—</span>}
+                        </td>
+                        <td className="px-3 py-2.5 text-center font-semibold text-slate-700">{l.quantite}</td>
+                        <td className="px-3 py-2.5 text-center font-semibold text-slate-700">{l.qte_besoin}</td>
+                        <td className="px-3 py-2.5">
+                          {!l.besoin_contrepartie ? (
+                            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                              Assemblé complet
+                            </span>
+                          ) : (l.composants || []).length === 0 ? (
+                            <span className="text-[9px] text-slate-400 italic">À définir</span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1">
+                              {cosses.length > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-sky-100 text-sky-700 border-sky-200">{cosses.length} cosse{cosses.length > 1 ? 's' : ''}</span>}
+                              {joints.length > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-amber-100 text-amber-700 border-amber-200">{joints.length} joint{joints.length > 1 ? 's' : ''}</span>}
+                              {cales.length  > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-indigo-100 text-indigo-700 border-indigo-200">{cales.length} cale{cales.length > 1 ? 's' : ''}</span>}
+                              {autres.length > 0 && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded border bg-slate-100 text-slate-600 border-slate-200">{autres.length} autre{autres.length > 1 ? 's' : ''}</span>}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-bold text-slate-800 whitespace-nowrap">
+                          {rowTot(l) > 0 ? `${rowTot(l).toFixed(2)} €` : '—'}
+                        </td>
+                        <td className="px-3 py-2.5" onClick={e => e.stopPropagation()}>
                           <button onClick={() => deleteLigne(l)}
                             className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors">
                             <Trash2 className="w-3 h-3" />
@@ -436,11 +580,12 @@ const ChiffrageDetail = () => {
 
         {/* Side panel */}
         {panelLigne && (
-          <div className="w-96 flex-shrink-0 border-l border-slate-200 bg-white flex flex-col overflow-hidden">
+          <div className="w-[420px] flex-shrink-0 border-l border-slate-200 bg-white flex flex-col overflow-hidden">
+            {/* Panel header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 flex-shrink-0"
               style={{ background: '#0f1d35' }}>
               <p className="text-sm font-bold text-white">
-                {panelLigne.id ? 'Modifier la ligne' : 'Nouveau connecteur'}
+                {panelLigne.id ? 'Modifier le connecteur' : 'Nouveau connecteur'}
               </p>
               <button onClick={closePanel}
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors">
@@ -448,104 +593,165 @@ const ChiffrageDetail = () => {
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-5">
 
-              {/* Connector identity */}
-              <div>
-                <span className={labelCls}>Réf. connecteur <span className="normal-case text-slate-400 font-normal">(recherche catalogue)</span></span>
-                <ConnecteurSearch
-                  value={connSearch}
-                  onChange={v => { setConnSearch(v); updatePanel('ref_connecteur', v); }}
-                  onSelect={handleSelectCatalogue}
-                />
-              </div>
+              {/* ── Section 1: Connecteur ── */}
+              <div className="rounded-xl border border-sky-200 bg-sky-50/40 p-4 space-y-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-sky-700">Connecteur</p>
 
-              <label className="block">
-                <span className={labelCls}>Désignation</span>
-                <input type="text" value={panelLigne.designation||''} onChange={e => updatePanel('designation', e.target.value)}
-                  className={fieldCls} placeholder="CONN HSG 81PTS" />
-              </label>
-
-              <label className="block">
-                <span className={labelCls}>Réf. contre-partie</span>
-                <input type="text" value={panelLigne.ref_contrepartie||''} onChange={e => updatePanel('ref_contrepartie', e.target.value)}
-                  className={fieldCls} placeholder="368146-1" />
-              </label>
-
-              {/* Photo */}
-              <div>
-                <span className={labelCls}>Photo contrepartie</span>
-                {panelLigne.photo_url ? (
-                  <div className="flex items-center gap-3">
-                    <img src={panelLigne.photo_url} alt="" className="h-12 w-12 object-contain rounded border border-slate-200" />
-                    <div className="space-y-1">
-                      <button type="button" onClick={() => photoRef.current?.click()}
-                        className="block text-xs text-sky-600 hover:underline">{uploading ? 'Upload…' : 'Changer'}</button>
-                      <button type="button" onClick={() => updatePanel('photo_url', '')}
-                        className="block text-xs text-red-500 hover:underline">Retirer</button>
-                    </div>
-                  </div>
-                ) : (
-                  <button type="button" onClick={() => photoRef.current?.click()} disabled={uploading}
-                    className="w-full py-2 rounded-xl border-2 border-dashed border-slate-300 text-xs text-slate-400 hover:border-sky-400 hover:text-sky-600 transition-colors disabled:opacity-50">
-                    {uploading ? '⏳ Upload…' : <><Image className="w-4 h-4 inline mr-1" />Uploader une photo</>}
-                  </button>
-                )}
-              </div>
-
-              {/* Connector supply */}
-              <SupplySection
-                title="Approvisionnement — Connecteur"
-                color="sky"
-                fournisseur={panelLigne.fournisseur||''}
-                refF={panelLigne.ref_fournisseur||''}
-                statut={panelLigne.statut_stock||'a_commander'}
-                prix={panelLigne.prix_unitaire||0}
-                solutionInterne={panelLigne.solution_interne||''}
-                onFournisseur={v => updatePanel('fournisseur', v)}
-                onRefF={v => updatePanel('ref_fournisseur', v)}
-                onStatut={v => updatePanel('statut_stock', v)}
-                onPrix={v => updatePanel('prix_unitaire', v)}
-                onSolutionInterne={v => updatePanel('solution_interne', v)}
-                fournisseurs={fournisseurs}
-              />
-
-              {/* CP supply */}
-              <SupplySection
-                title="Approvisionnement — Contre-partie"
-                color="indigo"
-                fournisseur={panelLigne.fournisseur_cp||''}
-                refF={panelLigne.ref_fournisseur_cp||''}
-                statut={panelLigne.statut_cp||'a_commander'}
-                prix={panelLigne.prix_cp||0}
-                solutionInterne={panelLigne.solution_interne||''}
-                onFournisseur={v => updatePanel('fournisseur_cp', v)}
-                onRefF={v => updatePanel('ref_fournisseur_cp', v)}
-                onStatut={v => updatePanel('statut_cp', v)}
-                onPrix={v => updatePanel('prix_cp', v)}
-                onSolutionInterne={v => updatePanel('solution_interne', v)}
-                fournisseurs={fournisseurs}
-              />
-
-              <div className="grid grid-cols-2 gap-3">
-                <label className="block">
-                  <span className={labelCls}>Quantité</span>
-                  <input type="number" min="1" step="1" value={panelLigne.quantite||1} onChange={e => updatePanel('quantite', parseInt(e.target.value)||1)}
-                    className={fieldCls + ' text-right'} />
-                </label>
                 <div>
-                  <p className={labelCls}>Total ligne</p>
-                  <p className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-bold text-right text-slate-800">
-                    {rowTot(panelLigne).toFixed(2)} €
-                  </p>
+                  <span className={labelCls}>Réf. fournisseur <span className="normal-case text-slate-400 font-normal">(recherche catalogue)</span></span>
+                  <ConnecteurSearch
+                    value={connSearch}
+                    onChange={v => { setConnSearch(v); updatePanel('ref_connecteur', v); }}
+                    onSelect={handleSelectCatalogue}
+                  />
+                </div>
+
+                <label className="block">
+                  <span className={labelCls}>Désignation</span>
+                  <input type="text" value={panelLigne.designation || ''} onChange={e => updatePanel('designation', e.target.value)}
+                    className={fieldCls} placeholder="CONN HSG 81PTS" />
+                </label>
+
+                <label className="block">
+                  <span className={labelCls}>Réf. interne</span>
+                  <input type="text" value={panelLigne.ref_interne || ''} onChange={e => updatePanel('ref_interne', e.target.value)}
+                    className={fieldCls} placeholder="Ex: 27062594 / Ref TEC interne" />
+                </label>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className={labelCls}>Fournisseur</span>
+                    <input type="text" value={panelLigne.fournisseur || ''} onChange={e => updatePanel('fournisseur', e.target.value)}
+                      list="fourn-list-conn" className={fieldCls} placeholder="Ex: Mouser" />
+                    <datalist id="fourn-list-conn">
+                      {fournisseurs.map(f => <option key={f.id} value={f.nom} />)}
+                    </datalist>
+                  </label>
+                  <label className="block">
+                    <span className={labelCls}>Prix unitaire (€)</span>
+                    <input type="number" min="0" step="0.01" value={panelLigne.prix_unitaire || 0}
+                      onChange={e => updatePanel('prix_unitaire', parseFloat(e.target.value) || 0)}
+                      className={fieldCls + ' text-right'} />
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block">
+                    <span className={labelCls}>Statut</span>
+                    <select value={panelLigne.statut_stock || 'a_commander'} onChange={e => updatePanel('statut_stock', e.target.value)}
+                      className={`w-full rounded-xl border px-3 py-2 text-xs font-semibold focus:outline-none ${statutCls(panelLigne.statut_stock)}`}>
+                      {STATUT_OPTS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <label className="block">
+                      <span className={labelCls}>Qté</span>
+                      <input type="number" min="1" value={panelLigne.quantite || 1}
+                        onChange={e => updatePanel('quantite', parseInt(e.target.value) || 1)}
+                        className={fieldCls + ' text-right'} />
+                    </label>
+                    <label className="block">
+                      <span className={labelCls}>Qté besoin</span>
+                      <input type="number" min="1" value={panelLigne.qte_besoin || 1}
+                        onChange={e => updatePanel('qte_besoin', parseInt(e.target.value) || 1)}
+                        className={fieldCls + ' text-right'} />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Photo */}
+                <div>
+                  <span className={labelCls}>Photo</span>
+                  {panelLigne.photo_url ? (
+                    <div className="flex items-center gap-3">
+                      <img src={panelLigne.photo_url} alt="" className="h-12 w-12 object-contain rounded border border-slate-200" />
+                      <div className="space-y-1">
+                        <button type="button" onClick={() => photoRef.current?.click()}
+                          className="block text-xs text-sky-600 hover:underline">{uploading ? 'Upload…' : 'Changer'}</button>
+                        <button type="button" onClick={() => updatePanel('photo_url', '')}
+                          className="block text-xs text-red-500 hover:underline">Retirer</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button type="button" onClick={() => photoRef.current?.click()} disabled={uploading}
+                      className="w-full py-2 rounded-xl border-2 border-dashed border-slate-300 text-xs text-slate-400 hover:border-sky-400 hover:text-sky-600 transition-colors disabled:opacity-50">
+                      {uploading ? '⏳ Upload…' : <><Image className="w-3.5 h-3.5 inline mr-1" />Photo</>}
+                    </button>
+                  )}
                 </div>
               </div>
 
+              {/* ── Section 2: Contrepartie toggle ── */}
+              <div className="rounded-xl border border-slate-200 p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-wider text-indigo-700">Contrepartie nécessaire</p>
+                  <button type="button"
+                    onClick={() => updatePanel('besoin_contrepartie', !panelLigne.besoin_contrepartie)}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                      panelLigne.besoin_contrepartie
+                        ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                        : 'bg-slate-50 text-slate-500 border-slate-200'
+                    }`}>
+                    {panelLigne.besoin_contrepartie
+                      ? <><ToggleRight className="w-4 h-4" /> OUI</>
+                      : <><ToggleLeft  className="w-4 h-4" /> NON — Connecteur assemblé complet</>}
+                  </button>
+                </div>
+
+                {/* ── Composants section ── */}
+                {panelLigne.besoin_contrepartie && (
+                  <div className="space-y-3">
+                    {/* Add buttons */}
+                    <div className="flex flex-wrap gap-2">
+                      {COMPOSANT_TYPES.map(t => {
+                        const IconComp = t.icon;
+                        return (
+                          <button key={t.value} type="button" onClick={() => addComposant(t.value)}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] font-semibold bg-white hover:bg-slate-50 transition-colors text-slate-600 border-slate-200">
+                            <IconComp className="w-3 h-3" />
+                            + {t.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Composant cards */}
+                    {(panelLigne.composants || []).length === 0 ? (
+                      <p className="text-xs text-slate-400 italic text-center py-3">
+                        Ajoutez les composants de la contrepartie ci-dessus
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {(panelLigne.composants || []).map((cmp, i) => (
+                          <ComposantCard
+                            key={cmp.id || i}
+                            cmp={cmp}
+                            index={i}
+                            fournisseurs={fournisseurs}
+                            onChange={updateComposant}
+                            onRemove={removeComposant}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Commentaire ── */}
               <label className="block">
                 <span className={labelCls}>Commentaire RAI</span>
-                <input type="text" value={panelLigne.commentaire_rai||''} onChange={e => updatePanel('commentaire_rai', e.target.value)}
-                  className={fieldCls} placeholder="A commander, En attente…" />
+                <input type="text" value={panelLigne.commentaire_rai || ''} onChange={e => updatePanel('commentaire_rai', e.target.value)}
+                  className={fieldCls} placeholder="A commander, En attente de livraison…" />
               </label>
+
+              {/* Total */}
+              <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total ligne</span>
+                <span className="text-lg font-bold text-slate-900">{rowTot(panelLigne).toFixed(2)} €</span>
+              </div>
             </div>
 
             <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
@@ -555,7 +761,9 @@ const ChiffrageDetail = () => {
                 {saving ? 'Sauvegarde…' : <><Check className="w-4 h-4 inline mr-1.5" />Enregistrer</>}
               </button>
               <button onClick={closePanel}
-                className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Fermer</button>
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                Fermer
+              </button>
             </div>
           </div>
         )}

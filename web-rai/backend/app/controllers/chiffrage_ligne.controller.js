@@ -25,6 +25,11 @@ const buildPayload = (body) => ({
   prix_cp:            num(body.prix_cp),
   // Internal solution
   solution_interne:   clean(body.solution_interne),
+  // New fields
+  ref_interne:        clean(body.ref_interne),
+  qte_besoin:         num(body.qte_besoin, 1),
+  besoin_contrepartie: body.besoin_contrepartie === false ? false : true,
+  composants:         Array.isArray(body.composants) ? body.composants : [],
   commentaire_rai:    clean(body.commentaire_rai),
   quantite:           num(body.quantite, 1),
 });

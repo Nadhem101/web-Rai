@@ -15,6 +15,9 @@ const ApplicateurVariant = require('./applicateur_variant.model');
 const ApplicateurMaintenanceRecord = require('./applicateur_maintenance_record.model');
 const ApplicateurThreshold = require('./applicateur_threshold.model');
 const ApplicateurPreventiveRecord = require('./applicateur_preventive_record.model');
+const SuiviMoyen = require('./suivi_moyen.model');
+const SuiviMoyenLigne = require('./suivi_moyen_ligne.model');
+const UserProfile = require('./user_profile.model');
 const Cosse = require('./cosse.model');
 const CurativeMaintenanceRecord = require('./curative_maintenance_record.model');
 const ArticleTest       = require('./article_test.model');
@@ -58,6 +61,10 @@ PinceVariant.hasMany(PinceMaintenanceRecord, { foreignKey: 'pince_variant_id', a
 Fabricant.hasMany(Applicateur, { foreignKey: 'fabricant_id' });
 Applicateur.hasMany(ApplicateurVariant, { foreignKey: 'applicateur_id', as: 'variants' });
 ApplicateurVariant.hasMany(ApplicateurMaintenanceRecord, { foreignKey: 'applicateur_variant_id', as: 'maintenanceRecords' });
+
+// Suivi moyen relationships
+SuiviMoyen.hasMany(SuiviMoyenLigne, { foreignKey: 'suivi_moyen_id', as: 'lignes', onDelete: 'CASCADE' });
+SuiviMoyenLigne.belongsTo(SuiviMoyen, { foreignKey: 'suivi_moyen_id', as: 'suivi' });
 
 const syncDatabase = async () => {
   try {

@@ -38,6 +38,19 @@ const ChiffrageLigne = sequelize.define(
     // Internal solution (used when connector or CP has no external supplier)
     solution_interne: { type: DataTypes.STRING(200) },
 
+    // Internal reference code (ref TEC / ref interne RAI)
+    ref_interne:      { type: DataTypes.STRING(150) },
+
+    // Quantity needed (separate from quantite which is how many connectors on the harness)
+    qte_besoin:       { type: DataTypes.INTEGER, defaultValue: 1 },
+
+    // Does this connector need a contrepartie for testing?
+    besoin_contrepartie: { type: DataTypes.BOOLEAN, defaultValue: true },
+
+    // Flexible array of contrepartie components: cosses, joints, cales, autres
+    // Each: { id, type, designation, ref_fournisseur, ref_interne, qte_besoin, acheter, recu, fournisseur, prix_unitaire, statut }
+    composants: { type: DataTypes.JSONB, defaultValue: [] },
+
     commentaire_rai:  { type: DataTypes.STRING(200) },
     quantite:         { type: DataTypes.INTEGER, defaultValue: 1 },
   },

@@ -159,6 +159,20 @@ export const flowchartService = {
   delete:  (id)          => API.delete(`/flowcharts/${id}`).then(r => r.data),
 };
 
+export const suiviMoyenService = {
+  getAll:  ()        => API.get('/suivi-moyens').then(r => r.data),
+  getById: (id)      => API.get(`/suivi-moyens/${id}`).then(r => r.data),
+  create:  (data)    => API.post('/suivi-moyens', data).then(r => r.data),
+  update:  (id, data)=> API.put(`/suivi-moyens/${id}`, data).then(r => r.data),
+  delete:  (id)      => API.delete(`/suivi-moyens/${id}`).then(r => r.data),
+};
+
+export const suiviMoyenLigneService = {
+  create:  (data)    => API.post('/suivi-moyen-lignes', data).then(r => r.data),
+  update:  (id, data)=> API.put(`/suivi-moyen-lignes/${id}`, data).then(r => r.data),
+  delete:  (id)      => API.delete(`/suivi-moyen-lignes/${id}`).then(r => r.data),
+};
+
 export const procedureService = {
   getAll:  (params = {}) => API.get('/procedures', { params }).then(r => r.data),
   getById: (id)          => API.get(`/procedures/${id}`).then(r => r.data),
