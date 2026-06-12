@@ -90,6 +90,9 @@ export const ecmeService = {
   getAll:          (params) => API.get('/ecme', { params }),
   getOne:          (code)   => API.get(`/ecme/${code}`),
   getAffectations: ()       => API.get('/ecme/meta/affectations'),
+  create:          (data)   => API.post('/ecme', data),
+  update:          (code, data) => API.put(`/ecme/${code}`, data),
+  delete:          (code)   => API.delete(`/ecme/${code}`),
 };
 
 export const applicateurService = {
@@ -102,6 +105,14 @@ export const applicateurService = {
 
 export const applicateurThresholdService = {
   getAll: () => API.get('/applicateur-thresholds').then((res) => res.data),
+};
+
+export const applicateurPreventiveService = {
+  getAll: () => API.get('/applicateur-preventive-records').then((res) => res.data),
+  getById: (id) => API.get(`/applicateur-preventive-records/${id}`).then((res) => res.data),
+  create: (data) => API.post('/applicateur-preventive-records', data).then((res) => res.data),
+  update: (id, data) => API.put(`/applicateur-preventive-records/${id}`, data).then((res) => res.data),
+  delete: (id) => API.delete(`/applicateur-preventive-records/${id}`).then((res) => res.data),
 };
 
 export const fournisseurCatalogueService = {

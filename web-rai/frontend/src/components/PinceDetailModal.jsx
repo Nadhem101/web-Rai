@@ -1,7 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { pincePreventiveService } from '../services/api';
+
+const normalizePinceNumber = (value) => {
+  if (!value) return value;
+  const s = String(value).trim();
+  return /^\d+$/.test(s) ? `P${s}` : s;
+};
+
+const formatDate = (value) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleDateString('fr-FR');
+};
 
 const PinceDetailModal = ({ pince, isOpen, onClose }) => {
   const [selectedVariant, setSelectedVariant] = useState(null);
+  const [preventiveHistory, setPreventiveHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen || !pince?.numero_pince) return;
+    const load = async () => {
+      setHistoryLoading(true);
+      try {
+        const all = await pincePreventiveService.getAll();
+        const norm = (v) => String(v ?? '').trim().toUpperCase().replace(/^P0*/, 'P').replace(/^0*(\d)/, '$1');
+        const pinceNum = normalizePinceNumber(pince.numero_pince);
+        const pinceNorm = norm(pinceNum);
+        const filtered = all.filter((r) => norm(normalizePinceNumber(r.numero_pince)) === pinceNorm);
+        setPreventiveHistory(filtered);
+      } catch {
+        setPreventiveHistory([]);
+      } finally {
+        setHistoryLoading(false);
+      }
+    };
+    load();
+  }, [isOpen, pince?.numero_pince]);
 
   if (!isOpen || !pince) return null;
 
@@ -279,6 +315,60 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
           {!selectedVariant && (!pince.variants || pince.variants.length === 0) && (
             <div className="p-4 rounded bg-gray-100 text-center text-sm text-gray-600">
               ⚠️ Aucune variante pour ce pince
+            </div>
+          )}
+
+          {/* Preventive History */}
+          {!selectedVariant && (
+            <div>
+              <h3 className="font-bold text-lg mb-3 text-sky-700">
+                📋 Historique préventif ({preventiveHistory.length})
+              </h3>
+              {historyLoading ? (
+                <div className="text-center py-6 text-sm text-gray-400">Chargement…</div>
+              ) : preventiveHistory.length === 0 ? (
+                <div className="p-4 rounded bg-gray-100 text-center text-sm text-gray-600">
+                  Aucun enregistrement préventif trouvé
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-sky-200 rounded-lg">
+                  <table className="w-full text-sm">
+                    <thead className="bg-sky-50">
+                      <tr>
+                        {['Date contrôle','Position','Cosse','Traction min.','V1','V2','V3','V4','V5','Moy.','Prochaine','Remarque'].map((h) => (
+                          <th key={h} className="px-3 py-2 text-left text-xs font-bold text-gray-600 whitespace-nowrap">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {preventiveHistory.map((rec, idx) => (
+                        <tr key={rec.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-sky-50/40'}>
+                          <td className="px-3 py-2 text-xs whitespace-nowrap font-medium">{formatDate(rec.date_controle)}</td>
+                          <td className="px-3 py-2 text-xs">{rec.position || '-'}</td>
+                          <td className="px-3 py-2 text-xs">{rec.cosse || '-'}</td>
+                          <td className="px-3 py-2 text-xs font-mono">{rec.traction_minimale_n || '-'}</td>
+                          {[1,2,3,4,5].map((n) => (
+                            <td key={n} className="px-3 py-2 text-xs font-mono text-center text-orange-700 font-semibold">
+                              {rec[`test_value_${n}`] ?? '-'}
+                            </td>
+                          ))}
+                          <td className="px-3 py-2 text-xs font-bold text-center text-sky-700">{rec.moyenne ?? '-'}</td>
+                          <td className="px-3 py-2 text-xs whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                              rec.date_prochaine && new Date(rec.date_prochaine) < new Date()
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-green-100 text-green-700'
+                            }`}>
+                              {formatDate(rec.date_prochaine)}
+                            </span>
+                          </td>
+                          <td className="px-3 py-2 text-xs text-gray-500 max-w-[120px] truncate">{rec.remarque || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
         </div>

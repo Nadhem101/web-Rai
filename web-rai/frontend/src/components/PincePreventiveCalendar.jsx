@@ -48,6 +48,21 @@ const parseNumericValue = (value) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
+// Normalize pince numbers: purely numeric → prefix with "P"
+const normalizePinceNumber = (value) => {
+  if (!value) return value;
+  const s = String(value).trim();
+  return /^\d+$/.test(s) ? `P${s}` : s;
+};
+
+const addSixMonths = (dateStr) => {
+  const date = parseDateOnly(dateStr);
+  if (!date) return '';
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + 6);
+  return formatDateForInput(result);
+};
+
 const toNullableValue = (value) => (value === null || value === undefined || value === '' ? null : value);
 
 const compareText = (left, right) =>
@@ -90,12 +105,21 @@ const getWeekBounds = (referenceDate = new Date()) => {
 };
 
 const getGroupScheduleInfo = (group) => {
-  const validDates = group.rows
-    .map((row) => parseDateOnly(row.date_prochaine))
-    .filter(Boolean)
-    .sort((left, right) => left - right);
+  // Use the date_prochaine from the most recent record (by date_controle)
+  const sortedByControl = [...group.rows].sort((a, b) => {
+    const da = parseDateOnly(a.date_controle);
+    const db = parseDateOnly(b.date_controle);
+    if (!da && !db) return 0;
+    if (!da) return 1;
+    if (!db) return -1;
+    return db - da;
+  });
 
-  if (validDates.length === 0) {
+  const nextDate = sortedByControl
+    .map((row) => parseDateOnly(row.date_prochaine))
+    .filter(Boolean)[0] ?? null;
+
+  if (!nextDate) {
     return {
       key: 'unknown',
       label: 'Sans date',
@@ -105,8 +129,6 @@ const getGroupScheduleInfo = (group) => {
       nextDate: null,
     };
   }
-
-  const nextDate = validDates[0];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -146,12 +168,14 @@ const getGroupScheduleInfo = (group) => {
 
 const buildNewRowDraft = (group) => {
   const baseRow = group.rows[0] || {};
+  const today = formatDateForInput(new Date());
 
   return {
-    numero_pince: group.sharedFields.numero_pince?.value || baseRow.numero_pince || '',
+    numero_pince: normalizePinceNumber(group.sharedFields.numero_pince?.value || baseRow.numero_pince || ''),
     reference_more: group.sharedFields.reference_more?.value || baseRow.reference_more || '',
     cosse: group.sharedFields.cosse?.value || baseRow.cosse || '',
-    date_controle: formatDateForInput(new Date()),
+    date_controle: today,
+    date_prochaine: addSixMonths(today),
     position: baseRow.position || '',
     fil: baseRow.fil || '',
     traction_minimale_n: baseRow.traction_minimale_n || '',
@@ -160,7 +184,6 @@ const buildNewRowDraft = (group) => {
     test_value_3: '',
     test_value_4: '',
     test_value_5: '',
-    date_prochaine: '',
     remarque: '',
   };
 };
@@ -352,8 +375,8 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
   const groupedRecords = useMemo(() => buildGroupedRecords(filteredRecords), [filteredRecords]);
 
   const overdueCount = useMemo(() => {
-    return filteredRecords.filter((record) => isPastDate(record.date_prochaine)).length;
-  }, [filteredRecords]);
+    return groupedRecords.filter((group) => getGroupScheduleInfo(group).key === 'overdue').length;
+  }, [groupedRecords]);
 
   const isEditingRow = rowForm.mode === 'edit';
 
@@ -458,13 +481,13 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   const handleRowFormChange = (event) => {
     const { name, value } = event.target;
-    setRowForm((current) => ({
-      ...current,
-      data: {
-        ...current.data,
-        [name]: value,
-      },
-    }));
+    setRowForm((current) => {
+      const updated = { ...current.data, [name]: value };
+      if (name === 'date_controle' && current.mode === 'create') {
+        updated.date_prochaine = addSixMonths(value);
+      }
+      return { ...current, data: updated };
+    });
   };
 
   const handleRowFormSubmit = async (event) => {
@@ -567,7 +590,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   <tr key={rowKey} className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} hover:bg-sky-50/30 transition-colors`}>
                     {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-2 border-sky-200', (value) => (
                       <div className="flex flex-col gap-2 min-w-[110px]">
-                        <span className="font-mono font-bold text-sky-700 text-sm">{formatValue(value)}</span>
+                        <span className="font-mono font-bold text-sky-700 text-sm">{formatValue(normalizePinceNumber(value))}</span>
                         <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
                           {schedule.label}
                         </span>

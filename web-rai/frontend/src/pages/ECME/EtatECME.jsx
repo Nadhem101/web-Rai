@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ecmeService } from '../../services/api';
+import EcmeFormModal from '../../components/EcmeFormModal';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 
 // ── Badge helpers ──────────────────────────────────────────────────────────────
 const ALERTE_CONFIG = {
@@ -66,6 +68,9 @@ export default function EtatECME() {
   const PAGE_SIZE = 25;
   const [page, setPage] = useState(1);
 
+  // Form modal
+  const [formModal, setFormModal] = useState({ open: false, ecme: null });
+
   // Load affectation list once
   useEffect(() => {
     ecmeService.getAffectations()
@@ -90,6 +95,17 @@ export default function EtatECME() {
 
   useEffect(() => { load(); }, [load]);
 
+  const handleDelete = async (code, e) => {
+    e.stopPropagation();
+    if (!window.confirm(`Supprimer définitivement ${code} ?`)) return;
+    try {
+      await ecmeService.delete(code);
+      load();
+    } catch (err) {
+      alert(err.response?.data?.error || 'Erreur lors de la suppression');
+    }
+  };
+
   // Stats
   const total      = records.length;
   const valable    = records.filter(r => r.alerte === 'VALABLE').length;
@@ -102,10 +118,22 @@ export default function EtatECME() {
 
   return (
     <div className="p-6 flex-1 overflow-auto">
-      <h1 className="text-2xl font-bold mb-2">🔬 État des ECME</h1>
-      <p className="text-sm text-gray-500 mb-5">
-        Équipements de Contrôle, de Mesure et d'Essai — Référence FQ0009/01
-      </p>
+      <div className="flex items-start justify-between gap-4 mb-2">
+        <div>
+          <h1 className="text-2xl font-bold">🔬 État des ECME</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Équipements de Contrôle, de Mesure et d'Essai — Référence FQ0009/01
+          </p>
+        </div>
+        <button
+          onClick={() => setFormModal({ open: true, ecme: null })}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white flex-shrink-0"
+          style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}
+        >
+          <Plus className="w-4 h-4" />
+          Nouvel ECME
+        </button>
+      </div>
 
       {/* ── KPIs ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
@@ -242,12 +270,29 @@ export default function EtatECME() {
                     {fmtDate(row.date_prochaine_verification)}
                   </td>
                   <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
-                    <button
-                      onClick={() => navigate(`/ecme/${row.code}`)}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      🔍 Inspecter
-                    </button>
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => navigate(`/ecme/${row.code}`)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 transition-colors"
+                        title="Inspecter"
+                      >
+                        🔍
+                      </button>
+                      <button
+                        onClick={e => { e.stopPropagation(); setFormModal({ open: true, ecme: row }); }}
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        title="Modifier"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={e => handleDelete(row.code, e)}
+                        className="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        title="Supprimer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -281,6 +326,13 @@ export default function EtatECME() {
           </div>
         )}
       </div>
+
+      <EcmeFormModal
+        ecme={formModal.ecme}
+        isOpen={formModal.open}
+        onClose={() => setFormModal({ open: false, ecme: null })}
+        onSuccess={() => { setFormModal({ open: false, ecme: null }); load(); }}
+      />
     </div>
   );
 }

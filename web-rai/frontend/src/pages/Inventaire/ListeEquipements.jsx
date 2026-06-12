@@ -133,6 +133,7 @@ const ListeEquipements = () => {
     const allowedCategories =
       categorie === 'pdr' ? ['pdr'] :
       categorie === 'fer-et-bain' ? ['equipement', 'pdr', 'fer-et-bain'] :
+      categorie.startsWith('zone:') ? ['equipement', 'fer-et-bain'] :
       ['equipement', 'pdr', 'fer-et-bain'];
 
     filtered = filtered.filter((eq) => {

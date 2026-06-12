@@ -193,11 +193,8 @@ const App = () => {
   const subZones = [
     // Assemblage Meca
     { group: 'Assemblage Meca', id: 'zone:Bobinage', label: 'Bobinage' },
-    { group: 'Assemblage Meca', id: 'zone:Chevain Arnoux', label: 'Chevain Arnoux' },
-    { group: 'Assemblage Meca', id: 'zone:Electro Aimants', label: 'Electro Aimants' },
     { group: 'Assemblage Meca', id: 'zone:Embases Relais', label: 'Embases Relais' },
     // Faisceau Cable
-    { group: 'Faisceau Cable', id: 'zone:Khun', label: 'Khun' },
     { group: 'Faisceau Cable', id: 'zone:Club', label: 'Club' },
     { group: 'Faisceau Cable', id: 'zone:Cablage', label: 'Cablage' },
     // Individual zones
