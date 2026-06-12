@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { equipementService, maintenanceEventService, ecmeService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { getCurrentWeek, getTasksForWeek, getOverdueTasks } from '../../utils/maintenanceSchedule';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -132,6 +133,9 @@ const Dashboard = () => {
   const currentWeek = getCurrentWeek();
   const currentYear = new Date().getFullYear();
   const navigate = useNavigate();
+  const { can } = useAuth();
+  const canMaintenance = can('maintenance');
+  const canEcme        = can('ecme');
 
   const [stats, setStats] = useState({ total: 0, enService: 0, horsService: 0, enMaintenance: 0, parZone: [] });
   const [loading, setLoading] = useState(true);
@@ -169,6 +173,7 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
+    if (!canMaintenance) { setLoadingMaint(false); return; }
     setWeekTasks(getTasksForWeek(currentWeek));
     maintenanceEventService.getByYear(currentYear)
       .then(({ data }) => {
@@ -180,9 +185,10 @@ const Dashboard = () => {
       })
       .catch((e) => console.error('Erreur evenements maintenance:', e))
       .finally(() => setLoadingMaint(false));
-  }, [currentWeek, currentYear]);
+  }, [currentWeek, currentYear, canMaintenance]);
 
   useEffect(() => {
+    if (!canEcme) { setLoadingEcme(false); return; }
     ecmeService.getAll({ alerte: 'VERIFICATION' })
       .then(({ data }) => {
         setEcmeToVerif(data);
@@ -191,7 +197,7 @@ const Dashboard = () => {
       })
       .catch((e) => console.error('Erreur ECME verif:', e))
       .finally(() => setLoadingEcme(false));
-  }, []);
+  }, [canEcme]);
 
   // ── Derived ───────────────────────────────────────────────
   const weekDone        = weekTasks.filter((t) => cellStates[t.key]?.status === 'done').length;
@@ -207,9 +213,10 @@ const Dashboard = () => {
   const pdrWarningCount  = pdrStockAlerts.filter((i) => i.level === 'warning').length;
 
   // Alert counts per section
-  const maintAlertCount = overdueTasks.length + weekPending + stats.horsService;
+  const maintAlertCount = canMaintenance ? overdueTasks.length + weekPending + stats.horsService : 0;
   const allClear = !loadingMaint && !loadingEcme && !loading &&
-    maintAlertCount === 0 && ecmeToVerif.length === 0 && pdrStockAlerts.length === 0;
+    (!canMaintenance || (maintAlertCount === 0 && pdrStockAlerts.length === 0)) &&
+    (!canEcme || ecmeToVerif.length === 0);
 
   if (loading && loadingMaint && loadingEcme) return (
     <div className="flex-1 flex items-center justify-center p-8">
@@ -241,9 +248,11 @@ const Dashboard = () => {
         <KpiCard label="Hors service" value={stats.horsService}
           icon={XCircle} iconBg="bg-red-50" iconColor="text-red-500"
           loading={loading} />
-        <KpiCard label="En maintenance" value={stats.enMaintenance}
-          icon={Wrench} iconBg="bg-amber-50" iconColor="text-amber-500"
-          loading={loading} />
+        {canMaintenance && (
+          <KpiCard label="En maintenance" value={stats.enMaintenance}
+            icon={Wrench} iconBg="bg-amber-50" iconColor="text-amber-500"
+            loading={loading} />
+        )}
       </div>
 
       {/* ── Row 2: Alerts (left) + Progress/Chart (right) ── */}
@@ -264,7 +273,7 @@ const Dashboard = () => {
           )}
 
           {/* ── Maintenance préventive ── */}
-          <AlertSection
+          {canMaintenance && <AlertSection
             title="Maintenance préventive"
             icon={CalendarClock}
             alertCount={maintAlertCount}
@@ -303,10 +312,10 @@ const Dashboard = () => {
                 <strong>{stats.horsService}</strong> équipement(s) hors service nécessite(nt) une attention
               </AlertItem>
             )}
-          </AlertSection>
+          </AlertSection>}
 
           {/* ── État des ECME ── */}
-          <AlertSection
+          {canEcme && <AlertSection
             title="État des ECME"
             icon={FlaskConical}
             alertCount={ecmeToVerif.length}
@@ -356,10 +365,10 @@ const Dashboard = () => {
                 )}
               </>
             )}
-          </AlertSection>
+          </AlertSection>}
 
           {/* ── Stock PDR ── */}
-          <AlertSection
+          {canMaintenance && <AlertSection
             title="Stock PDR"
             icon={BoxIcon}
             alertCount={pdrStockAlerts.length}
@@ -415,14 +424,14 @@ const Dashboard = () => {
                 </div>
               </>
             )}
-          </AlertSection>
+          </AlertSection>}
         </div>
 
         {/* ── RIGHT: Progress + Chart ───────────────────── */}
         <div className="space-y-4">
 
-          {/* Week maintenance progress */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+          {/* Week maintenance progress — maintenance only */}
+          {canMaintenance && <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Préventives KW{String(currentWeek).padStart(2, '0')}
@@ -486,7 +495,7 @@ const Dashboard = () => {
                 })}
               </div>
             )}
-          </div>
+          </div>}
 
           {/* Availability chart */}
           <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
