@@ -25,6 +25,11 @@ const COLORS = {
 };
 
 // ── Helpers ────────────────────────────────────────────────
+const migrateStep = (s) => ({
+  ...s,
+  parentIds: s.parentIds ?? (s.parentId ? [s.parentId] : []),
+});
+
 const isImageUrl = (url = '') =>
   /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(url) ||
   url.includes('drive.google.com') ||
@@ -70,9 +75,9 @@ const StepNode = ({ step, selected, onClick }) => {
 // ── Step detail modal ──────────────────────────────────────
 const StepModal = ({ step, steps, onClose }) => {
   if (!step) return null;
-  const cfg   = SHAPE_CONFIG[step.shape] || SHAPE_CONFIG.operation;
-  const color = COLORS[cfg.color];
-  const parent = steps.find(s => s.id === step.parentId);
+  const cfg     = SHAPE_CONFIG[step.shape] || SHAPE_CONFIG.operation;
+  const color   = COLORS[cfg.color];
+  const parents = (step.parentIds || []).map(pid => steps.find(s => s.id === pid)).filter(Boolean);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
@@ -88,10 +93,10 @@ const StepModal = ({ step, steps, onClose }) => {
             </div>
             <div className="min-w-0">
               <p className="text-base font-bold text-white leading-tight truncate">{step.label}</p>
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${color.badge}`}>{cfg.label}</span>
-                {parent && (
-                  <span className="text-[11px] text-slate-400">← {parent.number}. {parent.label}</span>
+                {parents.length > 0 && (
+                  <span className="text-[11px] text-slate-400">← {parents.map(p => `${p.number}. ${p.label}`).join(', ')}</span>
                 )}
               </div>
             </div>
@@ -276,7 +281,7 @@ const FlowChartViewer = () => {
     flowchartService.getById(id)
       .then(fc => {
         setTitle(fc.title || '');
-        setSteps(Array.isArray(fc.steps) ? fc.steps : []);
+        setSteps(Array.isArray(fc.steps) ? fc.steps.map(migrateStep) : []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -289,15 +294,15 @@ const FlowChartViewer = () => {
     return () => window.removeEventListener('pointerup', onUp);
   }, []);
 
-  const connectors = steps
-    .filter(s => s.parentId)
-    .map(s => {
-      const p = steps.find(x => x.id === s.parentId); if (!p) return null;
+  const connectors = steps.flatMap(s =>
+    (s.parentIds || []).map(pid => {
+      const p = steps.find(x => x.id === pid); if (!p) return null;
       const sx = p.x + STEP_W/2, sy = p.y + STEP_H;
       const ex = s.x + STEP_W/2, ey = s.y;
       const my = sy + Math.max(16, (ey - sy) / 2);
       return { id: `${p.id}-${s.id}`, sx, sy, ex, ey, my };
-    }).filter(Boolean);
+    })
+  ).filter(Boolean);
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">
