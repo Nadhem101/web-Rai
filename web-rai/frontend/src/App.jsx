@@ -153,7 +153,7 @@ const getPageName = (pathname) => {
 const App = () => {
   const location = useLocation();
   const pageName = getPageName(location.pathname);
-  const { session, user, loading: authLoading, logout, can, role } = useAuth();
+  const { session, user, loading: authLoading, logout, can } = useAuth();
 
   // Show nothing while checking auth
   if (authLoading) return (

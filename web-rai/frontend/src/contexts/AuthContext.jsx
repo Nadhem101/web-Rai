@@ -3,33 +3,40 @@ import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
-const fetchRole = async (session) => {
-  if (!session?.access_token) return 'admin';
+const fetchRoles = async (session) => {
+  if (!session?.access_token) return ['admin'];
   try {
     const res = await fetch(
       `${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/user-profiles/me`,
       { headers: { Authorization: `Bearer ${session.access_token}` } }
     );
-    if (!res.ok) return 'admin';
+    if (!res.ok) return ['admin'];
     const data = await res.json();
-    return data.role || 'admin';
+    return Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : ['admin'];
   } catch {
-    return 'admin';
+    return ['admin'];
   }
 };
 
+// Section → which roles grant access to it
+const PERMISSIONS = {
+  admin:       ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme', 'indus', 'admin'],
+  maintenance: ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme'],
+  indus:       ['dashboard', 'inventaire', 'indus'],
+};
+
 export const AuthProvider = ({ children }) => {
-  const [session,  setSession]  = useState(null);
-  const [role,     setRole]     = useState('admin');
-  const [loading,  setLoading]  = useState(true);
+  const [session, setSession]  = useState(null);
+  const [roles,   setRoles]    = useState(['admin']);
+  const [loading, setLoading]  = useState(true);
 
   const applySession = async (s) => {
     setSession(s);
     if (s) {
-      const r = await fetchRole(s);
-      setRole(r);
+      const r = await fetchRoles(s);
+      setRoles(r);
     } else {
-      setRole('admin');
+      setRoles(['admin']);
     }
   };
 
@@ -37,7 +44,7 @@ export const AuthProvider = ({ children }) => {
     if (!supabase) {
       console.warn('[Auth] Supabase not configured — auth disabled for local dev');
       setSession({ user: { email: 'dev@local', id: 'local' } });
-      setRole('admin');
+      setRoles(['admin']);
       setLoading(false);
       return;
     }
@@ -62,24 +69,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    if (!supabase) { setSession(null); setRole('admin'); return; }
+    if (!supabase) { setSession(null); setRoles(['admin']); return; }
     return supabase.auth.signOut();
   };
 
-  // Permission helper: can(section) returns true if current role has access
-  const PERMISSIONS = {
-    admin:       ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme', 'indus', 'admin'],
-    maintenance: ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme'],
-    indus:       ['dashboard', 'inventaire', 'indus'],
-  };
-
-  const can = (section) => {
-    const allowed = PERMISSIONS[role] || PERMISSIONS.admin;
-    return allowed.includes(section);
-  };
+  // can(section) — true if ANY of the user's roles grants access to that section
+  const can = (section) =>
+    roles.some(r => (PERMISSIONS[r] || []).includes(section));
 
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, role, loading, login, logout, can }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, roles, loading, login, logout, can }}>
       {children}
     </AuthContext.Provider>
   );

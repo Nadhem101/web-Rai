@@ -59,6 +59,11 @@ const StepNode = ({ step, selected, onClick, onPointerDown }) => {
           {(step.parentIds || []).length > 1 && (
             <span className="text-[9px] font-bold text-slate-400">↙{(step.parentIds||[]).length}</span>
           )}
+          {(step.subSteps || []).length > 0 && (
+            <span className="text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 px-1 rounded">
+              +{step.subSteps.length}
+            </span>
+          )}
           <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${color.badge}`}>
             {cfg.abbr}
           </span>
@@ -230,6 +235,11 @@ const FlowChartEditor = () => {
   const [newTool,      setNewTool]      = useState('');
   const [uploadingFile,setUploadingFile]= useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [editingSubIdx, setEditingSubIdx] = useState(null);
+  const [subDraft,      setSubDraft]      = useState(null);
+  const [addingSubStep, setAddingSubStep] = useState(false);
+  const [newSubTool,    setNewSubTool]    = useState('');
+  const [newSubParam,   setNewSubParam]   = useState('');
   const mediaFileRef = useRef(null);
   const canvasRef    = useRef(null);
 
@@ -311,7 +321,10 @@ const FlowChartEditor = () => {
     .filter(s => s.id !== selectedId)
     .map(s => ({ value: s.id, label: `${s.number}. ${s.label}` })), [steps, selectedId]);
 
-  const handleSelect = (id) => { setSelectedId(id); setPanel('view'); setConfirmDel(false); };
+  const handleSelect = (id) => {
+    setSelectedId(id); setPanel('view'); setConfirmDel(false);
+    setAddingSubStep(false); setEditingSubIdx(null); setSubDraft(null);
+  };
 
   // ── Edit step ─────────────────────────────────────────────
   const openEdit = () => {
@@ -446,6 +459,77 @@ const FlowChartEditor = () => {
   };
   const removeToolFromDraft = (i) =>
     setDraft(d => ({ ...d, tools: (d.tools || []).filter((_, idx) => idx !== i) }));
+
+  // ── Sub-step helpers ───────────────────────────────────────
+  const openAddSubStep = () => {
+    setAddingSubStep(true); setEditingSubIdx(null);
+    setSubDraft({ label: '', description: '', tools: [], parameters: [] });
+    setNewSubTool(''); setNewSubParam('');
+  };
+
+  const openEditSubStep = (idx) => {
+    const ss = (selectedStep?.subSteps || [])[idx]; if (!ss) return;
+    setEditingSubIdx(idx); setAddingSubStep(false);
+    setSubDraft({ ...ss, tools: [...(ss.tools || [])], parameters: [...(ss.parameters || [])] });
+    setNewSubTool(''); setNewSubParam('');
+  };
+
+  const cancelSubStep = () => {
+    setAddingSubStep(false); setEditingSubIdx(null); setSubDraft(null);
+  };
+
+  const confirmSubStep = async () => {
+    if (!subDraft?.label?.trim() || !selectedStep) return;
+    const subs = [...(selectedStep.subSteps || [])];
+    if (addingSubStep) {
+      subs.push({
+        id: `ss-${Date.now()}-${Math.floor(Math.random() * 9999)}`,
+        number: subs.length + 1,
+        label: subDraft.label.trim(),
+        description: subDraft.description || '',
+        tools: subDraft.tools || [],
+        parameters: subDraft.parameters || [],
+      });
+    } else if (editingSubIdx !== null) {
+      subs[editingSubIdx] = {
+        ...subs[editingSubIdx],
+        label: subDraft.label.trim(),
+        description: subDraft.description || '',
+        tools: subDraft.tools || [],
+        parameters: subDraft.parameters || [],
+      };
+    }
+    const nextSteps = steps.map(s => s.id === selectedId ? { ...s, subSteps: subs } : s);
+    setSteps(nextSteps);
+    await save(nextSteps);
+    cancelSubStep();
+  };
+
+  const deleteSubStep = async (idx) => {
+    if (!selectedStep) return;
+    const subs = (selectedStep.subSteps || [])
+      .filter((_, i) => i !== idx)
+      .map((s, i) => ({ ...s, number: i + 1 }));
+    const nextSteps = steps.map(s => s.id === selectedId ? { ...s, subSteps: subs } : s);
+    setSteps(nextSteps);
+    await save(nextSteps);
+  };
+
+  const addSubToolToDraft = () => {
+    if (!newSubTool.trim()) return;
+    setSubDraft(d => ({ ...d, tools: [...(d.tools || []), newSubTool.trim()] }));
+    setNewSubTool('');
+  };
+  const removeSubToolFromDraft = (i) =>
+    setSubDraft(d => ({ ...d, tools: (d.tools || []).filter((_, idx) => idx !== i) }));
+
+  const addSubParamToDraft = () => {
+    if (!newSubParam.trim()) return;
+    setSubDraft(d => ({ ...d, parameters: [...(d.parameters || []), newSubParam.trim()] }));
+    setNewSubParam('');
+  };
+  const removeSubParamFromDraft = (i) =>
+    setSubDraft(d => ({ ...d, parameters: (d.parameters || []).filter((_, idx) => idx !== i) }));
 
   // ── File upload to Supabase Storage ───────────────────────
   const uploadFile = async (file) => {
@@ -628,6 +712,64 @@ const FlowChartEditor = () => {
           y += 1;
         }
 
+        // Sub-steps
+        if ((step.subSteps || []).length > 0) {
+          checkPage(10);
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(5, 150, 105); // emerald-600
+          pdf.text('Sous-étapes :', MARGIN + 2, y); y += 5;
+
+          for (const ss of step.subSteps) {
+            checkPage(18);
+            // Sub-step header bar
+            pdf.setFillColor(236, 253, 245); // emerald-50
+            pdf.roundedRect(MARGIN + 4, y, COL - 8, 9, 1, 1, 'F');
+            pdf.setDrawColor(167, 243, 208); // emerald-200
+            pdf.roundedRect(MARGIN + 4, y, COL - 8, 9, 1, 1, 'S');
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(6, 78, 59); // emerald-900
+            pdf.text(`${step.number}.${ss.number}  —  ${ss.label}`, MARGIN + 7, y + 6);
+            y += 11;
+
+            if (ss.description) {
+              checkPage(6);
+              pdf.setFontSize(8.5);
+              pdf.setFont('helvetica', 'italic');
+              pdf.setTextColor(51, 65, 85);
+              const lines = pdf.splitTextToSize(ss.description, COL - 14);
+              pdf.text(lines, MARGIN + 7, y);
+              y += lines.length * 4.5 + 1;
+            }
+
+            if ((ss.parameters || []).length > 0) {
+              checkPage(6);
+              pdf.setFontSize(7.5);
+              pdf.setFont('helvetica', 'normal');
+              pdf.setTextColor(14, 165, 233);
+              for (const param of ss.parameters) {
+                checkPage(4);
+                const pLines = pdf.splitTextToSize(`• ${param}`, COL - 18);
+                pdf.text(pLines, MARGIN + 9, y);
+                y += pLines.length * 4 + 0.5;
+              }
+            }
+
+            if ((ss.tools || []).length > 0) {
+              checkPage(5);
+              pdf.setFontSize(7.5);
+              pdf.setFont('helvetica', 'normal');
+              pdf.setTextColor(217, 119, 6); // amber-600
+              const tLines = pdf.splitTextToSize(ss.tools.join(' · '), COL - 14);
+              pdf.text(tLines, MARGIN + 7, y);
+              y += tLines.length * 4 + 1;
+            }
+            y += 2;
+          }
+          y += 1;
+        }
+
         drawLine();
       }
 
@@ -705,6 +847,18 @@ const FlowChartEditor = () => {
             }).join('')
           }` : '';
 
+      const subStepsHtml = (step.subSteps || []).length > 0
+        ? `<div style="margin-top:12px;padding-left:12px;border-left:3px solid #10b981;">
+            <p style="font-weight:bold;color:#065f46;font-size:10pt;margin:0 0 8px;">Sous-étapes :</p>
+            ${step.subSteps.map(ss => `
+              <div style="margin-bottom:8px;padding:8px 10px;background:#f0fdf4;border:1px solid #a7f3d0;border-radius:6px;">
+                <p style="font-weight:bold;color:#064e3b;font-size:10pt;margin:0 0 3px;">${step.number}.${ss.number} — ${escape(ss.label)}</p>
+                ${ss.description ? `<p style="font-size:9pt;color:#334155;margin:2px 0;font-style:italic;">${escape(ss.description)}</p>` : ''}
+                ${(ss.parameters||[]).length > 0 ? `<p style="font-size:9pt;color:#0ea5e9;margin:4px 0 2px;font-weight:bold;">Paramètres :</p><ul style="margin:0;padding-left:16px;">${ss.parameters.map(p=>`<li style="font-size:9pt;">${escape(p)}</li>`).join('')}</ul>` : ''}
+                ${(ss.tools||[]).length > 0 ? `<p style="font-size:9pt;color:#d97706;margin:4px 0 0;"><strong>Outils :</strong> ${ss.tools.map(escape).join(' · ')}</p>` : ''}
+              </div>`).join('')}
+          </div>` : '';
+
       return `
         <div style="page-break-inside:avoid;margin-bottom:24px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
           <div style="background:#0f1d35;color:white;padding:10px 14px;">
@@ -717,6 +871,7 @@ const FlowChartEditor = () => {
             ${paramsHtml}
             ${toolsHtml}
             ${mediaHtml}
+            ${subStepsHtml}
           </div>
         </div>`;
     }).join('');
@@ -792,6 +947,79 @@ const FlowChartEditor = () => {
       <div className="text-center">
         <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
         <p className="text-sm text-slate-400">Chargement de la gamme…</p>
+      </div>
+    </div>
+  );
+
+  // ── Sub-step mini form (shown inline in the view panel) ────
+  const renderSubStepForm = () => (
+    <div className="rounded-xl border-2 border-sky-200 bg-sky-50 p-3 space-y-2.5 mt-1">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-sky-700">
+        {addingSubStep ? 'Nouvelle sous-étape' : `Modifier la sous-étape ${editingSubIdx !== null ? (editingSubIdx + 1) : ''}`}
+      </p>
+
+      <input autoFocus type="text" value={subDraft?.label || ''}
+        onChange={e => setSubDraft(d => ({ ...d, label: e.target.value }))}
+        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); confirmSubStep(); } if (e.key === 'Escape') cancelSubStep(); }}
+        className={fieldCls} placeholder="Libellé *" />
+
+      <textarea rows={2} value={subDraft?.description || ''}
+        onChange={e => setSubDraft(d => ({ ...d, description: e.target.value }))}
+        className={fieldCls + ' resize-none text-xs'} placeholder="Description courte…" />
+
+      {/* Tools */}
+      <div>
+        <p className={labelCls}>Équipements / Outils</p>
+        <div className="space-y-1 mb-1.5 max-h-24 overflow-y-auto">
+          {(subDraft?.tools || []).map((t, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span className="flex-1 text-[11px] text-amber-800 bg-amber-50 border border-amber-100 rounded px-2 py-0.5 truncate">{t}</span>
+              <button type="button" onClick={() => removeSubToolFromDraft(i)}
+                className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-red-500"><X className="w-3 h-3" /></button>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-1.5">
+          <input type="text" value={newSubTool} onChange={e => setNewSubTool(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubToolToDraft(); }}}
+            className={fieldCls + ' text-xs py-1.5'} placeholder="Outil… (Entrée)" />
+          <button type="button" onClick={addSubToolToDraft} disabled={!newSubTool.trim()}
+            className="flex-shrink-0 w-8 rounded-lg bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 disabled:opacity-40">+</button>
+        </div>
+      </div>
+
+      {/* Parameters */}
+      <div>
+        <p className={labelCls}>Paramètres</p>
+        <div className="space-y-1 mb-1.5 max-h-24 overflow-y-auto">
+          {(subDraft?.parameters || []).map((p, i) => (
+            <div key={i} className="flex items-center gap-1.5">
+              <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-sky-100 text-[8px] font-bold text-sky-700 flex-shrink-0">{i+1}</span>
+              <span className="flex-1 text-[11px] text-slate-700 truncate">{p}</span>
+              <button type="button" onClick={() => removeSubParamFromDraft(i)}
+                className="w-4 h-4 flex items-center justify-center text-slate-400 hover:text-red-500"><X className="w-3 h-3" /></button>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-1.5">
+          <input type="text" value={newSubParam} onChange={e => setNewSubParam(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSubParamToDraft(); }}}
+            className={fieldCls + ' text-xs py-1.5'} placeholder="Paramètre… (Entrée)" />
+          <button type="button" onClick={addSubParamToDraft} disabled={!newSubParam.trim()}
+            className="flex-shrink-0 w-8 rounded-lg bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 disabled:opacity-40">+</button>
+        </div>
+      </div>
+
+      <div className="flex gap-2 pt-1">
+        <button type="button" onClick={confirmSubStep} disabled={!subDraft?.label?.trim()}
+          className="flex-1 py-2 rounded-xl text-xs font-semibold text-white bg-sky-500 hover:bg-sky-600 disabled:opacity-40 transition-colors">
+          <Check className="w-3.5 h-3.5 inline mr-1" />
+          {addingSubStep ? 'Ajouter' : 'Enregistrer'}
+        </button>
+        <button type="button" onClick={cancelSubStep}
+          className="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">
+          Annuler
+        </button>
       </div>
     </div>
   );
@@ -1145,6 +1373,63 @@ const FlowChartEditor = () => {
                           })}
                         </div>
                       )}
+                    </div>
+
+                    {/* Sub-steps */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <p className={labelCls}>Sous-étapes ({(selectedStep.subSteps || []).length})</p>
+                        {!addingSubStep && editingSubIdx === null && (
+                          <button type="button" onClick={openAddSubStep}
+                            className="flex items-center gap-0.5 text-[10px] font-semibold text-sky-600 hover:text-sky-800 transition-colors">
+                            <Plus className="w-3 h-3" />Ajouter
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="space-y-1.5">
+                        {(selectedStep.subSteps || []).length === 0 && !addingSubStep && (
+                          <p className="text-xs text-slate-400 italic px-1">Aucune — cliquez sur Ajouter</p>
+                        )}
+
+                        {(selectedStep.subSteps || []).map((ss, idx) => (
+                          <div key={ss.id || idx}
+                            className={`flex items-start gap-2 rounded-lg border px-3 py-2 transition-colors ${
+                              editingSubIdx === idx ? 'border-sky-300 bg-sky-50' : 'border-slate-200 bg-slate-50'
+                            }`}>
+                            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700 flex-shrink-0 mt-0.5">
+                              {ss.number}
+                            </span>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-semibold text-slate-800 leading-tight">{ss.label}</p>
+                              {ss.description && (
+                                <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{ss.description}</p>
+                              )}
+                              {(ss.tools || []).length > 0 && (
+                                <p className="text-[10px] text-amber-700 mt-0.5 truncate">{ss.tools.join(' · ')}</p>
+                              )}
+                              {(ss.parameters || []).length > 0 && (
+                                <p className="text-[10px] text-sky-600 mt-0.5">{ss.parameters.length} paramètre(s)</p>
+                              )}
+                            </div>
+                            <div className="flex gap-0.5 flex-shrink-0">
+                              <button type="button"
+                                onClick={() => editingSubIdx === idx ? cancelSubStep() : openEditSubStep(idx)}
+                                className="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-sky-600 transition-colors">
+                                {editingSubIdx === idx ? <X className="w-3 h-3" /> : <Pencil className="w-3 h-3" />}
+                              </button>
+                              {editingSubIdx !== idx && (
+                                <button type="button" onClick={() => deleteSubStep(idx)}
+                                  className="w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-red-500 transition-colors">
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+
+                        {(addingSubStep || editingSubIdx !== null) && subDraft && renderSubStepForm()}
+                      </div>
                     </div>
                   </div>
                 </>

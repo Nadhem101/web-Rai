@@ -5,7 +5,7 @@ const sequelize = require('../db/config');
 // Roles: admin | maintenance | indus
 const UserProfile = sequelize.define('UserProfile', {
   user_id:      { type: DataTypes.STRING(100), primaryKey: true },
-  role:         { type: DataTypes.STRING(30),  defaultValue: 'admin' },
+  role:         { type: DataTypes.TEXT,         defaultValue: 'admin' },
   display_name: { type: DataTypes.STRING(150) },
 }, { tableName: 'user_profiles', timestamps: true });
 
