@@ -55,43 +55,62 @@ workbook.SheetNames.forEach((sheetName) => {
     return v instanceof Date ? fmtDate(v) : String(v ?? '').trim();
   };
 
+  // The "Code :" row anchors every other field, since sheets are not all laid
+  // out at the same absolute row offset (some are shifted up by 1-5 rows).
+  let codeRow = -1;
+  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+    if (/code\s*:/i.test(cell(i, 0))) { codeRow = i; break; }
+  }
+  if (codeRow === -1) {
+    console.warn(`⚠ ${sheetName}: could not locate the "Code :" row, skipping sheet`);
+    return;
+  }
+
+  const designationRow    = codeRow - 1;
+  const marqueRow         = codeRow + 1;
+  const proprieteLabelRow = codeRow + 3;
+  const raiRow            = codeRow + 4;
+  const clientRow         = codeRow + 5;
+  const zoneRow           = codeRow + 7;
+  const calibRow          = codeRow + 8;
+  const interventionsStart = codeRow + 16;
+
   // ── Static fields ───────────────────────────────────────────────────────────
-  const designation       = stripLabel(cell(5, 0));           // "Désignation :TEXT"
-  const code              = stripLabel(cell(6, 0)).replace(/\s+/g, ''); // "Code: ECME316"
-  const marque            = cell(7, 1);
-  const modele            = cell(7, 3);
-  const n_serie           = cell(7, 5);
+  const designation       = stripLabel(cell(designationRow, 0));   // "Désignation :TEXT"
+  const code              = stripLabel(cell(codeRow, 0)).replace(/\s+/g, ''); // "Code: ECME316"
+  const marque            = stripLabel(cell(marqueRow, 0));
+  const modele            = stripLabel(cell(marqueRow, 2));
+  const n_serie           = stripLabel(cell(marqueRow, 4));
 
   // Propriété: RAI or Client
-  const proprieteRow10    = cell(9, 0);  // "Propriété" — label
-  const propriete         = cell(10, 0) === 'R.A.I.' ? 'R.A.I.' : (cell(11, 1) === 'X' ? 'Client' : '');
+  const propriete         = cell(raiRow, 0) === 'R.A.I.' ? 'R.A.I.' : (cell(clientRow, 1) === 'X' ? 'Client' : '');
 
   // Dates
-  const dateAchat         = stripLabel(cell(9, 2), ':');
-  const dateMiseEnService = stripLabel(cell(10, 2), ':');
+  const dateAchat         = stripLabel(cell(proprieteLabelRow, 2), ':');
+  const dateMiseEnService = stripLabel(cell(raiRow, 2), ':');
 
   // Verification type
-  const verif_interne     = cell(10, 4) === 'Interne' ? true : false;
-  const verif_ip          = cell(10, 6).toLowerCase().includes('ip');
-  const verif_exempte     = cell(11, 6).toLowerCase().includes('exempt');
+  const verif_interne     = cell(raiRow, 4) === 'Interne' ? true : false;
+  const verif_ip          = cell(raiRow, 6).toLowerCase().includes('ip');
+  const verif_exempte     = cell(clientRow, 6).toLowerCase().includes('exempt');
   let   verif_type        = '';
   if (verif_exempte)      verif_type = 'Exempté';
   else if (verif_ip)      verif_type = 'IP';
   else if (verif_interne) verif_type = 'Interne';
   else                    verif_type = 'Externe';
 
-  // Zone — row 13 col 1 (the long-space cell sometimes; trim carefully)
-  const zone              = cell(13, 1).replace(/\s+/g, ' ').trim();
+  // Zone — "Affectation" row, col 1 (the long-space cell sometimes; trim carefully)
+  const zone              = cell(zoneRow, 1).replace(/\s+/g, ' ').trim();
 
-  // Calibration dates row (row 14, columns 1+)
-  const calibDates        = rowValues(rows[14] || [], 1)
+  // Calibration dates row, columns 1+
+  const calibDates        = rowValues(rows[calibRow] || [], 1)
     .map(v => fmtDate(v))
     .filter(Boolean);
 
-  // ── Intervention history (row 22 onward) ────────────────────────────────────
-  // Row 21 is headers: Date[0], Nature[1], Résultat[4], Visa[7]
+  // ── Intervention history ────────────────────────────────────────────────────
+  // The row right before interventionsStart is the header: Date[0], Nature[1], Résultat[4], Visa[7]
   const interventions = [];
-  for (let r = 22; r < rows.length; r++) {
+  for (let r = interventionsStart; r < rows.length; r++) {
     const row = rows[r] || [];
     const date    = fmtDate(row[0]);
     const nature  = String(row[1] ?? '').trim();
