@@ -1,16 +1,15 @@
-const { Op } = require('sequelize');
 const sequelize = require('../db/config');
-const PincePreventiveRecord = require('../models/pince_preventive_record.model');
+const ApplicateurPreventiveRecord = require('../models/applicateur_preventive_record.model');
 
-// Only return active (non-archived) records
+// Active records for all applicateurs
 exports.findAll = async (req, res) => {
   try {
-    const records = await PincePreventiveRecord.findAll({
+    const records = await ApplicateurPreventiveRecord.findAll({
       where: { is_historique: false },
       order: [
         ['date_controle', 'DESC'],
-        ['numero_pince', 'ASC'],
-        ['position', 'ASC'],
+        ['numero_outil', 'ASC'],
+        ['section_mm2', 'ASC'],
       ],
     });
     res.json(records);
@@ -19,15 +18,15 @@ exports.findAll = async (req, res) => {
   }
 };
 
-// All historical records (for global history view)
+// All historical records
 exports.findHistorique = async (req, res) => {
   try {
-    const records = await PincePreventiveRecord.findAll({
+    const records = await ApplicateurPreventiveRecord.findAll({
       where: { is_historique: true },
       order: [
         ['date_controle', 'DESC'],
-        ['numero_pince', 'ASC'],
-        ['position', 'ASC'],
+        ['numero_outil', 'ASC'],
+        ['section_mm2', 'ASC'],
       ],
     });
     res.json(records);
@@ -36,12 +35,12 @@ exports.findHistorique = async (req, res) => {
   }
 };
 
-// Historical records for a single pince (used by inventory tab)
-exports.findHistoriqueByPince = async (req, res) => {
+// Historical records for a single outil (used by inventory tab)
+exports.findHistoriqueByOutil = async (req, res) => {
   try {
-    const records = await PincePreventiveRecord.findAll({
-      where: { numero_pince: req.params.numero_pince, is_historique: true },
-      order: [['date_controle', 'DESC'], ['position', 'ASC']],
+    const records = await ApplicateurPreventiveRecord.findAll({
+      where: { numero_outil: req.params.numero_outil, is_historique: true },
+      order: [['date_controle', 'DESC'], ['section_mm2', 'ASC']],
     });
     res.json(records);
   } catch (error) {
@@ -51,7 +50,7 @@ exports.findHistoriqueByPince = async (req, res) => {
 
 exports.findOne = async (req, res) => {
   try {
-    const record = await PincePreventiveRecord.findByPk(req.params.id);
+    const record = await ApplicateurPreventiveRecord.findByPk(req.params.id);
     if (record) {
       res.json(record);
     } else {
@@ -64,7 +63,7 @@ exports.findOne = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const record = await PincePreventiveRecord.create(req.body);
+    const record = await ApplicateurPreventiveRecord.create(req.body);
     res.status(201).json(record);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -73,11 +72,11 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const [updated] = await PincePreventiveRecord.update(req.body, {
+    const [updated] = await ApplicateurPreventiveRecord.update(req.body, {
       where: { id: req.params.id },
     });
     if (updated) {
-      const record = await PincePreventiveRecord.findByPk(req.params.id);
+      const record = await ApplicateurPreventiveRecord.findByPk(req.params.id);
       res.json(record);
     } else {
       res.status(404).json({ message: 'Enregistrement non trouvé' });
@@ -89,7 +88,7 @@ exports.update = async (req, res) => {
 
 exports.delete = async (req, res) => {
   try {
-    const deleted = await PincePreventiveRecord.destroy({
+    const deleted = await ApplicateurPreventiveRecord.destroy({
       where: { id: req.params.id },
     });
     if (deleted) {
@@ -102,33 +101,31 @@ exports.delete = async (req, res) => {
   }
 };
 
-// Archive current active records for a pince then create fresh records for new maintenance cycle
+// Archive current active records for an outil then create fresh records for new maintenance cycle
 exports.startMaintenance = async (req, res) => {
-  const { numero_pince, date_controle, date_prochaine, rows } = req.body;
+  const { numero_outil, date_controle, date_prochaine, rows } = req.body;
 
-  if (!numero_pince || !date_controle || !date_prochaine || !Array.isArray(rows) || rows.length === 0) {
-    return res.status(400).json({ message: 'numero_pince, date_controle, date_prochaine et rows sont requis' });
+  if (!numero_outil || !date_controle || !date_prochaine || !Array.isArray(rows) || rows.length === 0) {
+    return res.status(400).json({ message: 'numero_outil, date_controle, date_prochaine et rows sont requis' });
   }
 
   const t = await sequelize.transaction();
   try {
-    // Archive all currently active records for this pince
-    await PincePreventiveRecord.update(
+    // Archive all currently active records for this outil
+    await ApplicateurPreventiveRecord.update(
       { is_historique: true },
-      { where: { numero_pince, is_historique: false }, transaction: t }
+      { where: { numero_outil, is_historique: false }, transaction: t }
     );
 
-    // Create the new maintenance records
-    const created = await PincePreventiveRecord.bulkCreate(
+    // Create new maintenance records
+    const created = await ApplicateurPreventiveRecord.bulkCreate(
       rows.map((row) => ({
-        numero_pince,
+        numero_outil,
         date_controle,
         date_prochaine,
-        reference_more: row.reference_more ?? null,
-        cosse: row.cosse ?? null,
-        position: row.position ?? null,
-        fil: row.fil ?? null,
-        traction_minimale_n: row.traction_minimale_n ?? null,
+        section_mm2: row.section_mm2 ?? null,
+        seuil_n: row.seuil_n ?? null,
+        longueur_denudage: row.longueur_denudage ?? null,
         test_value_1: row.test_value_1 ?? null,
         test_value_2: row.test_value_2 ?? null,
         test_value_3: row.test_value_3 ?? null,

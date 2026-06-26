@@ -312,7 +312,10 @@ const CalendrierPreventif = () => {
         const intType   = parts[1];
         const newKey    = `${equipCode}__${intType}__${state.newWeek}`;
         const original  = scheduledCells[key];
-        if (original) cells[newKey] = { ...original, week: state.newWeek, isRescheduledTarget: true, originalKey: key };
+        // Only inject the target if that week isn't already its own scheduled maintenance
+        if (original && !scheduledCells[newKey]) {
+          cells[newKey] = { ...original, week: state.newWeek, isRescheduledTarget: true, originalKey: key };
+        }
       }
     });
     return cells;
@@ -330,12 +333,17 @@ const CalendrierPreventif = () => {
     const machineKey = resolveMaintenanceMachineKeyFromEquipment(cellData.equip);
     const machineTemplate = machineKey ? getMaintenanceMachineTemplate(machineKey) : null;
 
+    // Rescheduled target cells must redirect to the original key so that
+    // Done / Reset / Reschedule all operate on the correct DB record.
+    const activeKey = (cellData.isRescheduledTarget && cellData.originalKey) ? cellData.originalKey : key;
+    const [, activeIntType, activeWeekStr] = activeKey.split('__');
+
     setPopup({
-      key,
+      key: activeKey,
       equip: cellData.equip,
-      week: cellData.week,
-      intType: cellData.intType,
-      currentStatus: cellStates[key]?.status || null,
+      week: parseInt(activeWeekStr, 10),
+      intType: activeIntType,
+      currentStatus: cellStates[activeKey]?.status || null,
       machineKey,
       machineLabel: machineTemplate?.machineLabel || null,
       x,

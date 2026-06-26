@@ -1,8 +1,131 @@
 import React, { useState, useEffect } from 'react';
-import { applicateurService } from '../services/api';
+import { applicateurService, applicateurPreventiveService } from '../services/api';
 import ApplicateurDetailModal from './ApplicateurDetailModal';
 import ApplicateurForm from './ApplicateurForm';
-import { Plus, Pencil, Trash2, Zap, PackageOpen, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash2, Zap, PackageOpen, Eye, History, ChevronDown, ChevronUp } from 'lucide-react';
+
+const formatDate = (value) => {
+  if (!value) return '—';
+  const parts = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (parts) return new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3])).toLocaleDateString('fr-FR');
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleDateString('fr-FR');
+};
+
+// Collapsible history drawer for one applicateur
+const HistoriqueDrawer = ({ numeroOutil }) => {
+  const [open, setOpen] = useState(false);
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  const toggle = async () => {
+    if (!open && !fetched) {
+      setLoading(true);
+      try {
+        const data = await applicateurPreventiveService.getHistoriqueByOutil(numeroOutil);
+        setRecords(Array.isArray(data) ? data : []);
+      } catch {
+        setRecords([]);
+      } finally {
+        setLoading(false);
+        setFetched(true);
+      }
+    }
+    setOpen((v) => !v);
+  };
+
+  const sessions = records.reduce((acc, r) => {
+    const key = r.date_controle ?? 'sans-date';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(r);
+    return acc;
+  }, {});
+  const sessionDates = Object.keys(sessions).sort((a, b) => b.localeCompare(a));
+
+  return (
+    <>
+      <tr className="bg-amber-50/30">
+        <td colSpan={8} className="px-4 py-1.5">
+          <button onClick={toggle}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-amber-800 transition-colors">
+            <History className="w-3.5 h-3.5" />
+            Historique des maintenances
+            {open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            {fetched && records.length > 0 && (
+              <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-700">
+                {sessionDates.length} session(s)
+              </span>
+            )}
+          </button>
+        </td>
+      </tr>
+
+      {open && (
+        <tr>
+          <td colSpan={8} className="px-4 pb-4 bg-slate-50/60">
+            {loading ? (
+              <div className="flex items-center gap-2 py-3 text-xs text-slate-400">
+                <div className="w-4 h-4 border-2 border-amber-100 border-t-amber-400 rounded-full animate-spin" />
+                Chargement de l'historique…
+              </div>
+            ) : records.length === 0 ? (
+              <p className="py-3 text-xs text-slate-400 italic">Aucun historique disponible pour cet applicateur.</p>
+            ) : (
+              <div className="space-y-3 mt-2">
+                {sessionDates.map((dateKey) => {
+                  const sessionRows = sessions[dateKey];
+                  const first = sessionRows[0];
+                  return (
+                    <div key={dateKey} className="rounded-xl border border-slate-200 bg-white overflow-hidden">
+                      <div className="flex items-center justify-between px-4 py-2 bg-slate-100 border-b border-slate-200">
+                        <span className="text-xs font-bold text-slate-700">Contrôle du {formatDate(first.date_controle)}</span>
+                        {first.date_prochaine && (
+                          <span className="text-xs text-slate-500">Prochaine (archivée) : {formatDate(first.date_prochaine)}</span>
+                        )}
+                      </div>
+                      <table className="min-w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-slate-100 bg-slate-50">
+                            {['Section mm²', 'Seuil N', 'Dénudage', 'Val.1', 'Val.2', 'Val.3', 'Val.4', 'Val.5', 'Moy.', 'Statut'].map((h) => (
+                              <th key={h} className="px-3 py-1.5 text-left text-[10px] font-semibold uppercase tracking-wider text-slate-400">{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {sessionRows.map((r) => (
+                            <tr key={r.id} className="hover:bg-slate-50">
+                              <td className="px-3 py-2 font-mono">{r.section_mm2 ?? '—'}</td>
+                              <td className="px-3 py-2 font-mono">{r.seuil_n ?? '—'}</td>
+                              <td className="px-3 py-2">{r.longueur_denudage ?? '—'}</td>
+                              {[1, 2, 3, 4, 5].map((n) => (
+                                <td key={n} className="px-3 py-2 font-mono text-slate-600">{r[`test_value_${n}`] ?? '—'}</td>
+                              ))}
+                              <td className="px-3 py-2 font-semibold text-slate-800">{r.moyenne ?? '—'}</td>
+                              <td className="px-3 py-2">
+                                {r.statut_verification ? (
+                                  <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                                    r.statut_verification === 'Conforme' ? 'bg-emerald-50 text-emerald-700' :
+                                    r.statut_verification === 'Non-conforme' ? 'bg-red-50 text-red-700' :
+                                    'bg-amber-50 text-amber-700'
+                                  }`}>{r.statut_verification}</span>
+                                ) : '—'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </td>
+        </tr>
+      )}
+    </>
+  );
+};
 
 const normalizeText = (value = '') =>
   value.toString().normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -128,34 +251,37 @@ const ApplicateursList = ({ searchQuery = '' }) => {
                   </td>
                 </tr>
               ) : sorted.map((a) => (
-                <tr key={a.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-4 py-3 font-mono font-bold text-amber-600 whitespace-nowrap">{a.numero_outil}</td>
-                  <td className="px-4 py-3 text-slate-700 max-w-[180px] truncate" title={a.designation}>{a.designation || '—'}</td>
-                  <td className="px-4 py-3 text-slate-500">{a.constructeur_outil || '—'}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-500">{a.numero_serie || '—'}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">
-                      {a.variants?.length || 0}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap"><StatusBadge statut={a.statut} /></td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-center gap-1">
-                      <button onClick={() => handleDetailClick(a)} title="Voir les détails"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => handleEditClick(a)} title="Modifier"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <button onClick={() => handleDeleteClick(a)} title="Supprimer"
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                <React.Fragment key={a.id}>
+                  <tr className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-3 font-mono font-bold text-amber-600 whitespace-nowrap">{a.numero_outil}</td>
+                    <td className="px-4 py-3 text-slate-700 max-w-[180px] truncate" title={a.designation}>{a.designation || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500">{a.constructeur_outil || '—'}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-slate-500">{a.numero_serie || '—'}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">
+                        {a.variants?.length || 0}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 whitespace-nowrap"><StatusBadge statut={a.statut} /></td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => handleDetailClick(a)} title="Voir les détails"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => handleEditClick(a)} title="Modifier"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => handleDeleteClick(a)} title="Supprimer"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {a.numero_outil && <HistoriqueDrawer numeroOutil={a.numero_outil} />}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

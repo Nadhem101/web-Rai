@@ -49,6 +49,23 @@ export const pincePreventiveService = {
   create: (data) => API.post('/pince-preventive-records', data).then((res) => res.data),
   update: (id, data) => API.put(`/pince-preventive-records/${id}`, data).then((res) => res.data),
   delete: (id) => API.delete(`/pince-preventive-records/${id}`).then((res) => res.data),
+  // Maintenance cycle: archives active records then creates new ones with date +6M
+  startMaintenance: (data) => API.post('/pince-preventive-records/maintenance', data).then((res) => res.data),
+  getHistorique: () => API.get('/pince-preventive-records/historique').then((res) => res.data),
+  getHistoriqueByPince: (numero_pince) =>
+    API.get(`/pince-preventive-records/historique/${encodeURIComponent(numero_pince)}`).then((res) => res.data),
+};
+
+export const applicateurPreventiveService = {
+  getAll: () => API.get('/applicateur-preventive-records').then((res) => res.data),
+  getById: (id) => API.get(`/applicateur-preventive-records/${id}`).then((res) => res.data),
+  create: (data) => API.post('/applicateur-preventive-records', data).then((res) => res.data),
+  update: (id, data) => API.put(`/applicateur-preventive-records/${id}`, data).then((res) => res.data),
+  delete: (id) => API.delete(`/applicateur-preventive-records/${id}`).then((res) => res.data),
+  startMaintenance: (data) => API.post('/applicateur-preventive-records/maintenance', data).then((res) => res.data),
+  getHistorique: () => API.get('/applicateur-preventive-records/historique').then((res) => res.data),
+  getHistoriqueByOutil: (numero_outil) =>
+    API.get(`/applicateur-preventive-records/historique/${encodeURIComponent(numero_outil)}`).then((res) => res.data),
 };
 
 export const cosseService = {

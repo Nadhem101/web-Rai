@@ -65,9 +65,20 @@ const PincePreventiveRecord = sequelize.define(
       allowNull: true,
       comment: 'Date de la prochaine maintenance preventive',
     },
+    statut_verification: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      comment: 'Conforme, Non-conforme, À reprendre',
+    },
     remarque: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    is_historique: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      comment: 'True = archived record (replaced by a newer maintenance)',
     },
     moyenne: {
       type: DataTypes.VIRTUAL,

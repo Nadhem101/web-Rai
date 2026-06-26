@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { pincePreventiveService } from '../services/api';
-import { Pencil, Trash2, Plus, X, AlertCircle, Wrench } from 'lucide-react';
+import { Pencil, Trash2, Plus, X, AlertCircle, Wrench, ClipboardList } from 'lucide-react';
 
 const normalizeText = (value = '') =>
   String(value ?? '')
     .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .trim();
 
@@ -20,7 +20,6 @@ const formatDate = (value) => {
 const formatDateForInput = (value = new Date()) => {
   const date = value instanceof Date ? value : parseDateOnly(value) || new Date(value);
   if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
-
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
@@ -30,13 +29,11 @@ const formatDateForInput = (value = new Date()) => {
 const parseDateOnly = (value) => {
   const normalized = String(value ?? '').trim();
   if (!normalized) return null;
-
   const parts = normalized.match(/^(\d{4})-(\d{2})-(\d{2})$/);
   if (parts) {
     const date = new Date(Number(parts[1]), Number(parts[2]) - 1, Number(parts[3]));
     return Number.isNaN(date.getTime()) ? null : date;
   }
-
   const parsed = new Date(normalized);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
@@ -56,18 +53,13 @@ const compareText = (left, right) =>
 const compareMeasurements = (left, right) => {
   const leftNumeric = parseNumericValue(left);
   const rightNumeric = parseNumericValue(right);
-
-  if (leftNumeric !== null && rightNumeric !== null && leftNumeric !== rightNumeric) {
-    return leftNumeric - rightNumeric;
-  }
-
+  if (leftNumeric !== null && rightNumeric !== null && leftNumeric !== rightNumeric) return leftNumeric - rightNumeric;
   return compareText(left, right);
 };
 
 const isPastDate = (value) => {
   const date = parseDateOnly(value);
   if (!date) return false;
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   date.setHours(0, 0, 0, 0);
@@ -77,16 +69,19 @@ const isPastDate = (value) => {
 const getWeekBounds = (referenceDate = new Date()) => {
   const start = new Date(referenceDate);
   start.setHours(0, 0, 0, 0);
-
   const dayIndex = start.getDay();
   const offsetToMonday = (dayIndex + 6) % 7;
   start.setDate(start.getDate() - offsetToMonday);
-
   const end = new Date(start);
   end.setDate(start.getDate() + 6);
   end.setHours(23, 59, 59, 999);
-
   return { start, end };
+};
+
+const addMonths = (date, months) => {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
 };
 
 const getGroupScheduleInfo = (group) => {
@@ -96,57 +91,25 @@ const getGroupScheduleInfo = (group) => {
     .sort((left, right) => left - right);
 
   if (validDates.length === 0) {
-    return {
-      key: 'unknown',
-      label: 'Sans date',
-      chipClass: 'bg-slate-100 text-slate-600 border-slate-200',
-      buttonClass: 'bg-slate-200 text-slate-400 cursor-not-allowed',
-      canAdd: false,
-      nextDate: null,
-    };
+    return { key: 'unknown', label: 'Sans date', chipClass: 'bg-slate-100 text-slate-600 border-slate-200', canAdd: false, nextDate: null };
   }
 
   const nextDate = validDates[0];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-
   const { start, end } = getWeekBounds(today);
 
   if (nextDate < today) {
-    return {
-      key: 'overdue',
-      label: 'En retard',
-      chipClass: 'bg-red-100 text-red-700 border-red-200',
-      buttonClass: 'bg-red-600 text-white hover:bg-red-700',
-      canAdd: true,
-      nextDate,
-    };
+    return { key: 'overdue', label: 'En retard', chipClass: 'bg-red-100 text-red-700 border-red-200', canAdd: true, nextDate };
   }
-
   if (nextDate >= start && nextDate <= end) {
-    return {
-      key: 'current-week',
-      label: 'Cette semaine',
-      chipClass: 'bg-amber-100 text-amber-700 border-amber-200',
-      buttonClass: 'bg-amber-600 text-white hover:bg-amber-700',
-      canAdd: true,
-      nextDate,
-    };
+    return { key: 'current-week', label: 'Cette semaine', chipClass: 'bg-amber-100 text-amber-700 border-amber-200', canAdd: true, nextDate };
   }
-
-  return {
-    key: 'future',
-    label: 'A venir',
-    chipClass: 'bg-slate-100 text-slate-600 border-slate-200',
-    buttonClass: 'bg-slate-200 text-slate-400 cursor-not-allowed',
-    canAdd: false,
-    nextDate,
-  };
+  return { key: 'future', label: 'A venir', chipClass: 'bg-slate-100 text-slate-600 border-slate-200', canAdd: false, nextDate };
 };
 
 const buildNewRowDraft = (group) => {
   const baseRow = group.rows[0] || {};
-
   return {
     numero_pince: group.sharedFields.numero_pince?.value || baseRow.numero_pince || '',
     reference_more: group.sharedFields.reference_more?.value || baseRow.reference_more || '',
@@ -160,6 +123,7 @@ const buildNewRowDraft = (group) => {
     test_value_3: '',
     test_value_4: '',
     test_value_5: '',
+    statut_verification: '',
     date_prochaine: '',
     remarque: '',
   };
@@ -178,6 +142,7 @@ const buildEditRowDraft = (record) => ({
   test_value_3: record?.test_value_3 ?? '',
   test_value_4: record?.test_value_4 ?? '',
   test_value_5: record?.test_value_5 ?? '',
+  statut_verification: record?.statut_verification ?? '',
   date_prochaine: record?.date_prochaine ? formatDateForInput(record.date_prochaine) : '',
   remarque: record?.remarque ?? '',
 });
@@ -195,6 +160,7 @@ const buildRowPayload = (data) => ({
   test_value_3: toNullableValue(data.test_value_3),
   test_value_4: toNullableValue(data.test_value_4),
   test_value_5: toNullableValue(data.test_value_5),
+  statut_verification: toNullableValue(data.statut_verification),
   date_prochaine: toNullableValue(data.date_prochaine),
   remarque: toNullableValue(data.remarque),
 });
@@ -206,69 +172,47 @@ const getPinceGroupKey = (record) => {
 };
 
 const getSharedFieldInfo = (rows, field) => {
-  if (rows.length === 0) {
-    return { shared: false, value: null };
-  }
-
+  if (rows.length === 0) return { shared: false, value: null };
   const firstValue = rows[0]?.[field] ?? null;
   const firstNormalized = normalizeText(firstValue);
   const shared = rows.every((row) => normalizeText(row?.[field] ?? null) === firstNormalized);
-
   return shared ? { shared: true, value: firstValue } : { shared: false, value: null };
 };
 
 const compareGroupRows = (left, right) => {
   const positionCompare = compareMeasurements(left.position, right.position);
   if (positionCompare !== 0) return positionCompare;
-
   const controlDateCompare = compareText(left.date_controle, right.date_controle);
   if (controlDateCompare !== 0) return controlDateCompare;
-
   return compareText(left.id ?? 0, right.id ?? 0);
 };
 
 const compareGroups = (left, right) => {
   const leftLabel = formatValue(left.numeroPince);
   const rightLabel = formatValue(right.numeroPince);
-
   const leftMissing = leftLabel === '-';
   const rightMissing = rightLabel === '-';
-
   if (leftMissing && !rightMissing) return 1;
   if (!leftMissing && rightMissing) return -1;
-
   const labelCompare = compareText(leftLabel, rightLabel);
   if (labelCompare !== 0) return labelCompare;
-
   const firstLeftDate = left.rows[0]?.date_controle;
   const firstRightDate = right.rows[0]?.date_controle;
-  const dateCompare = compareText(firstLeftDate, firstRightDate);
-  if (dateCompare !== 0) return dateCompare;
-
-  return compareText(left.rows[0]?.id ?? 0, right.rows[0]?.id ?? 0);
+  return compareText(firstLeftDate, firstRightDate);
 };
 
 const buildGroupedRecords = (records) => {
   const groups = new Map();
-
   records.forEach((record) => {
     const groupKey = getPinceGroupKey(record);
-
     if (!groups.has(groupKey)) {
-      groups.set(groupKey, {
-        key: groupKey,
-        numeroPince: record.numero_pince ?? null,
-        rows: [],
-      });
+      groups.set(groupKey, { key: groupKey, numeroPince: record.numero_pince ?? null, rows: [] });
     }
-
     groups.get(groupKey).rows.push(record);
   });
-
   return Array.from(groups.values())
     .map((group) => {
       const rows = [...group.rows].sort(compareGroupRows);
-
       return {
         ...group,
         rows,
@@ -286,30 +230,193 @@ const buildGroupedRecords = (records) => {
 };
 
 const getMeasurementValues = (record) =>
-  [
-    record.test_value_1,
-    record.test_value_2,
-    record.test_value_3,
-    record.test_value_4,
-    record.test_value_5,
-  ].filter((value) => value !== null && value !== undefined && value !== '');
+  [record.test_value_1, record.test_value_2, record.test_value_3, record.test_value_4, record.test_value_5]
+    .filter((value) => value !== null && value !== undefined && value !== '');
 
+const STATUT_OPTIONS = ['', 'Conforme', 'Non-conforme', 'À reprendre'];
+
+// ── Maintenance modal (new maintenance cycle for a whole pince group) ─────────
+const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
+  const today = new Date();
+  const defaultDateControle = formatDateForInput(today);
+  const defaultDateProchaine = formatDateForInput(addMonths(today, 6));
+
+  const [dateControle, setDateControle] = useState(defaultDateControle);
+  const [dateProchaine, setDateProchaine] = useState(defaultDateProchaine);
+  const [globalRemarque, setGlobalRemarque] = useState('');
+  // One row of test values per position in the current group
+  const [rowDrafts, setRowDrafts] = useState(() =>
+    group.rows.map((r) => ({
+      position: r.position ?? '',
+      fil: r.fil ?? '',
+      traction_minimale_n: r.traction_minimale_n ?? '',
+      reference_more: r.reference_more ?? '',
+      cosse: r.cosse ?? '',
+      test_value_1: '',
+      test_value_2: '',
+      test_value_3: '',
+      test_value_4: '',
+      test_value_5: '',
+      statut_verification: '',
+      remarque: '',
+    }))
+  );
+
+  // When dateControle changes, recalculate dateProchaine to +6M
+  const handleDateControleChange = (val) => {
+    setDateControle(val);
+    const d = parseDateOnly(val);
+    if (d) setDateProchaine(formatDateForInput(addMonths(d, 6)));
+  };
+
+  const updateRow = (idx, field, value) => {
+    setRowDrafts((prev) => prev.map((r, i) => (i === idx ? { ...r, [field]: value } : r)));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onConfirm({
+      numero_pince: group.numeroPince,
+      date_controle: dateControle || null,
+      date_prochaine: dateProchaine || null,
+      rows: rowDrafts.map((r) => ({
+        ...r,
+        test_value_1: toNullableValue(r.test_value_1),
+        test_value_2: toNullableValue(r.test_value_2),
+        test_value_3: toNullableValue(r.test_value_3),
+        test_value_4: toNullableValue(r.test_value_4),
+        test_value_5: toNullableValue(r.test_value_5),
+        statut_verification: toNullableValue(r.statut_verification),
+        remarque: toNullableValue(r.remarque) ?? toNullableValue(globalRemarque),
+      })),
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
+          style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <ClipboardList className="w-4 h-4 text-emerald-300" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-white leading-tight">Nouvelle maintenance préventive</h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Pince <span className="font-mono text-slate-200">{group.numeroPince}</span> · {group.rows.length} position(s) à tester
+              </p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-5">
+          {error && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Dates */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <label className="block">
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date de contrôle</span>
+              <input type="date" value={dateControle} onChange={(e) => handleDateControleChange(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+            </label>
+            <label className="block">
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                Prochaine échéance <span className="text-emerald-600 normal-case font-medium">(auto +6 mois)</span>
+              </span>
+              <input type="date" value={dateProchaine} onChange={(e) => setDateProchaine(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+            </label>
+          </div>
+
+          {/* Per-position test values */}
+          <div className="space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Valeurs de traction mesurées</p>
+            {rowDrafts.map((row, idx) => (
+              <div key={idx} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-3 flex flex-wrap items-center gap-3">
+                  <span className="font-mono text-sm font-bold text-sky-700">
+                    {row.position ? `Position ${row.position}` : `Mesure ${idx + 1}`}
+                  </span>
+                  {row.fil && <span className="text-xs text-slate-500">Fil : {row.fil}</span>}
+                  {row.traction_minimale_n && (
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-200 text-slate-700">
+                      min. {row.traction_minimale_n} N
+                    </span>
+                  )}
+                </div>
+                <div className="grid gap-2 grid-cols-5 mb-2">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <label key={n} className="block">
+                      <span className="mb-0.5 block text-[10px] font-semibold text-slate-400">Val. {n}</span>
+                      <input type="text" value={row[`test_value_${n}`]}
+                        onChange={(e) => updateRow(idx, `test_value_${n}`, e.target.value)}
+                        className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+                        placeholder="0" />
+                    </label>
+                  ))}
+                </div>
+                <div className="grid gap-2 md:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-0.5 block text-[10px] font-semibold text-slate-400">Statut</span>
+                    <select value={row.statut_verification} onChange={(e) => updateRow(idx, 'statut_verification', e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-sky-400 focus:outline-none bg-white">
+                      {STATUT_OPTIONS.map((s) => <option key={s} value={s}>{s || '— choisir —'}</option>)}
+                    </select>
+                  </label>
+                  <label className="block">
+                    <span className="mb-0.5 block text-[10px] font-semibold text-slate-400">Remarque (ligne)</span>
+                    <input type="text" value={row.remarque} onChange={(e) => updateRow(idx, 'remarque', e.target.value)}
+                      className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                  </label>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Global remark */}
+          <label className="block">
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Remarque générale</span>
+            <textarea value={globalRemarque} onChange={(e) => setGlobalRemarque(e.target.value)} rows={3}
+              className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              placeholder="Observations générales sur cette maintenance…" />
+          </label>
+
+          <div className="flex gap-3">
+            <button type="submit" disabled={saving}
+              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-colors"
+              style={{ background: saving ? '#94a3b8' : 'linear-gradient(135deg, #10b981, #059669)' }}>
+              {saving ? 'Enregistrement…' : 'Valider la maintenance'}
+            </button>
+            <button type="button" onClick={onClose}
+              className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+              Annuler
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// ── PincePreventiveCalendar ───────────────────────────────────────────────────
 const PincePreventiveCalendar = ({ searchQuery = '' }) => {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [rowForm, setRowForm] = useState({
-    open: false,
-    mode: 'create',
-    group: null,
-    record: null,
-    data: null,
-    saving: false,
-    error: '',
-  });
+  const [rowForm, setRowForm] = useState({ open: false, mode: 'create', group: null, record: null, data: null, saving: false, error: '' });
+  const [maintenanceModal, setMaintenanceModal] = useState({ open: false, group: null, saving: false, error: '' });
 
-  useEffect(() => {
-    loadRecords();
-  }, []);
+  useEffect(() => { loadRecords(); }, []);
 
   const loadRecords = async () => {
     try {
@@ -328,64 +435,41 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
   const filteredRecords = useMemo(() => {
     return records.filter((record) => {
       if (!normalizedSearch) return true;
-
       return [
-        record.numero_pince,
-        record.reference_more,
-        record.position,
-        record.cosse,
-        record.fil,
-        record.traction_minimale_n,
-        record.test_value_1,
-        record.test_value_2,
-        record.test_value_3,
-        record.test_value_4,
-        record.test_value_5,
-        record.date_controle,
-        record.date_prochaine,
-        record.moyenne,
-        record.remarque,
+        record.numero_pince, record.reference_more, record.position, record.cosse, record.fil,
+        record.traction_minimale_n, record.test_value_1, record.test_value_2, record.test_value_3,
+        record.test_value_4, record.test_value_5, record.date_controle, record.date_prochaine,
+        record.moyenne, record.statut_verification, record.remarque,
       ].some((field) => normalizeText(field).includes(normalizedSearch));
     });
   }, [records, normalizedSearch]);
 
   const groupedRecords = useMemo(() => buildGroupedRecords(filteredRecords), [filteredRecords]);
 
-  const overdueCount = useMemo(() => {
-    return filteredRecords.filter((record) => isPastDate(record.date_prochaine)).length;
-  }, [filteredRecords]);
+  const overdueCount = useMemo(
+    () => filteredRecords.filter((r) => isPastDate(r.date_prochaine)).length,
+    [filteredRecords]
+  );
 
   const isEditingRow = rowForm.mode === 'edit';
 
   const renderMergedCell = (group, field, row, rowIndex, className, renderContent) => {
     const sharedField = group.sharedFields[field];
-
     if (sharedField?.shared) {
       if (rowIndex !== 0) return null;
-      return (
-        <td rowSpan={group.rows.length} className={className}>
-          {renderContent(sharedField.value, true)}
-        </td>
-      );
+      return <td rowSpan={group.rows.length} className={className}>{renderContent(sharedField.value, true)}</td>;
     }
-
     return <td className={className}>{renderContent(row[field], false)}</td>;
   };
 
   const renderValues = (record) => {
     const measurementValues = getMeasurementValues(record);
     const hasAverage = record.moyenne !== null && record.moyenne !== undefined && record.moyenne !== '';
-
-    if (measurementValues.length === 0 && !hasAverage) {
-      return <span className="text-slate-400">-</span>;
-    }
-
+    if (measurementValues.length === 0 && !hasAverage) return <span className="text-slate-400">-</span>;
     return (
       <div className="flex items-center gap-2 whitespace-nowrap overflow-x-auto text-sm text-slate-700">
         {measurementValues.map((value, valueIndex) => (
-          <span key={`${record.id}-value-${valueIndex}`} className="font-medium text-slate-700">
-            {value}
-          </span>
+          <span key={`${record.id}-value-${valueIndex}`} className="font-medium text-slate-700">{value}</span>
         ))}
         {hasAverage && (
           <>
@@ -400,53 +484,31 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
   const openAddRowModal = (group) => {
     const schedule = getGroupScheduleInfo(group);
     if (!schedule.canAdd) return;
-
-    setRowForm({
-      open: true,
-      mode: 'create',
-      group,
-      record: null,
-      data: buildNewRowDraft(group),
-      saving: false,
-      error: '',
-    });
+    setRowForm({ open: true, mode: 'create', group, record: null, data: buildNewRowDraft(group), saving: false, error: '' });
   };
 
   const openEditRowModal = (group, record) => {
     if (!record) return;
-
-    setRowForm({
-      open: true,
-      mode: 'edit',
-      group,
-      record,
-      data: buildEditRowDraft(record),
-      saving: false,
-      error: '',
-    });
+    setRowForm({ open: true, mode: 'edit', group, record, data: buildEditRowDraft(record), saving: false, error: '' });
   };
 
-  const closeRowModal = () => {
-    setRowForm({
-      open: false,
-      mode: 'create',
-      group: null,
-      record: null,
-      data: null,
-      saving: false,
-      error: '',
-    });
+  const closeRowModal = () =>
+    setRowForm({ open: false, mode: 'create', group: null, record: null, data: null, saving: false, error: '' });
+
+  const openMaintenanceModal = (group) => {
+    const schedule = getGroupScheduleInfo(group);
+    if (!schedule.canAdd) return;
+    setMaintenanceModal({ open: true, group, saving: false, error: '' });
   };
+
+  const closeMaintenanceModal = () =>
+    setMaintenanceModal({ open: false, group: null, saving: false, error: '' });
 
   const handleDeleteRow = async (record) => {
     const confirmed = window.confirm(
-      `Êtes-vous sûr de vouloir supprimer la ligne du ${formatDate(record.date_controle)} pour ${formatValue(
-        record.numero_pince
-      )} ?`
+      `Êtes-vous sûr de vouloir supprimer la ligne du ${formatDate(record.date_controle)} pour ${formatValue(record.numero_pince)} ?`
     );
-
     if (!confirmed) return;
-
     try {
       await pincePreventiveService.delete(record.id);
       await loadRecords();
@@ -458,40 +520,37 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   const handleRowFormChange = (event) => {
     const { name, value } = event.target;
-    setRowForm((current) => ({
-      ...current,
-      data: {
-        ...current.data,
-        [name]: value,
-      },
-    }));
+    setRowForm((current) => ({ ...current, data: { ...current.data, [name]: value } }));
   };
 
   const handleRowFormSubmit = async (event) => {
     event.preventDefault();
-
     if (!rowForm.data) return;
-
     try {
       setRowForm((current) => ({ ...current, saving: true, error: '' }));
-
       const payload = buildRowPayload(rowForm.data);
-
       if (rowForm.mode === 'edit' && rowForm.record?.id) {
         await pincePreventiveService.update(rowForm.record.id, payload);
       } else {
         await pincePreventiveService.create(payload);
       }
-
       await loadRecords();
       closeRowModal();
     } catch (error) {
-      const message =
-        error?.response?.data?.message ||
-        error.message ||
-        (rowForm.mode === 'edit' ? 'Erreur lors de la modification de la ligne' : 'Erreur lors de la création de la ligne');
-      console.error('Erreur ligne preventive:', error);
+      const message = error?.response?.data?.message || error.message || 'Erreur lors de la sauvegarde';
       setRowForm((current) => ({ ...current, saving: false, error: message }));
+    }
+  };
+
+  const handleMaintenanceConfirm = async (payload) => {
+    setMaintenanceModal((m) => ({ ...m, saving: true, error: '' }));
+    try {
+      await pincePreventiveService.startMaintenance(payload);
+      await loadRecords();
+      closeMaintenanceModal();
+    } catch (error) {
+      const message = error?.response?.data?.message || error.message || 'Erreur lors de la maintenance';
+      setMaintenanceModal((m) => ({ ...m, saving: false, error: message }));
     }
   };
 
@@ -528,295 +587,260 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   return (
     <>
-    <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
-            <Wrench className="w-4 h-4 text-sky-500" />
+      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
+              <Wrench className="w-4 h-4 text-sky-500" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-800">Suivi préventif des pinces</p>
+              <p className="text-xs text-slate-400">Groupé par N° pince — valeurs de traction mesurées</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-bold text-slate-800">Suivi préventif des pinces</p>
-            <p className="text-xs text-slate-400">Groupé par N° pince — valeurs de traction mesurées</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{groupedRecords.length} pince(s)</span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{filteredRecords.length} ligne(s)</span>
+            {overdueCount > 0 && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">{overdueCount} en retard</span>
+            )}
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{groupedRecords.length} pince(s)</span>
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{filteredRecords.length} ligne(s)</span>
-          {overdueCount > 0 && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">{overdueCount} en retard</span>
-          )}
-        </div>
-      </div>
 
-      <div className="flex-1 min-h-0 overflow-auto">
-        <table className="min-w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-slate-50 border-b border-slate-200">
-              {['N° Pince','Date contrôle','Référence','Position','Cosse','Fil','Traction min.','Valeurs','Prochaine','Remarque','Actions'].map((h) => (
-                <th key={h} className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
-            {groupedRecords.map((group) =>
-              group.rows.map((record, rowIndex) => {
-                const rowKey = record.id ?? `${group.key}-${rowIndex}`;
-                const schedule = getGroupScheduleInfo(group);
+        <div className="flex-1 min-h-0 overflow-auto">
+          <table className="min-w-full border-collapse text-sm">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200">
+                {['N° Pince', 'Date contrôle', 'Référence', 'Position', 'Cosse', 'Fil', 'Traction min.', 'Valeurs', 'Statut', 'Prochaine', 'Remarque', 'Actions'].map((h) => (
+                  <th key={h} className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {groupedRecords.map((group) =>
+                group.rows.map((record, rowIndex) => {
+                  const rowKey = record.id ?? `${group.key}-${rowIndex}`;
+                  const schedule = getGroupScheduleInfo(group);
+                  return (
+                    <tr key={rowKey} className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} hover:bg-sky-50/30 transition-colors`}>
+                      {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-2 border-sky-200', (value) => (
+                        <div className="flex flex-col gap-1.5 min-w-[130px]">
+                          <span className="font-mono font-bold text-sky-700 text-sm">{formatValue(value)}</span>
+                          <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
+                            {schedule.label}
+                          </span>
+                          {group.rows.length > 1 && (
+                            <span className="text-[11px] text-slate-400">{group.rows.length} mesures</span>
+                          )}
+                          {/* Primary action: full maintenance cycle */}
+                          <button type="button" onClick={() => openMaintenanceModal(group)} disabled={!schedule.canAdd}
+                            title={schedule.canAdd ? 'Démarrer une nouvelle maintenance (archive les anciennes valeurs)' : 'Disponible quand la pince est en retard ou prévue cette semaine'}
+                            className={`inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[11px] font-semibold transition ${
+                              schedule.canAdd
+                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
+                                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                            }`}>
+                            <ClipboardList className="w-3 h-3" />
+                            Nouvelle maintenance
+                          </button>
+                          {/* Secondary: add a single row */}
+                          <button type="button" onClick={() => openAddRowModal(group)} disabled={!schedule.canAdd}
+                            title="Ajouter une ligne isolée"
+                            className={`inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[11px] font-semibold transition ${
+                              schedule.canAdd
+                                ? 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100'
+                                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                            }`}>
+                            <Plus className="w-3 h-3" />
+                            Ajouter
+                          </button>
+                        </div>
+                      ))}
 
-                return (
-                  <tr key={rowKey} className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} hover:bg-sky-50/30 transition-colors`}>
-                    {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-2 border-sky-200', (value) => (
-                      <div className="flex flex-col gap-2 min-w-[110px]">
-                        <span className="font-mono font-bold text-sky-700 text-sm">{formatValue(value)}</span>
-                        <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
-                          {schedule.label}
-                        </span>
-                        {group.rows.length > 1 && (
-                          <span className="text-[11px] text-slate-400">{group.rows.length} mesures</span>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => openAddRowModal(group)}
-                          disabled={!schedule.canAdd}
-                          title={schedule.canAdd ? 'Ajouter une nouvelle mesure' : 'Disponible quand la pince est en retard ou prévue cette semaine'}
-                          className={`inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[11px] font-semibold transition ${
-                            schedule.canAdd
-                              ? 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100'
-                              : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                          }`}
-                        >
-                          <Plus className="w-3 h-3" />
-                          Ajouter
-                        </button>
-                      </div>
-                    ))}
+                      {renderMergedCell(group, 'date_controle', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
+                        <span>{formatDate(value)}</span>
+                      ))}
 
-                    {renderMergedCell(group, 'date_controle', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                      <span>{formatDate(value)}</span>
-                    ))}
+                      {renderMergedCell(group, 'reference_more', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
+                        <span>{formatValue(value)}</span>
+                      ))}
 
-                    {renderMergedCell(group, 'reference_more', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                      <span>{formatValue(value)}</span>
-                    ))}
+                      <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.position)}</td>
 
-                    <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.position)}</td>
+                      {renderMergedCell(group, 'cosse', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
+                        <span>{formatValue(value)}</span>
+                      ))}
 
-                    {renderMergedCell(group, 'cosse', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                      <span>{formatValue(value)}</span>
-                    ))}
+                      <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.fil)}</td>
+                      <td className="px-3 py-3 align-top text-xs font-mono text-slate-600">{formatValue(record.traction_minimale_n)}</td>
+                      <td className="px-3 py-3 align-top text-xs text-slate-600">{renderValues(record)}</td>
 
-                    <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.fil)}</td>
+                      <td className="px-3 py-3 align-top text-xs">
+                        {record.statut_verification ? (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
+                            record.statut_verification === 'Conforme' ? 'bg-emerald-50 text-emerald-700' :
+                            record.statut_verification === 'Non-conforme' ? 'bg-red-50 text-red-700' :
+                            'bg-amber-50 text-amber-700'
+                          }`}>{record.statut_verification}</span>
+                        ) : <span className="text-slate-400">-</span>}
+                      </td>
 
-                    <td className="px-3 py-3 align-top text-xs font-mono text-slate-600">{formatValue(record.traction_minimale_n)}</td>
-
-                    <td className="px-3 py-3 align-top text-xs text-slate-600">{renderValues(record)}</td>
-
-                    {renderMergedCell(group, 'date_prochaine', record, rowIndex, 'px-3 py-3 align-top text-xs', (value) => (
-                      <span
-                        className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      {renderMergedCell(group, 'date_prochaine', record, rowIndex, 'px-3 py-3 align-top text-xs', (value) => (
+                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
                           isPastDate(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                        }`}
-                      >
-                        {formatDate(value)}
-                      </span>
-                    ))}
+                        }`}>{formatDate(value)}</span>
+                      ))}
 
-                    {renderMergedCell(group, 'remarque', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                      <span>{formatValue(value)}</span>
-                    ))}
+                      {renderMergedCell(group, 'remarque', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
+                        <span>{formatValue(value)}</span>
+                      ))}
 
-                    <td className="px-3 py-3 align-top">
-                      <div className="flex items-center gap-1">
-                        <button type="button" onClick={() => openEditRowModal(group, record)}
-                          title="Modifier cette ligne"
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button type="button" onClick={() => handleDeleteRow(record)}
-                          title="Supprimer cette ligne"
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    {rowForm.open && rowForm.group && rowForm.data && (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
-          <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
-            style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center flex-shrink-0">
-                <Wrench className="w-4 h-4 text-sky-300" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-white leading-tight">
-                  {isEditingRow ? 'Modifier une valeur préventive' : 'Ajouter une valeur préventive'}
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Pince {formatValue(rowForm.group.numeroPince)} · {rowForm.group.rows.length} mesure(s) existante(s)
-                  {isEditingRow && rowForm.record?.id ? ` · #${rowForm.record.id}` : ''}
-                </p>
-              </div>
-            </div>
-            <button type="button" onClick={closeRowModal}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0">
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-
-          <form onSubmit={handleRowFormSubmit} className="flex-1 overflow-auto p-6">
-            {rowForm.error && (
-              <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                <span>{rowForm.error}</span>
-              </div>
-            )}
-
-            <div className="mb-5 grid gap-3 md:grid-cols-3">
-              <label className="block rounded-xl bg-slate-50 px-4 py-3">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">N° Pince</span>
-                <input
-                  type="text"
-                  name="numero_pince"
-                  value={rowForm.data.numero_pince}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                />
-              </label>
-              <label className="block rounded-xl bg-slate-50 px-4 py-3">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Référence</span>
-                <input
-                  type="text"
-                  name="reference_more"
-                  value={rowForm.data.reference_more}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                />
-              </label>
-              <label className="block rounded-xl bg-slate-50 px-4 py-3">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Cosse</span>
-                <input
-                  type="text"
-                  name="cosse"
-                  value={rowForm.data.cosse}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="block">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date contrôle</span>
-                <input
-                  type="date"
-                  name="date_controle"
-                  value={rowForm.data.date_controle}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date prochaine</span>
-                <input
-                  type="date"
-                  name="date_prochaine"
-                  value={rowForm.data.date_prochaine}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Position</span>
-                <input
-                  type="text"
-                  name="position"
-                  value={rowForm.data.position}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                  placeholder="ex: 0.75"
-                />
-              </label>
-
-              <label className="block">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Fil</span>
-                <input
-                  type="text"
-                  name="fil"
-                  value={rowForm.data.fil}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                  placeholder="ex: 1"
-                />
-              </label>
-
-              <label className="block md:col-span-2">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Traction minimale</span>
-                <input
-                  type="text"
-                  name="traction_minimale_n"
-                  value={rowForm.data.traction_minimale_n}
-                  onChange={handleRowFormChange}
-                  className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                  placeholder="ex: 90"
-                />
-              </label>
-            </div>
-
-            <div className="mt-5 grid gap-4 md:grid-cols-5">
-              {[1, 2, 3, 4, 5].map((index) => (
-                <label key={`test_value_${index}`} className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Valeur {index}</span>
-                  <input
-                    type="text"
-                    name={`test_value_${index}`}
-                    value={rowForm.data[`test_value_${index}`]}
-                      onChange={handleRowFormChange}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                    placeholder="0"
-                  />
-                </label>
-              ))}
-            </div>
-
-            <label className="mt-5 block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Remarque</span>
-              <textarea
-                name="remarque"
-                value={rowForm.data.remarque}
-                onChange={handleRowFormChange}
-                rows={4}
-                className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
-                placeholder="Commentaires sur cette nouvelle mesure..."
-              />
-            </label>
-
-            <div className="mt-6 flex gap-3">
-              <button type="submit" disabled={rowForm.saving}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-                style={{ background: rowForm.saving ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
-                {rowForm.saving ? 'Sauvegarde…' : isEditingRow ? 'Enregistrer les modifications' : 'Ajouter la ligne'}
-              </button>
-              <button type="button" onClick={closeRowModal}
-                className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
-                Annuler
-              </button>
-            </div>
-          </form>
+                      <td className="px-3 py-3 align-top">
+                        <div className="flex items-center gap-1">
+                          <button type="button" onClick={() => openEditRowModal(group, record)}
+                            title="Modifier cette ligne"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button type="button" onClick={() => handleDeleteRow(record)}
+                            title="Supprimer cette ligne"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
-    )}
+
+      {/* Add/Edit single row modal */}
+      {rowForm.open && rowForm.group && rowForm.data && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
+              style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center flex-shrink-0">
+                  <Wrench className="w-4 h-4 text-sky-300" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white leading-tight">
+                    {isEditingRow ? 'Modifier une valeur préventive' : 'Ajouter une valeur préventive'}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Pince {formatValue(rowForm.group.numeroPince)} · {rowForm.group.rows.length} mesure(s) existante(s)
+                    {isEditingRow && rowForm.record?.id ? ` · #${rowForm.record.id}` : ''}
+                  </p>
+                </div>
+              </div>
+              <button type="button" onClick={closeRowModal}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors flex-shrink-0">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleRowFormSubmit} className="flex-1 overflow-auto p-6">
+              {rowForm.error && (
+                <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>{rowForm.error}</span>
+                </div>
+              )}
+
+              <div className="mb-5 grid gap-3 md:grid-cols-3">
+                {['numero_pince', 'reference_more', 'cosse'].map((field) => (
+                  <label key={field} className="block rounded-xl bg-slate-50 px-4 py-3">
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                      {field === 'numero_pince' ? 'N° Pince' : field === 'reference_more' ? 'Référence' : 'Cosse'}
+                    </span>
+                    <input type="text" name={field} value={rowForm.data[field]} onChange={handleRowFormChange}
+                      className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                  </label>
+                ))}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date contrôle</span>
+                  <input type="date" name="date_controle" value={rowForm.data.date_controle} onChange={handleRowFormChange}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date prochaine</span>
+                  <input type="date" name="date_prochaine" value={rowForm.data.date_prochaine} onChange={handleRowFormChange}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Position</span>
+                  <input type="text" name="position" value={rowForm.data.position} onChange={handleRowFormChange}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="ex: 0.75" />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Fil</span>
+                  <input type="text" name="fil" value={rowForm.data.fil} onChange={handleRowFormChange}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="ex: 1" />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Traction minimale</span>
+                  <input type="text" name="traction_minimale_n" value={rowForm.data.traction_minimale_n} onChange={handleRowFormChange}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="ex: 90" />
+                </label>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Statut</span>
+                  <select name="statut_verification" value={rowForm.data.statut_verification} onChange={handleRowFormChange}
+                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none bg-white">
+                    {STATUT_OPTIONS.map((s) => <option key={s} value={s}>{s || '— choisir —'}</option>)}
+                  </select>
+                </label>
+              </div>
+
+              <div className="mt-5 grid gap-4 md:grid-cols-5">
+                {[1, 2, 3, 4, 5].map((index) => (
+                  <label key={`test_value_${index}`} className="block">
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Valeur {index}</span>
+                    <input type="text" name={`test_value_${index}`} value={rowForm.data[`test_value_${index}`]} onChange={handleRowFormChange}
+                      className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="0" />
+                  </label>
+                ))}
+              </div>
+
+              <label className="mt-5 block">
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Remarque</span>
+                <textarea name="remarque" value={rowForm.data.remarque} onChange={handleRowFormChange} rows={3}
+                  className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+              </label>
+
+              <div className="mt-6 flex gap-3">
+                <button type="submit" disabled={rowForm.saving}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
+                  style={{ background: rowForm.saving ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                  {rowForm.saving ? 'Sauvegarde…' : isEditingRow ? 'Enregistrer les modifications' : 'Ajouter la ligne'}
+                </button>
+                <button type="button" onClick={closeRowModal}
+                  className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+                  Annuler
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Full maintenance cycle modal */}
+      {maintenanceModal.open && maintenanceModal.group && (
+        <MaintenanceModal
+          group={maintenanceModal.group}
+          saving={maintenanceModal.saving}
+          error={maintenanceModal.error}
+          onConfirm={handleMaintenanceConfirm}
+          onClose={closeMaintenanceModal}
+        />
+      )}
     </>
   );
 };

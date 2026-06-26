@@ -14,6 +14,7 @@ const Applicateur = require('./applicateur.model');
 const ApplicateurVariant = require('./applicateur_variant.model');
 const ApplicateurMaintenanceRecord = require('./applicateur_maintenance_record.model');
 const ApplicateurThreshold = require('./applicateur_threshold.model');
+const ApplicateurPreventiveRecord = require('./applicateur_preventive_record.model');
 const Cosse = require('./cosse.model');
 const CurativeMaintenanceRecord = require('./curative_maintenance_record.model');
 const ArticleTest       = require('./article_test.model');
@@ -98,6 +99,7 @@ module.exports = {
   ApplicateurVariant,
   ApplicateurMaintenanceRecord,
   ApplicateurThreshold,
+  ApplicateurPreventiveRecord,
   Cosse,
   CurativeMaintenanceRecord,
   ArticleTest,
