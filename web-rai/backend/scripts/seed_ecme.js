@@ -90,7 +90,9 @@ async function main() {
   }
 
   // ── Parse CSV ─────────────────────────────────────────────────────────────
-  const lines = fs.readFileSync(CSV_FILE, 'utf8').split('\n');
+  // Use 'latin1' (ISO-8859-1) because French Excel CSV exports use this encoding.
+  // Reading as 'utf8' corrupts characters like é, è, à, ç → garbled bytes.
+  const lines = fs.readFileSync(CSV_FILE, 'latin1').split('\n');
 
   // Find data rows: rows where col 3 starts with "ECME"
   const dataRows = lines

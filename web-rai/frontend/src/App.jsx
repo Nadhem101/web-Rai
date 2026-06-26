@@ -20,6 +20,9 @@ import FlowChartsIndex from './pages/Industrialization/FlowChartsIndex.jsx';
 import FlowChartEditor from './pages/Industrialization/FlowChartEditor.jsx';
 import FlowChartViewer from './pages/Industrialization/FlowChartViewer.jsx';
 import TestCables from './pages/Industrialization/TestCables.jsx';
+import SuiviMoyensIndex from './pages/Industrialization/SuiviMoyensIndex.jsx';
+import SuiviMoyensDetail from './pages/Industrialization/SuiviMoyensDetail.jsx';
+import AdminUsers from './pages/Admin/AdminUsers.jsx';
 import { maintenanceSheetService } from './services/api';
 import { useAuth } from './contexts/AuthContext.jsx';
 import Login from './pages/Login.jsx';
@@ -150,7 +153,7 @@ const getPageName = (pathname) => {
 const App = () => {
   const location = useLocation();
   const pageName = getPageName(location.pathname);
-  const { session, user, loading: authLoading, logout } = useAuth();
+  const { session, user, loading: authLoading, logout, can } = useAuth();
 
   // Show nothing while checking auth
   if (authLoading) return (
@@ -193,11 +196,8 @@ const App = () => {
   const subZones = [
     // Assemblage Meca
     { group: 'Assemblage Meca', id: 'zone:Bobinage', label: 'Bobinage' },
-    { group: 'Assemblage Meca', id: 'zone:Chevain Arnoux', label: 'Chevain Arnoux' },
-    { group: 'Assemblage Meca', id: 'zone:Electro Aimants', label: 'Electro Aimants' },
     { group: 'Assemblage Meca', id: 'zone:Embases Relais', label: 'Embases Relais' },
     // Faisceau Cable
-    { group: 'Faisceau Cable', id: 'zone:Khun', label: 'Khun' },
     { group: 'Faisceau Cable', id: 'zone:Club', label: 'Club' },
     { group: 'Faisceau Cable', id: 'zone:Cablage', label: 'Cablage' },
     // Individual zones
@@ -304,52 +304,71 @@ const App = () => {
           )}
 
           {/* ── MAINTENANCE ── */}
-          <SectionLabel label="Maintenance" />
+          {can('maintenance') && (
+            <>
+              <SectionLabel label="Maintenance" />
 
-          <ExpandBtn
-            icon={CalendarCheck}
-            label="Préventive"
-            expanded={maintenanceExpanded}
-            onClick={() => setMaintenanceExpanded(!maintenanceExpanded)}
-            badge={completedMaintenanceCount}
-          />
+              <ExpandBtn
+                icon={CalendarCheck}
+                label="Préventive"
+                expanded={maintenanceExpanded}
+                onClick={() => setMaintenanceExpanded(!maintenanceExpanded)}
+                badge={completedMaintenanceCount}
+              />
 
-          {maintenanceExpanded && (
-            <div className="space-y-0.5 mt-0.5">
-              <SubNavItem to="/preventif" label="Calendrier préventif" />
-              <SubNavItem to="/preventif/suivi-pinces" label="Suivi des pinces" />
-              <SubNavItem to="/preventif/suivi-applicateurs" label="Suivi des applicateurs" />
-              <SubNavItem to="/preventif/fiches-maintenance" label="Fiches machines" badge={completedMaintenanceCount} />
-            </div>
-          )}
+              {maintenanceExpanded && (
+                <div className="space-y-0.5 mt-0.5">
+                  <SubNavItem to="/preventif" label="Calendrier préventif" />
+                  <SubNavItem to="/preventif/suivi-pinces" label="Suivi des pinces" />
+                  <SubNavItem to="/preventif/suivi-applicateurs" label="Suivi des applicateurs" />
+                  <SubNavItem to="/preventif/fiches-maintenance" label="Fiches machines" badge={completedMaintenanceCount} />
+                </div>
+              )}
 
-          <ExpandBtn
-            icon={Wrench}
-            label="Curative"
-            expanded={curativeExpanded}
-            onClick={() => setCurativeExpanded(!curativeExpanded)}
-          />
+              <ExpandBtn
+                icon={Wrench}
+                label="Curative"
+                expanded={curativeExpanded}
+                onClick={() => setCurativeExpanded(!curativeExpanded)}
+              />
 
-          {curativeExpanded && (
-            <div className="space-y-0.5 mt-0.5">
-              <SubNavItem to="/curatif" label="Suivi curatif" />
-              <SubNavItem to="/curatif/indicateur" label="Indicateur curatif" />
-            </div>
+              {curativeExpanded && (
+                <div className="space-y-0.5 mt-0.5">
+                  <SubNavItem to="/curatif" label="Suivi curatif" />
+                  <SubNavItem to="/curatif/indicateur" label="Indicateur curatif" />
+                </div>
+              )}
+            </>
           )}
 
           {/* ── QUALITÉ & CONFORMITÉ ── */}
-          <SectionLabel label="Qualité & Conformité" />
-
-          <NavItem to="/ecme" icon={FlaskConical} label="État des ECME" />
+          {can('ecme') && (
+            <>
+              <SectionLabel label="Qualité & Conformité" />
+              <NavItem to="/ecme" icon={FlaskConical} label="État des ECME" />
+            </>
+          )}
 
           {/* ── INDUSTRIALISATION ── */}
-          <SectionLabel label="Industrialisation" />
+          {can('indus') && (
+            <>
+              <SectionLabel label="Industrialisation" />
+              <NavItem to="/industrialization" icon={Factory} label="Chiffrage" />
+              <NavItem to="/industrialization/connecteurs" icon={Link2} label="Catalogue connecteurs" />
+              <NavItem to="/industrialization/fournisseurs" icon={Truck} label="Catalogue fournisseurs" />
+              <NavItem to="/industrialization/flow-chart" icon={GitBranch} label="Flow Chart" />
+              <NavItem to="/industrialization/test-cables" icon={Cable} label="Test des câbles" />
+              <NavItem to="/industrialization/suivi-moyens" icon={CalendarCheck} label="Suivi des moyens" />
+            </>
+          )}
 
-          <NavItem to="/industrialization" icon={Factory} label="Chiffrage" />
-          <NavItem to="/industrialization/connecteurs" icon={Link2} label="Catalogue connecteurs" />
-          <NavItem to="/industrialization/fournisseurs" icon={Truck} label="Catalogue fournisseurs" />
-          <NavItem to="/industrialization/flow-chart" icon={GitBranch} label="Flow Chart" />
-          <NavItem to="/industrialization/test-cables" icon={Cable} label="Test des câbles" />
+          {/* ── ADMIN ── */}
+          {can('admin') && (
+            <>
+              <SectionLabel label="Administration" />
+              <NavItem to="/admin/users" icon={User} label="Gestion des accès" />
+            </>
+          )}
         </nav>
 
         {/* Sidebar footer — user info + logout */}
@@ -432,6 +451,9 @@ const App = () => {
               <Route path="/industrialization/flow-chart/:id/view" element={<FlowChartViewer />} />
               <Route path="/industrialization/chiffrage/:id" element={<ChiffrageDetail />} />
               <Route path="/industrialization/test-cables" element={<TestCables />} />
+              <Route path="/industrialization/suivi-moyens" element={<SuiviMoyensIndex />} />
+              <Route path="/industrialization/suivi-moyens/:id" element={<SuiviMoyensDetail />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
             </Routes>
           </div>
         </main>

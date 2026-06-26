@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ecmeService } from '../../services/api';
+import EcmeFormModal from '../../components/EcmeFormModal';
+import { Pencil } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const ALERTE_CONFIG = {
@@ -31,17 +33,20 @@ function InfoRow({ label, value, className = '' }) {
 export default function FicheDeVie() {
   const { code }   = useParams();
   const navigate   = useNavigate();
-  const [data,     setData]    = useState(null);
-  const [loading,  setLoading] = useState(true);
-  const [error,    setError]   = useState('');
+  const [data,       setData]      = useState(null);
+  const [loading,    setLoading]   = useState(true);
+  const [error,      setError]     = useState('');
+  const [editOpen,   setEditOpen]  = useState(false);
 
-  useEffect(() => {
+  const reload = () => {
     setLoading(true);
     ecmeService.getOne(code)
       .then(({ data: d }) => setData(d))
       .catch((e) => setError(e.response?.data?.error || e.message))
       .finally(() => setLoading(false));
-  }, [code]);
+  };
+
+  useEffect(() => { reload(); }, [code]);
 
   if (loading) {
     return (
@@ -75,13 +80,23 @@ export default function FicheDeVie() {
 
   return (
     <div className="p-6 flex-1 overflow-auto">
-      {/* ── Back button ── */}
-      <button
-        onClick={() => navigate('/ecme')}
-        className="mb-4 flex items-center gap-1 text-blue-600 hover:underline text-sm"
-      >
-        ← Retour à la liste
-      </button>
+      {/* ── Back button + Edit ── */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={() => navigate('/ecme')}
+          className="flex items-center gap-1 text-blue-600 hover:underline text-sm"
+        >
+          ← Retour à la liste
+        </button>
+        <button
+          onClick={() => setEditOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
+          style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          Modifier / Mettre à jour les dates
+        </button>
+      </div>
 
       {/* ── Header ── */}
       <div className="bg-white rounded-lg shadow p-5 mb-5">
@@ -201,6 +216,13 @@ export default function FicheDeVie() {
           </div>
         )}
       </div>
+
+      <EcmeFormModal
+        ecme={data}
+        isOpen={editOpen}
+        onClose={() => setEditOpen(false)}
+        onSuccess={() => { setEditOpen(false); reload(); }}
+      />
     </div>
   );
 }

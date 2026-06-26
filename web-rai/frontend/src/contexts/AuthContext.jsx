@@ -3,26 +3,59 @@ import { supabase } from '../lib/supabase';
 
 const AuthContext = createContext(null);
 
+const fetchRoles = async (session) => {
+  if (!session?.access_token) return ['admin'];
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/user-profiles/me`,
+      { headers: { Authorization: `Bearer ${session.access_token}` } }
+    );
+    if (!res.ok) return ['admin'];
+    const data = await res.json();
+    return Array.isArray(data.roles) && data.roles.length > 0 ? data.roles : ['admin'];
+  } catch {
+    return ['admin'];
+  }
+};
+
+// Section → which roles grant access to it
+const PERMISSIONS = {
+  admin:       ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme', 'indus', 'admin'],
+  maintenance: ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme'],
+  indus:       ['dashboard', 'inventaire', 'indus'],
+};
+
 export const AuthProvider = ({ children }) => {
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [session, setSession]  = useState(null);
+  const [roles,   setRoles]    = useState(['admin']);
+  const [loading, setLoading]  = useState(true);
+
+  const applySession = async (s) => {
+    setSession(s);
+    if (s) {
+      const r = await fetchRoles(s);
+      setRoles(r);
+    } else {
+      setRoles(['admin']);
+    }
+  };
 
   useEffect(() => {
     if (!supabase) {
-      // Supabase not configured locally — skip auth, let everyone through
       console.warn('[Auth] Supabase not configured — auth disabled for local dev');
-      setSession({ user: { email: 'dev@local' } }); // fake session
+      setSession({ user: { email: 'dev@local', id: 'local' } });
+      setRoles(['admin']);
       setLoading(false);
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      await applySession(session);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await applySession(session);
     });
 
     return () => subscription.unsubscribe();
@@ -36,12 +69,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    if (!supabase) { setSession(null); return; }
+    if (!supabase) { setSession(null); setRoles(['admin']); return; }
     return supabase.auth.signOut();
   };
 
+  // can(section) — true if ANY of the user's roles grants access to that section
+  const can = (section) =>
+    roles.some(r => (PERMISSIONS[r] || []).includes(section));
+
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, login, logout }}>
+    <AuthContext.Provider value={{ session, user: session?.user ?? null, roles, loading, login, logout, can }}>
       {children}
     </AuthContext.Provider>
   );

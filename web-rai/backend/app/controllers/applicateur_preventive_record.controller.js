@@ -48,6 +48,7 @@ exports.findHistoriqueByOutil = async (req, res) => {
   }
 };
 
+
 exports.findOne = async (req, res) => {
   try {
     const record = await ApplicateurPreventiveRecord.findByPk(req.params.id);

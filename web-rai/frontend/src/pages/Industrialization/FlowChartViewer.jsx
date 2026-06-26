@@ -25,6 +25,11 @@ const COLORS = {
 };
 
 // ── Helpers ────────────────────────────────────────────────
+const migrateStep = (s) => ({
+  ...s,
+  parentIds: s.parentIds ?? (s.parentId ? [s.parentId] : []),
+});
+
 const isImageUrl = (url = '') =>
   /\.(jpg|jpeg|png|gif|webp|svg|bmp)(\?.*)?$/i.test(url) ||
   url.includes('drive.google.com') ||
@@ -53,6 +58,11 @@ const StepNode = ({ step, selected, onClick }) => {
         </span>
         <div className="flex items-center gap-1">
           {hasMedia && <Image className="w-3 h-3 text-slate-400" />}
+          {(step.subSteps || []).length > 0 && (
+            <span className="text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 px-1 rounded">
+              +{step.subSteps.length}
+            </span>
+          )}
           <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase ${color.badge}`}>{cfg.abbr}</span>
         </div>
       </div>
@@ -65,9 +75,9 @@ const StepNode = ({ step, selected, onClick }) => {
 // ── Step detail modal ──────────────────────────────────────
 const StepModal = ({ step, steps, onClose }) => {
   if (!step) return null;
-  const cfg   = SHAPE_CONFIG[step.shape] || SHAPE_CONFIG.operation;
-  const color = COLORS[cfg.color];
-  const parent = steps.find(s => s.id === step.parentId);
+  const cfg     = SHAPE_CONFIG[step.shape] || SHAPE_CONFIG.operation;
+  const color   = COLORS[cfg.color];
+  const parents = (step.parentIds || []).map(pid => steps.find(s => s.id === pid)).filter(Boolean);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
@@ -83,10 +93,10 @@ const StepModal = ({ step, steps, onClose }) => {
             </div>
             <div className="min-w-0">
               <p className="text-base font-bold text-white leading-tight truncate">{step.label}</p>
-              <div className="flex items-center gap-2 mt-0.5">
+              <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <span className={`rounded px-2 py-0.5 text-[10px] font-bold ${color.badge}`}>{cfg.label}</span>
-                {parent && (
-                  <span className="text-[11px] text-slate-400">← {parent.number}. {parent.label}</span>
+                {parents.length > 0 && (
+                  <span className="text-[11px] text-slate-400">← {parents.map(p => `${p.number}. ${p.label}`).join(', ')}</span>
                 )}
               </div>
             </div>
@@ -191,8 +201,58 @@ const StepModal = ({ step, steps, onClose }) => {
             </section>
           )}
 
+          {/* Sub-steps */}
+          {(step.subSteps || []).length > 0 && (
+            <section>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-600 mb-3 flex items-center gap-2">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100 text-[9px] font-bold text-emerald-700">+</span>
+                Sous-étapes ({step.subSteps.length})
+              </h3>
+              <div className="space-y-3">
+                {step.subSteps.map((ss, idx) => (
+                  <div key={ss.id || idx} className="rounded-xl border border-emerald-200 bg-emerald-50 overflow-hidden">
+                    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-emerald-100/70 border-b border-emerald-200">
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-[9px] font-bold text-white flex-shrink-0">
+                        {step.number}.{ss.number}
+                      </span>
+                      <p className="text-sm font-bold text-emerald-900 leading-tight">{ss.label}</p>
+                    </div>
+                    {(ss.description || (ss.tools||[]).length > 0 || (ss.parameters||[]).length > 0) && (
+                      <div className="px-4 py-3 space-y-2">
+                        {ss.description && (
+                          <p className="text-sm text-slate-600 italic">{ss.description}</p>
+                        )}
+                        {(ss.parameters || []).length > 0 && (
+                          <div className="space-y-1.5">
+                            {ss.parameters.map((p, i) => (
+                              <div key={i} className="flex items-start gap-2.5 text-sm text-slate-700">
+                                <span className="flex h-4 w-4 items-center justify-center rounded border-2 border-slate-300 bg-white text-[9px] font-bold text-slate-500 flex-shrink-0 mt-0.5">
+                                  {i + 1}
+                                </span>
+                                {p}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {(ss.tools || []).length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {ss.tools.map(t => (
+                              <span key={t} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+                                {t}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Empty state */}
-          {(step.parameters || []).length === 0 && (step.tools || []).length === 0 && (step.media || []).length === 0 && (
+          {(step.parameters || []).length === 0 && (step.tools || []).length === 0 && (step.media || []).length === 0 && (step.subSteps || []).length === 0 && (
             <div className="flex flex-col items-center justify-center py-8 text-slate-400">
               <GitBranch className="w-8 h-8 mb-2 opacity-30" />
               <p className="text-sm">Aucun contenu ajouté à cette étape</p>
@@ -221,7 +281,7 @@ const FlowChartViewer = () => {
     flowchartService.getById(id)
       .then(fc => {
         setTitle(fc.title || '');
-        setSteps(Array.isArray(fc.steps) ? fc.steps : []);
+        setSteps(Array.isArray(fc.steps) ? fc.steps.map(migrateStep) : []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -234,15 +294,15 @@ const FlowChartViewer = () => {
     return () => window.removeEventListener('pointerup', onUp);
   }, []);
 
-  const connectors = steps
-    .filter(s => s.parentId)
-    .map(s => {
-      const p = steps.find(x => x.id === s.parentId); if (!p) return null;
+  const connectors = steps.flatMap(s =>
+    (s.parentIds || []).map(pid => {
+      const p = steps.find(x => x.id === pid); if (!p) return null;
       const sx = p.x + STEP_W/2, sy = p.y + STEP_H;
       const ex = s.x + STEP_W/2, ey = s.y;
       const my = sy + Math.max(16, (ey - sy) / 2);
       return { id: `${p.id}-${s.id}`, sx, sy, ex, ey, my };
-    }).filter(Boolean);
+    })
+  ).filter(Boolean);
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center">

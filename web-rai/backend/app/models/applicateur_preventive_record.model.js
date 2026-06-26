@@ -14,6 +14,14 @@ const ApplicateurPreventiveRecord = sequelize.define(
       allowNull: true,
       comment: 'N° outil — corresponds to applicateur_thresholds.numero_outil',
     },
+    reference_tec: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    designation: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     section_mm2: {
       type: DataTypes.STRING(50),
       allowNull: true,
@@ -31,21 +39,17 @@ const ApplicateurPreventiveRecord = sequelize.define(
     date_controle: {
       type: DataTypes.DATEONLY,
       allowNull: true,
+      comment: 'Date du contrôle préventif',
     },
     test_value_1: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
     test_value_2: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
     test_value_3: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
     test_value_4: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
     test_value_5: { type: DataTypes.DECIMAL(10, 2), allowNull: true },
-    statut_verification: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-      comment: 'Conforme, Non-conforme, À reprendre',
-    },
     date_prochaine: {
       type: DataTypes.DATEONLY,
       allowNull: true,
-      comment: 'Prochaine échéance de maintenance préventive',
+      comment: 'Date de la prochaine maintenance préventive',
     },
     remarque: {
       type: DataTypes.TEXT,

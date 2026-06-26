@@ -107,6 +107,9 @@ export const ecmeService = {
   getAll:          (params) => API.get('/ecme', { params }),
   getOne:          (code)   => API.get(`/ecme/${code}`),
   getAffectations: ()       => API.get('/ecme/meta/affectations'),
+  create:          (data)   => API.post('/ecme', data),
+  update:          (code, data) => API.put(`/ecme/${code}`, data),
+  delete:          (code)   => API.delete(`/ecme/${code}`),
 };
 
 export const applicateurService = {
@@ -163,6 +166,20 @@ export const flowchartService = {
   create:  (data)        => API.post('/flowcharts', data).then(r => r.data),
   update:  (id, data)    => API.put(`/flowcharts/${id}`, data).then(r => r.data),
   delete:  (id)          => API.delete(`/flowcharts/${id}`).then(r => r.data),
+};
+
+export const suiviMoyenService = {
+  getAll:  ()        => API.get('/suivi-moyens').then(r => r.data),
+  getById: (id)      => API.get(`/suivi-moyens/${id}`).then(r => r.data),
+  create:  (data)    => API.post('/suivi-moyens', data).then(r => r.data),
+  update:  (id, data)=> API.put(`/suivi-moyens/${id}`, data).then(r => r.data),
+  delete:  (id)      => API.delete(`/suivi-moyens/${id}`).then(r => r.data),
+};
+
+export const suiviMoyenLigneService = {
+  create:  (data)    => API.post('/suivi-moyen-lignes', data).then(r => r.data),
+  update:  (id, data)=> API.put(`/suivi-moyen-lignes/${id}`, data).then(r => r.data),
+  delete:  (id)      => API.delete(`/suivi-moyen-lignes/${id}`).then(r => r.data),
 };
 
 export const procedureService = {
