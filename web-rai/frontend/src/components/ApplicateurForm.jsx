@@ -15,8 +15,9 @@ const buildInitialState = (applicateur) => ({
   remarque:          applicateur?.remarque          ?? '',
 });
 
-const fieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors disabled:bg-slate-50 disabled:text-slate-400';
-const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500';
+const fieldClass = 'w-full rounded-[10px] px-4 py-2.5 text-sm outline-none transition-colors';
+const fieldStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
+const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em]';
 
 const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
   const [formData,        setFormData]        = useState(buildInitialState(applicateur));
@@ -103,7 +104,7 @@ const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
@@ -137,39 +138,39 @@ const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>N° Outil <span className="text-red-400">*</span></span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>N° Outil <span className="text-red-400">*</span></span>
               <input type="text" name="numero_outil" value={formData.numero_outil} onChange={handleChange}
-                required disabled={isEditing} className={fieldClass} placeholder="ex : A1" />
+                required disabled={isEditing} className={fieldClass} style={fieldStyle} placeholder="ex : A1" />
             </label>
             <label className="block">
-              <span className={labelClass}>Site</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Site</span>
               <input type="text" name="site" value={formData.site} onChange={handleChange}
-                className={fieldClass} placeholder="ex : RAI" />
+                className={fieldClass} style={fieldStyle} placeholder="ex : RAI" />
             </label>
           </div>
 
           <label className="block">
-            <span className={labelClass}>Désignation</span>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Désignation</span>
             <input type="text" name="designation" value={formData.designation} onChange={handleChange}
-              className={fieldClass} placeholder="Désignation de l'outil" />
+              className={fieldClass} style={fieldStyle} placeholder="Désignation de l'outil" />
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>N° Série</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>N° Série</span>
               <input type="text" name="numero_serie" value={formData.numero_serie} onChange={handleChange}
-                className={fieldClass} />
+                className={fieldClass} style={fieldStyle} />
             </label>
             <label className="block">
-              <span className={labelClass}>Constructeur</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Constructeur</span>
               <input type="text" name="constructeur_outil" value={formData.constructeur_outil} onChange={handleChange}
-                className={fieldClass} />
+                className={fieldClass} style={fieldStyle} />
             </label>
           </div>
 
           <label className="block">
-            <span className={labelClass}>Statut</span>
-            <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass}>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Statut</span>
+            <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass} style={fieldStyle}>
               <option value="en service">En service</option>
               <option value="hors service">Hors service</option>
               <option value="à vérifier">À vérifier</option>
@@ -177,9 +178,9 @@ const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
           </label>
 
           <div>
-            <span className={labelClass}>Cosse associée <span className="text-slate-400 normal-case font-normal">(optionnel)</span></span>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Cosse associée <span className="text-slate-400 normal-case font-normal">(optionnel)</span></span>
             <select value={selectedCosseId} onChange={(e) => setSelectedCosseId(e.target.value)}
-              className={fieldClass} disabled={loadingOptions}>
+              className={fieldClass} style={fieldStyle} disabled={loadingOptions}>
               <option value="">{loadingOptions ? 'Chargement…' : 'Sélectionner une cosse'}</option>
               {cosseOptions.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -193,7 +194,7 @@ const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
           </div>
 
           <label className="block">
-            <span className={labelClass}>Remarque</span>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Remarque</span>
             <textarea name="remarque" value={formData.remarque} onChange={handleChange} rows={3}
               className={fieldClass + ' resize-none'} placeholder="Notes et remarques…" />
           </label>
@@ -201,7 +202,7 @@ const ApplicateurForm = ({ applicateur, isOpen, onClose, onSuccess }) => {
           <div className="flex gap-3 pt-1">
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
-              style={{ background: loading ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+              style={{ background: loading ? 'var(--text3)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
               {loading ? 'Sauvegarde…' : isEditing ? 'Enregistrer les modifications' : 'Créer l\'applicateur'}
             </button>
             <button type="button" onClick={onClose}

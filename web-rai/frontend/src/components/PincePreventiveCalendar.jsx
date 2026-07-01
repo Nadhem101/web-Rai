@@ -294,7 +294,7 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
           style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -567,7 +567,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   if (groupedRecords.length === 0) {
     return (
-      <div className="mt-4 flex min-h-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="mt-4 flex min-h-0 flex-col overflow-hidden rounded-[14px]">
         <div className="border-b border-slate-100 px-5 py-4 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
             <Wrench className="w-4 h-4 text-sky-500" />
@@ -587,7 +587,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   return (
     <>
-      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
@@ -610,7 +610,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
         <div className="flex-1 min-h-0 overflow-auto">
           <table className="min-w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
+              <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                 {['N° Pince', 'Date contrôle', 'Référence', 'Position', 'Cosse', 'Fil', 'Traction min.', 'Valeurs', 'Statut', 'Prochaine', 'Remarque', 'Actions'].map((h) => (
                   <th key={h} className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
                 ))}
@@ -721,7 +721,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
       {/* Add/Edit single row modal */}
       {rowForm.open && rowForm.group && rowForm.data && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
             <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
               style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <div className="flex items-center gap-3">
@@ -818,7 +818,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
               <div className="mt-6 flex gap-3">
                 <button type="submit" disabled={rowForm.saving}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-                  style={{ background: rowForm.saving ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                  style={{ background: rowForm.saving ? 'var(--text3)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                   {rowForm.saving ? 'Sauvegarde…' : isEditingRow ? 'Enregistrer les modifications' : 'Ajouter la ligne'}
                 </button>
                 <button type="button" onClick={closeRowModal}

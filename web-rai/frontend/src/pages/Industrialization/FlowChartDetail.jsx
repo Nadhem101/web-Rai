@@ -35,8 +35,9 @@ const DEFAULT_STEPS = [
 const createId = () => `s-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
 
 // ── Shared styles ──────────────────────────────────────────
-const fieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors';
-const labelClass = 'mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500';
+const fieldClass = 'w-full rounded-[10px] px-3 py-2 text-sm outline-none transition-colors';
+const fieldStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
+const labelClass = 'mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em]';
 
 // ── FlowStepNode ───────────────────────────────────────────
 const FlowStepNode = ({ step, selected, onClick, onPointerDown }) => {
@@ -325,7 +326,7 @@ const FlowChartDetail = () => {
           {/* Add step */}
           <button onClick={openAdd}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-colors"
-            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
             <Plus className="w-3.5 h-3.5" /> Ajouter étape
           </button>
         </div>
@@ -418,7 +419,7 @@ const FlowChartDetail = () => {
               <div className="flex-1 p-4 space-y-4">
                 {/* Parent */}
                 <div>
-                  <p className={labelClass}>Vient de</p>
+                  <p className={labelClass} style={{ color: 'var(--text3)' }}>Vient de</p>
                   <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
                     {selectedStep.parentId
                       ? (() => { const p = steps.find(s => s.id === selectedStep.parentId); return p ? `${p.number}. ${p.label}` : '—'; })()
@@ -429,7 +430,7 @@ const FlowChartDetail = () => {
                 {/* Parameters */}
                 {selectedStep.parameters?.length > 0 && (
                   <div>
-                    <p className={labelClass}>Paramètres</p>
+                    <p className={labelClass} style={{ color: 'var(--text3)' }}>Paramètres</p>
                     <div className="space-y-1.5">
                       {selectedStep.parameters.map((param, i) => (
                         <div key={i} className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
@@ -444,7 +445,7 @@ const FlowChartDetail = () => {
                 {/* Tools */}
                 {selectedStep.tools?.length > 0 && (
                   <div>
-                    <p className={labelClass}>Outils / Matériel</p>
+                    <p className={labelClass} style={{ color: 'var(--text3)' }}>Outils / Matériel</p>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedStep.tools.map(tool => (
                         <span key={tool} className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">
@@ -458,7 +459,7 @@ const FlowChartDetail = () => {
                 {/* Photos placeholder */}
                 {selectedStep.photos?.length > 0 && (
                   <div>
-                    <p className={labelClass}>Photos</p>
+                    <p className={labelClass} style={{ color: 'var(--text3)' }}>Photos</p>
                     <div className="space-y-2">
                       {selectedStep.photos.map((photo, i) => (
                         <div key={i} className="flex items-center gap-3 rounded-lg border border-dashed border-slate-300 bg-slate-50 p-2.5">
@@ -488,23 +489,23 @@ const FlowChartDetail = () => {
               </div>
               <div className="flex-1 p-4 space-y-3 overflow-y-auto">
                 <label className="block">
-                  <span className={labelClass}>Libellé <span className="text-red-400">*</span></span>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Libellé <span className="text-red-400">*</span></span>
                   <input type="text" value={draft.label} onChange={e => setDraft(p => ({ ...p, label: e.target.value }))}
-                    className={fieldClass} placeholder="Nom de l'étape" />
+                    className={fieldClass} style={fieldStyle} placeholder="Nom de l'étape" />
                 </label>
                 <label className="block">
-                  <span className={labelClass}>Type</span>
-                  <select value={draft.shape} onChange={e => setDraft(p => ({ ...p, shape: e.target.value }))} className={fieldClass}>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Type</span>
+                  <select value={draft.shape} onChange={e => setDraft(p => ({ ...p, shape: e.target.value }))} className={fieldClass} style={fieldStyle}>
                     {Object.entries(SHAPE_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                   </select>
                 </label>
                 <label className="block">
-                  <span className={labelClass}>Outils (séparés par virgule)</span>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Outils (séparés par virgule)</span>
                   <input type="text" value={draft.tools} onChange={e => setDraft(p => ({ ...p, tools: e.target.value }))}
-                    className={fieldClass} placeholder="Ex: Caliper, Komax" />
+                    className={fieldClass} style={fieldStyle} placeholder="Ex: Caliper, Komax" />
                 </label>
                 <label className="block">
-                  <span className={labelClass}>Paramètres (un par ligne)</span>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Paramètres (un par ligne)</span>
                   <textarea rows={4} value={draft.parameters} onChange={e => setDraft(p => ({ ...p, parameters: e.target.value }))}
                     className={fieldClass + ' resize-none'} placeholder="Un paramètre par ligne" />
                 </label>
@@ -512,7 +513,7 @@ const FlowChartDetail = () => {
               <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
                 <button onClick={saveEdit}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
-                  style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                   <Check className="w-4 h-4 inline mr-1.5" />Enregistrer
                 </button>
                 <button onClick={() => setPanel('view')}
@@ -535,30 +536,30 @@ const FlowChartDetail = () => {
               </div>
               <div className="flex-1 p-4 space-y-3 overflow-y-auto">
                 <label className="block">
-                  <span className={labelClass}>Libellé <span className="text-red-400">*</span></span>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Libellé <span className="text-red-400">*</span></span>
                   <input type="text" value={draft.label} onChange={e => setDraft(p => ({ ...p, label: e.target.value }))}
-                    className={fieldClass} placeholder="Ex: Sertissage" autoFocus />
+                    className={fieldClass} style={fieldStyle} placeholder="Ex: Sertissage" autoFocus />
                 </label>
                 <label className="block">
-                  <span className={labelClass}>Type</span>
-                  <select value={draft.shape} onChange={e => setDraft(p => ({ ...p, shape: e.target.value }))} className={fieldClass}>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Type</span>
+                  <select value={draft.shape} onChange={e => setDraft(p => ({ ...p, shape: e.target.value }))} className={fieldClass} style={fieldStyle}>
                     {Object.entries(SHAPE_CONFIG).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
                   </select>
                 </label>
                 <label className="block">
-                  <span className={labelClass}>Vient de</span>
-                  <select value={draft.parentId} onChange={e => setDraft(p => ({ ...p, parentId: e.target.value }))} className={fieldClass}>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Vient de</span>
+                  <select value={draft.parentId} onChange={e => setDraft(p => ({ ...p, parentId: e.target.value }))} className={fieldClass} style={fieldStyle}>
                     <option value="">Point de départ</option>
                     {stepOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </label>
                 <label className="block">
-                  <span className={labelClass}>Outils (séparés par virgule)</span>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Outils (séparés par virgule)</span>
                   <input type="text" value={draft.tools} onChange={e => setDraft(p => ({ ...p, tools: e.target.value }))}
-                    className={fieldClass} placeholder="Ex: Caliper, Komax" />
+                    className={fieldClass} style={fieldStyle} placeholder="Ex: Caliper, Komax" />
                 </label>
                 <label className="block">
-                  <span className={labelClass}>Paramètres (un par ligne)</span>
+                  <span className={labelClass} style={{ color: 'var(--text3)' }}>Paramètres (un par ligne)</span>
                   <textarea rows={4} value={draft.parameters} onChange={e => setDraft(p => ({ ...p, parameters: e.target.value }))}
                     className={fieldClass + ' resize-none'} placeholder="Un paramètre par ligne" />
                 </label>
@@ -566,7 +567,7 @@ const FlowChartDetail = () => {
               <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
                 <button onClick={confirmAdd} disabled={!draft.label.trim()}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-colors"
-                  style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                   <Plus className="w-4 h-4 inline mr-1.5" />Ajouter
                 </button>
                 <button onClick={() => setPanel('view')}

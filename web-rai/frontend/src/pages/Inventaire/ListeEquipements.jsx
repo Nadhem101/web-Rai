@@ -40,13 +40,14 @@ const isFerEtBainItem = (eq) => {
 // ── Status badge ───────────────────────────────────────────
 const StatusBadge = ({ statut }) => {
   const cfg = {
-    'En service':    { dot: 'bg-emerald-500', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    'Hors service':  { dot: 'bg-red-500',     cls: 'bg-red-50 text-red-700 border-red-200' },
-    'En maintenance':{ dot: 'bg-amber-400',   cls: 'bg-amber-50 text-amber-700 border-amber-200' },
-  }[statut] ?? { dot: 'bg-slate-400', cls: 'bg-slate-50 text-slate-600 border-slate-200' };
+    'En service':     { bg: 'var(--ok-soft)',   color: 'var(--ok)',   dot: 'var(--ok)'   },
+    'Hors service':   { bg: 'var(--crit-soft)', color: 'var(--crit)', dot: 'var(--crit)' },
+    'En maintenance': { bg: 'var(--warn-soft)', color: 'var(--warn)', dot: 'var(--warn)' },
+  }[statut] ?? { bg: 'var(--panel2)', color: 'var(--text3)', dot: 'var(--text3)' };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.cls}`}>
-      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${cfg.dot}`} />
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[20px] text-xs font-bold"
+      style={{ background: cfg.bg, color: cfg.color }}>
+      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: cfg.dot }} />
       {statut}
     </span>
   );
@@ -55,14 +56,15 @@ const StatusBadge = ({ statut }) => {
 // ── PDR quantity pill ──────────────────────────────────────
 const PdrQtyPill = ({ value }) => {
   const qty = parsePdrQuantity(value);
-  let cls = 'bg-slate-50 border-slate-200 text-slate-500';
+  let bg = 'var(--panel2)', color = 'var(--text3)';
   if (qty !== null) {
-    if (qty === 0) cls = 'bg-red-50 border-red-200 text-red-700';
-    else if (qty <= PDR_LOW_STOCK_THRESHOLD) cls = 'bg-amber-50 border-amber-200 text-amber-700';
-    else cls = 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    if (qty === 0) { bg = 'var(--crit-soft)'; color = 'var(--crit)'; }
+    else if (qty <= PDR_LOW_STOCK_THRESHOLD) { bg = 'var(--warn-soft)'; color = 'var(--warn)'; }
+    else { bg = 'var(--ok-soft)'; color = 'var(--ok)'; }
   }
   return (
-    <span className={`inline-flex min-w-[2.5rem] items-center justify-center rounded-full border px-2 py-0.5 text-xs font-semibold ${cls}`}>
+    <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-[20px] px-2 py-0.5 text-xs font-bold"
+      style={{ background: bg, color }}>
       {formatPdrCell(value)}
     </span>
   );
@@ -199,55 +201,45 @@ const ListeEquipements = () => {
   const isPdr = categorie === 'pdr';
 
   return (
-    <div className="p-6 flex-1 overflow-auto flex flex-col gap-5">
+    <div className="px-[26px] pt-6 pb-10 flex-1 overflow-auto flex flex-col gap-[18px]" style={{ background: 'var(--bg)' }}>
 
       {/* ── Header ──────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className={`w-9 h-9 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0`}>
+        <div className="flex items-center gap-3.5">
+          <div className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)' }}>
             <CategoryIcon className={`w-5 h-5 ${catConfig.color}`} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-slate-800">{categoryTitle}</h1>
+              <h1 className="font-display font-semibold text-[25px]" style={{ color: 'var(--text)', letterSpacing: '-0.4px' }}>{categoryTitle}</h1>
               {!isSpecialCatalogue && !loading && (
-                <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-[20px]" style={{ background: 'var(--panel2)', color: 'var(--text3)' }}>
                   {filteredEquipements.length}
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">{categorySummary}</p>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>{categorySummary}</p>
           </div>
         </div>
 
         {canUseGenericCrud && (
-          <button
-            type="button"
-            onClick={handleCreateClick}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
-          >
-            <Plus className="w-4 h-4" />
-            Nouvel équipement
+          <button type="button" onClick={handleCreateClick}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5 flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+            <Plus className="w-4 h-4" /> Nouvel équipement
           </button>
         )}
       </div>
 
       {/* ── Search ──────────────────────────────────────── */}
-      <div className="relative">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-        <input
-          type="text"
-          placeholder={getSearchPlaceholder(categorie)}
-          className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl bg-white text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100 transition-colors"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="relative max-w-[520px]">
+        <Search className="absolute left-[13px] top-1/2 -translate-y-1/2 w-[15px] h-[15px] pointer-events-none" style={{ color: 'var(--text3)' }} />
+        <input type="text" placeholder={getSearchPlaceholder(categorie)}
+          className="w-full pl-10 pr-4 py-[11px] rounded-[11px] text-[13px] outline-none transition-colors"
+          style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text)' }}
+          value={search} onChange={(e) => setSearch(e.target.value)} />
         {search && (
-          <button
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-            onClick={() => setSearch('')}
-          >
+          <button className="absolute right-3 top-1/2 -translate-y-1/2 hover:opacity-70" style={{ color: 'var(--text3)' }} onClick={() => setSearch('')}>
             <XCircle className="w-4 h-4" />
           </button>
         )}
@@ -257,8 +249,8 @@ const ListeEquipements = () => {
       {loading ? (
         <div className="flex-1 flex items-center justify-center py-16">
           <div className="text-center">
-            <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
-            <p className="text-sm text-slate-400">Chargement…</p>
+            <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
+            <p className="text-sm" style={{ color: 'var(--text3)' }}>Chargement…</p>
           </div>
         </div>
 
@@ -272,88 +264,65 @@ const ListeEquipements = () => {
         <CossesList searchQuery={search} />
 
       ) : filteredEquipements.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center py-16 text-slate-400">
+        <div className="flex-1 flex flex-col items-center justify-center py-16" style={{ color: 'var(--text3)' }}>
           <PackageOpen className="w-10 h-10 mb-3 opacity-40" />
           <p className="text-sm font-medium">
             {isPdr ? 'Aucune pièce de rechange trouvée' : 'Aucun équipement trouvé'}
           </p>
           {search && (
-            <button className="mt-2 text-xs text-sky-500 hover:underline" onClick={() => setSearch('')}>
+            <button className="mt-2 text-xs hover:underline" style={{ color: 'var(--accent)' }} onClick={() => setSearch('')}>
               Effacer la recherche
             </button>
           )}
         </div>
 
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col min-h-0">
+        <div className="rounded-[14px] overflow-hidden flex-1 flex flex-col min-h-0"
+          style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
           <div className="overflow-auto flex-1">
             <table className="min-w-full text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Code RAI</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Désignation</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">N° Série</th>
-                  {isPdr && (
-                    <>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Lame cuivre réf.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Qté</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Lame isolant réf.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Qté</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Enclume cuivre réf.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Qté</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Enclume isolant réf.</th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">Qté</th>
-                    </>
-                  )}
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Zone</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Fabricant</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Statut</th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
+                <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
+                  {['Code RAI','Désignation','N° Série',
+                    ...(isPdr ? ['Lame cuivre réf.','Qté','Lame isolant réf.','Qté','Enclume cuivre réf.','Qté','Enclume isolant réf.','Qté'] : []),
+                    'Zone','Fabricant','Statut','Actions'].map(h => (
+                    <th key={h} className={`px-3.5 py-2.5 text-left whitespace-nowrap ${h==='Actions'?'text-center':''}`}>
+                      <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--text3)' }}>{h}</span>
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody>
                 {filteredEquipements.map((eq) => (
-                  <tr key={eq.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="px-4 py-3 font-mono text-xs font-semibold text-slate-700 whitespace-nowrap">
-                      {eq.code_rai}
-                    </td>
-                    <td className="px-4 py-3 text-slate-700 max-w-[220px] truncate" title={eq.designation}>
-                      {eq.designation}
-                    </td>
-                    <td className="px-4 py-3 text-slate-400 text-xs whitespace-nowrap">
-                      {eq.numero_serie || '—'}
-                    </td>
+                  <tr key={eq.id} className="transition-colors hover:bg-[var(--panel2)] group" style={{ borderBottom: '1px solid var(--border2)' }}>
+                    <td className="px-3.5 py-2.5 font-mono text-xs font-bold whitespace-nowrap" style={{ color: 'var(--accent)' }}>{eq.code_rai}</td>
+                    <td className="px-3.5 py-2.5 max-w-[220px] truncate" style={{ color: 'var(--text)' }} title={eq.designation}>{eq.designation}</td>
+                    <td className="px-3.5 py-2.5 text-xs whitespace-nowrap font-mono" style={{ color: 'var(--text3)' }}>{eq.numero_serie || '—'}</td>
                     {isPdr && (
                       <>
-                        <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{formatPdrCell(eq.pdr_details?.lame_cuivre?.reference)}</td>
-                        <td className="px-4 py-3 text-center"><PdrQtyPill value={eq.pdr_details?.lame_cuivre?.quantity} /></td>
-                        <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{formatPdrCell(eq.pdr_details?.lame_isolant?.reference)}</td>
-                        <td className="px-4 py-3 text-center"><PdrQtyPill value={eq.pdr_details?.lame_isolant?.quantity} /></td>
-                        <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{formatPdrCell(eq.pdr_details?.enclume_cuivre?.reference)}</td>
-                        <td className="px-4 py-3 text-center"><PdrQtyPill value={eq.pdr_details?.enclume_cuivre?.quantity} /></td>
-                        <td className="px-4 py-3 text-xs text-slate-600 whitespace-nowrap">{formatPdrCell(eq.pdr_details?.enclume_isolant?.reference)}</td>
-                        <td className="px-4 py-3 text-center"><PdrQtyPill value={eq.pdr_details?.enclume_isolant?.quantity} /></td>
+                        <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text2)' }}>{formatPdrCell(eq.pdr_details?.lame_cuivre?.reference)}</td>
+                        <td className="px-3.5 py-2.5 text-center"><PdrQtyPill value={eq.pdr_details?.lame_cuivre?.quantity} /></td>
+                        <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text2)' }}>{formatPdrCell(eq.pdr_details?.lame_isolant?.reference)}</td>
+                        <td className="px-3.5 py-2.5 text-center"><PdrQtyPill value={eq.pdr_details?.lame_isolant?.quantity} /></td>
+                        <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text2)' }}>{formatPdrCell(eq.pdr_details?.enclume_cuivre?.reference)}</td>
+                        <td className="px-3.5 py-2.5 text-center"><PdrQtyPill value={eq.pdr_details?.enclume_cuivre?.quantity} /></td>
+                        <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text2)' }}>{formatPdrCell(eq.pdr_details?.enclume_isolant?.reference)}</td>
+                        <td className="px-3.5 py-2.5 text-center"><PdrQtyPill value={eq.pdr_details?.enclume_isolant?.quantity} /></td>
                       </>
                     )}
-                    <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{eq.Zone?.nom_zone || '—'}</td>
-                    <td className="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{eq.Fabricant?.nom || '—'}</td>
-                    <td className="px-4 py-3 whitespace-nowrap"><StatusBadge statut={eq.statut} /></td>
-                    <td className="px-4 py-3">
+                    <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text3)' }}>{eq.Zone?.nom_zone || '—'}</td>
+                    <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text3)' }}>{eq.Fabricant?.nom || '—'}</td>
+                    <td className="px-3.5 py-2.5 whitespace-nowrap"><StatusBadge statut={eq.statut} /></td>
+                    <td className="px-3.5 py-2.5">
                       <div className="flex items-center justify-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleEditClick(eq)}
-                          title="Modifier"
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors"
-                        >
+                        <button type="button" onClick={() => handleEditClick(eq)} title="Modifier"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]"
+                          style={{ color: 'var(--text3)' }}>
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteClick(eq)}
-                          title="Supprimer"
-                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                        >
+                        <button type="button" onClick={() => handleDeleteClick(eq)} title="Supprimer"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--crit-soft)] hover:text-[var(--crit)]"
+                          style={{ color: 'var(--text3)' }}>
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>

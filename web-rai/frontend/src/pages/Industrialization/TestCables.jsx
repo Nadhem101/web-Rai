@@ -13,21 +13,20 @@ const PROGRAMMES = ['Auto-apprentissage', 'Programmé'];
 const TESTEURS   = ['1', '2', '3', '2 ET 3', '3 &2'];
 
 const programmeBadge = (p) => {
-  if (!p) return 'bg-slate-100 text-slate-500';
+  if (!p) return null;
   if (normalize(p) === 'programme' || normalize(p).startsWith('programm'))
-    return 'bg-sky-50 text-sky-700 border border-sky-200';
-  return 'bg-purple-50 text-purple-700 border border-purple-200';
+    return { background: 'var(--accent-soft)', color: 'var(--accent)' };
+  return { background: 'var(--info-soft)', color: 'var(--info)' };
 };
 
-const testeurBadge = (t) => {
-  if (!t) return 'bg-slate-100 text-slate-500';
-  return 'bg-amber-50 text-amber-700 border border-amber-200';
-};
+const testeurBadge = () => ({ background: 'var(--warn-soft)', color: 'var(--warn)' });
 
 // ── Shared styles ──────────────────────────────────────────
-const fieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors';
-const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500';
-const cellClass  = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100 transition-colors';
+const fieldClass = 'w-full rounded-[10px] px-4 py-2.5 text-sm outline-none transition-colors';
+const fieldStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
+const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em]';
+const cellClass  = 'w-full rounded-[8px] px-3 py-2 text-xs outline-none transition-colors';
+const cellStyle  = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
 
 // ─────────────────────────────────────────────────────────────
 // Detail modal — shows the test card for one article
@@ -37,7 +36,7 @@ const DetailModal = ({ article, onClose, onEdit }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
-        className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -73,7 +72,7 @@ const DetailModal = ({ article, onClose, onEdit }) => {
           <div className="flex items-center gap-2">
             <Cpu className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Testeur</span>
-            <span className={`ml-1 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${testeurBadge(article.numero_testeur)}`}>
+            <span className="ml-1 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold" style={testeurBadge()}>
               {article.numero_testeur || '—'}
             </span>
           </div>
@@ -81,7 +80,7 @@ const DetailModal = ({ article, onClose, onEdit }) => {
           <div className="flex items-center gap-2">
             <BookOpen className="w-3.5 h-3.5 text-slate-400" />
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Programme</span>
-            <span className={`ml-1 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${programmeBadge(article.programme_test)}`}>
+            <span className="ml-1 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={programmeBadge(article.programme_test) || {}}>
               {article.programme_test || '—'}
             </span>
           </div>
@@ -190,7 +189,7 @@ const FormModal = ({ article, onClose, onSaved }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
           style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -224,41 +223,41 @@ const FormModal = ({ article, onClose, onSaved }) => {
           {/* Row 1 */}
           <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
             <label className="block">
-              <span className={labelClass}>N° Article <span className="text-red-400">*</span></span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>N° Article <span className="text-red-400">*</span></span>
               <input type="text" name="numero_article" value={form.numero_article}
-                onChange={handleChange} required className={fieldClass}
+                onChange={handleChange} required className={fieldClass} style={fieldStyle}
                 placeholder="ex : KU0761073300" />
             </label>
             <label className="block">
-              <span className={labelClass}>Indice</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Indice</span>
               <input type="text" name="indice" value={form.indice}
-                onChange={handleChange} className={fieldClass} placeholder="ex : 0, A, B…" />
+                onChange={handleChange} className={fieldClass} style={fieldStyle} placeholder="ex : 0, A, B…" />
             </label>
           </div>
 
           {/* Designation */}
           <label className="block">
-            <span className={labelClass}>Désignation</span>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Désignation</span>
             <input type="text" name="designation" value={form.designation}
-              onChange={handleChange} className={fieldClass}
+              onChange={handleChange} className={fieldClass} style={fieldStyle}
               placeholder="ex : HARNESS WIRING SAE" />
           </label>
 
           {/* Testeur + Programme */}
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>N° Testeur</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>N° Testeur</span>
               <input type="text" name="numero_testeur" value={form.numero_testeur}
-                onChange={handleChange} list="testeur-opts" className={fieldClass}
+                onChange={handleChange} list="testeur-opts" className={fieldClass} style={fieldStyle}
                 placeholder="ex : 1, 2, 3, 2 ET 3…" />
               <datalist id="testeur-opts">
                 {TESTEURS.map((t) => <option key={t} value={t} />)}
               </datalist>
             </label>
             <label className="block">
-              <span className={labelClass}>Programme test</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Programme test</span>
               <select name="programme_test" value={form.programme_test}
-                onChange={handleChange} className={fieldClass}>
+                onChange={handleChange} className={fieldClass} style={fieldStyle}>
                 <option value="">— Sélectionner —</option>
                 {PROGRAMMES.map((p) => <option key={p} value={p}>{p}</option>)}
               </select>
@@ -297,13 +296,13 @@ const FormModal = ({ article, onClose, onSaved }) => {
                     style={{ gridTemplateColumns: '2fr 1.5fr 1.5fr auto' }}>
                     <input type="text" value={d.nappe_utilisee} placeholder="ex : 1/J1, 2-J2…"
                       onChange={(e) => handleDetailChange(i, 'nappe_utilisee', e.target.value)}
-                      className={cellClass} />
+                      className={cellClass} style={cellStyle} />
                     <input type="text" value={d.emplacement} placeholder="ex : C-15"
                       onChange={(e) => handleDetailChange(i, 'emplacement', e.target.value)}
-                      className={cellClass} />
+                      className={cellClass} style={cellStyle} />
                     <input type="text" value={d.interface} placeholder="ex : P-8"
                       onChange={(e) => handleDetailChange(i, 'interface', e.target.value)}
-                      className={cellClass} />
+                      className={cellClass} style={cellStyle} />
                     <button type="button" onClick={() => removeDetail(i)}
                       className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
                       <Trash2 className="w-3.5 h-3.5" />
@@ -321,7 +320,7 @@ const FormModal = ({ article, onClose, onSaved }) => {
           <div className="flex gap-3 pt-1">
             <button type="submit" disabled={saving}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-              style={{ background: saving ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+              style={{ background: saving ? 'var(--text3)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
               {saving ? 'Sauvegarde…' : isEditing ? 'Enregistrer les modifications' : 'Créer l\'article'}
             </button>
             <button type="button" onClick={onClose}
@@ -412,7 +411,7 @@ const TestCables = () => {
         </div>
         <button onClick={() => openForm()}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-colors"
-          style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
           <Plus className="w-4 h-4" />
           Nouvel article
         </button>
@@ -517,14 +516,14 @@ const TestCables = () => {
                   </td>
                   <td className="px-4 py-3">
                     {a.numero_testeur ? (
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${testeurBadge(a.numero_testeur)}`}>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold" style={testeurBadge()}>
                         Testeur {a.numero_testeur}
                       </span>
                     ) : <span className="text-slate-300 text-xs">—</span>}
                   </td>
                   <td className="px-4 py-3">
                     {a.programme_test ? (
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${programmeBadge(a.programme_test)}`}>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold" style={programmeBadge(a.programme_test) || {}}>
                         {a.programme_test}
                       </span>
                     ) : <span className="text-slate-300 text-xs">—</span>}

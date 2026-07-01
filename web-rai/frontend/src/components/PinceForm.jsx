@@ -20,8 +20,9 @@ const buildInitialState = (pince) => ({
   remarque:         pince?.remarque         ?? '',
 });
 
-const fieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors disabled:bg-slate-50 disabled:text-slate-400';
-const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500';
+const fieldClass = 'w-full rounded-[10px] px-4 py-2.5 text-sm outline-none transition-colors';
+const fieldStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
+const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em]';
 
 const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
   const [formData,       setFormData]       = useState(buildInitialState(pince));
@@ -142,7 +143,7 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
@@ -175,17 +176,17 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
           )}
 
           <label className="block">
-            <span className={labelClass}>N° Pince <span className="text-red-400">*</span></span>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>N° Pince <span className="text-red-400">*</span></span>
             <input type="text" name="numero_pince" value={formData.numero_pince} onChange={handleChange}
-              required disabled={isEditing} className={fieldClass} placeholder="ex : P01+P02" />
+              required disabled={isEditing} className={fieldClass} style={fieldStyle} placeholder="ex : P01+P02" />
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>Fabricant</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Fabricant</span>
               <input type="text" name="fabricant_nom" list="pince-fabricant-opts"
                 value={formData.fabricant_nom} onChange={handleChange}
-                className={fieldClass} placeholder="Saisir ou choisir un fabricant" />
+                className={fieldClass} style={fieldStyle} placeholder="Saisir ou choisir un fabricant" />
               <datalist id="pince-fabricant-opts">
                 {fabricantOptions.map((f) => <option key={f.id} value={f.nom} />)}
               </datalist>
@@ -193,23 +194,23 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
             </label>
 
             <label className="block">
-              <span className={labelClass}>Référence pince</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Référence pince</span>
               <input type="text" name="reference_pince" value={formData.reference_pince}
-                onChange={handleChange} className={fieldClass} placeholder="ex : 539 773-2A" />
+                onChange={handleChange} className={fieldClass} style={fieldStyle} placeholder="ex : 539 773-2A" />
             </label>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>Date de vérification</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Date de vérification</span>
               <input type="date" name="date_verification" value={formData.date_verification}
-                onChange={handleChange} className={fieldClass} />
+                onChange={handleChange} className={fieldClass} style={fieldStyle} />
             </label>
 
             <div>
-              <span className={labelClass}>Cosse associée <span className="text-slate-400 normal-case font-normal">(optionnel)</span></span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Cosse associée <span className="text-slate-400 normal-case font-normal">(optionnel)</span></span>
               <input type="text" value={cosseSearch} onChange={handleCosseSearchChange}
-                list="pince-cosse-opts" className={fieldClass}
+                list="pince-cosse-opts" className={fieldClass} style={fieldStyle}
                 placeholder="Tapez une référence TEC ou constructeur…" />
               <datalist id="pince-cosse-opts">
                 {cosseOptions.map((c) => <option key={c.id} value={buildCosseLabel(c)} />)}
@@ -235,8 +236,8 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
           </div>
 
           <label className="block">
-            <span className={labelClass}>Statut</span>
-            <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass}>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Statut</span>
+            <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass} style={fieldStyle}>
               <option value="En service">En service</option>
               <option value="Hors service">Hors service</option>
               <option value="À vérifier">À vérifier</option>
@@ -246,7 +247,7 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
           </label>
 
           <label className="block">
-            <span className={labelClass}>Remarque</span>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Remarque</span>
             <textarea name="remarque" value={formData.remarque} onChange={handleChange} rows={3}
               className={fieldClass + ' resize-none'} placeholder="Notes et remarques…" />
           </label>
@@ -254,7 +255,7 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
           <div className="flex gap-3 pt-1">
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
-              style={{ background: loading ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+              style={{ background: loading ? 'var(--text3)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
               {loading ? 'Sauvegarde…' : isEditing ? 'Enregistrer les modifications' : 'Créer la pince'}
             </button>
             <button type="button" onClick={onClose}

@@ -34,8 +34,9 @@ const migrateStep = (s) => ({
   parentIds: s.parentIds ?? (s.parentId ? [s.parentId] : []),
 });
 
-const fieldCls = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors';
-const labelCls = 'mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500';
+const fieldCls = 'w-full rounded-[10px] px-3 py-2 text-sm outline-none transition-colors';
+const fieldClsStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
+const labelCls = 'mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em]';
 
 // ── Step node ──────────────────────────────────────────────
 const StepNode = ({ step, selected, onClick, onPointerDown }) => {
@@ -961,7 +962,7 @@ const FlowChartEditor = () => {
       <input autoFocus type="text" value={subDraft?.label || ''}
         onChange={e => setSubDraft(d => ({ ...d, label: e.target.value }))}
         onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); confirmSubStep(); } if (e.key === 'Escape') cancelSubStep(); }}
-        className={fieldCls} placeholder="Libellé *" />
+        className={fieldCls} style={fieldClsStyle} placeholder="Libellé *" />
 
       <textarea rows={2} value={subDraft?.description || ''}
         onChange={e => setSubDraft(d => ({ ...d, description: e.target.value }))}
@@ -969,7 +970,7 @@ const FlowChartEditor = () => {
 
       {/* Tools */}
       <div>
-        <p className={labelCls}>Équipements / Outils</p>
+        <p className={labelCls} style={{ color: 'var(--text3)' }}>Équipements / Outils</p>
         <div className="space-y-1 mb-1.5 max-h-24 overflow-y-auto">
           {(subDraft?.tools || []).map((t, i) => (
             <div key={i} className="flex items-center gap-1.5">
@@ -990,7 +991,7 @@ const FlowChartEditor = () => {
 
       {/* Parameters */}
       <div>
-        <p className={labelCls}>Paramètres</p>
+        <p className={labelCls} style={{ color: 'var(--text3)' }}>Paramètres</p>
         <div className="space-y-1 mb-1.5 max-h-24 overflow-y-auto">
           {(subDraft?.parameters || []).map((p, i) => (
             <div key={i} className="flex items-center gap-1.5">
@@ -1029,7 +1030,7 @@ const FlowChartEditor = () => {
     <div className="flex-1 p-4 space-y-3 overflow-y-auto">
       {panel === 'add' && (
         <div>
-          <span className={labelCls}>Libellé * <span className="normal-case font-normal text-slate-400">(recherche dans la bibliothèque)</span></span>
+          <span className={labelCls} style={{ color: 'var(--text3)' }}>Libellé * <span className="normal-case font-normal text-slate-400">(recherche dans la bibliothèque)</span></span>
           <ProcedureSearch
             value={draft.label}
             onChange={v => setDraft(d => ({ ...d, label: v, procedure_id: null }))}
@@ -1039,21 +1040,21 @@ const FlowChartEditor = () => {
       )}
       {panel === 'edit' && (
         <label className="block">
-          <span className={labelCls}>Libellé *</span>
-          <input type="text" value={draft.label} onChange={e => setDraft(d => ({ ...d, label: e.target.value }))} className={fieldCls} />
+          <span className={labelCls} style={{ color: 'var(--text3)' }}>Libellé *</span>
+          <input type="text" value={draft.label} onChange={e => setDraft(d => ({ ...d, label: e.target.value }))} className={fieldCls} style={fieldClsStyle} />
         </label>
       )}
 
       <label className="block">
-        <span className={labelCls}>Type</span>
-        <select value={draft.shape} onChange={e => setDraft(d => ({ ...d, shape: e.target.value }))} className={fieldCls}>
+        <span className={labelCls} style={{ color: 'var(--text3)' }}>Type</span>
+        <select value={draft.shape} onChange={e => setDraft(d => ({ ...d, shape: e.target.value }))} className={fieldCls} style={fieldClsStyle}>
           {Object.entries(SHAPE_CONFIG).map(([k,v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
       </label>
 
       {/* Multiple parents */}
       <div>
-        <span className={labelCls}>Vient de (après quelles étapes)</span>
+        <span className={labelCls} style={{ color: 'var(--text3)' }}>Vient de (après quelles étapes)</span>
         <ParentSelector
           stepOptions={stepOptions}
           selectedIds={draft.parentIds || []}
@@ -1067,13 +1068,13 @@ const FlowChartEditor = () => {
       </div>
 
       <label className="block">
-        <span className={labelCls}>Description</span>
+        <span className={labelCls} style={{ color: 'var(--text3)' }}>Description</span>
         <textarea rows={2} value={draft.description} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))} className={fieldCls + ' resize-none'} placeholder="Description courte…" />
       </label>
 
       {/* Tools */}
       <div>
-        <span className={labelCls}>Équipements / Outils ({(draft.tools||[]).length})</span>
+        <span className={labelCls} style={{ color: 'var(--text3)' }}>Équipements / Outils ({(draft.tools||[]).length})</span>
         <div className="space-y-1.5 mb-2 max-h-32 overflow-y-auto">
           {(draft.tools||[]).map((t,i) => (
             <div key={i} className="flex items-center gap-2 bg-amber-50 rounded-lg border border-amber-200 px-3 py-2">
@@ -1087,7 +1088,7 @@ const FlowChartEditor = () => {
         <div className="flex gap-2">
           <input type="text" value={newTool} onChange={e=>setNewTool(e.target.value)}
             onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addToolToDraft();}}}
-            className={fieldCls} placeholder="Équipement / outil… (Entrée)" />
+            className={fieldCls} style={fieldClsStyle} placeholder="Équipement / outil… (Entrée)" />
           <button type="button" onClick={addToolToDraft} disabled={!newTool.trim()}
             className="flex-shrink-0 px-3 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 disabled:opacity-40">+</button>
         </div>
@@ -1095,7 +1096,7 @@ const FlowChartEditor = () => {
 
       {/* Parameters */}
       <div>
-        <span className={labelCls}>Paramètres ({(draft.parameters||[]).length})</span>
+        <span className={labelCls} style={{ color: 'var(--text3)' }}>Paramètres ({(draft.parameters||[]).length})</span>
         <div className="space-y-1.5 mb-2 max-h-40 overflow-y-auto">
           {(draft.parameters||[]).map((p,i) => (
             <div key={i} className="flex items-center gap-2 bg-slate-50 rounded-lg border border-slate-200 px-3 py-2">
@@ -1110,7 +1111,7 @@ const FlowChartEditor = () => {
         <div className="flex gap-2">
           <input type="text" value={newParam} onChange={e=>setNewParam(e.target.value)}
             onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();addParamToDraft();}}}
-            className={fieldCls} placeholder="Nouveau paramètre… (Entrée)" />
+            className={fieldCls} style={fieldClsStyle} placeholder="Nouveau paramètre… (Entrée)" />
           <button type="button" onClick={addParamToDraft} disabled={!newParam.trim()}
             className="flex-shrink-0 px-3 rounded-xl bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 disabled:opacity-40">+</button>
         </div>
@@ -1118,7 +1119,7 @@ const FlowChartEditor = () => {
 
       {/* Media with editable titles */}
       <div>
-        <p className={labelCls}>Photos / Vidéos ({(draft.media||[]).length}) — donnez un titre à chaque fichier</p>
+        <p className={labelCls} style={{ color: 'var(--text3)' }}>Photos / Vidéos ({(draft.media||[]).length}) — donnez un titre à chaque fichier</p>
         <div className="space-y-2 mb-2">
           {(draft.media || []).map((m, i) => (
             <MediaItem key={i} item={m} index={i}
@@ -1240,7 +1241,7 @@ const FlowChartEditor = () => {
           <button onClick={() => save()} disabled={saving}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               saved ? 'bg-emerald-500 text-white' : 'text-white'}`}
-            style={saved ? {} : { background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+            style={saved ? {} : { background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
             {saved ? <><Check className="w-3.5 h-3.5" /> Sauvegardé</> : saving ? 'Sauvegarde…' : <><Save className="w-3.5 h-3.5" /> Sauvegarder</>}
           </button>
           <button onClick={openAdd}
@@ -1329,7 +1330,7 @@ const FlowChartEditor = () => {
                   <div className="flex-1 p-4 space-y-4">
                     {(selectedStep.parameters || []).length > 0 && (
                       <div>
-                        <p className={labelCls}>Paramètres</p>
+                        <p className={labelCls} style={{ color: 'var(--text3)' }}>Paramètres</p>
                         <div className="space-y-1.5">
                           {selectedStep.parameters.map((p, i) => (
                             <div key={i} className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700">
@@ -1341,7 +1342,7 @@ const FlowChartEditor = () => {
                     )}
                     {(selectedStep.tools || []).length > 0 && (
                       <div>
-                        <p className={labelCls}>Outils / Matériel</p>
+                        <p className={labelCls} style={{ color: 'var(--text3)' }}>Outils / Matériel</p>
                         <div className="flex flex-wrap gap-1.5">
                           {selectedStep.tools.map(t => (
                             <span key={t} className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">{t}</span>
@@ -1351,14 +1352,14 @@ const FlowChartEditor = () => {
                     )}
                     {(selectedStep.media || []).length > 0 && (
                       <div>
-                        <p className={labelCls}>Photos / Vidéos</p>
+                        <p className={labelCls} style={{ color: 'var(--text3)' }}>Photos / Vidéos</p>
                         <div className="space-y-2">
                           {selectedStep.media.map((m, i) => <MediaItem key={i} item={m} index={i} readOnly />)}
                         </div>
                       </div>
                     )}
                     <div>
-                      <p className={labelCls}>Vient de</p>
+                      <p className={labelCls} style={{ color: 'var(--text3)' }}>Vient de</p>
                       {(selectedStep.parentIds || []).length === 0 ? (
                         <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500 italic">Point de départ</div>
                       ) : (
@@ -1378,7 +1379,7 @@ const FlowChartEditor = () => {
                     {/* Sub-steps */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <p className={labelCls}>Sous-étapes ({(selectedStep.subSteps || []).length})</p>
+                        <p className={labelCls} style={{ color: 'var(--text3)' }}>Sous-étapes ({(selectedStep.subSteps || []).length})</p>
                         {!addingSubStep && editingSubIdx === null && (
                           <button type="button" onClick={openAddSubStep}
                             className="flex items-center gap-0.5 text-[10px] font-semibold text-sky-600 hover:text-sky-800 transition-colors">
@@ -1453,7 +1454,7 @@ const FlowChartEditor = () => {
               <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
                 <button onClick={saveEdit}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"
-                  style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                   <Check className="w-4 h-4 inline mr-1.5" />Enregistrer
                 </button>
                 <button onClick={() => setPanel('view')}
@@ -1473,7 +1474,7 @@ const FlowChartEditor = () => {
               <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
                 <button onClick={confirmAdd} disabled={!draft.label.trim()}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-                  style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                   <Plus className="w-4 h-4 inline mr-1.5" />Ajouter
                 </button>
                 <button onClick={() => setPanel('view')}

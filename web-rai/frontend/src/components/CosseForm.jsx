@@ -20,8 +20,9 @@ const EMPTY_ROW = () => ({
 const normalizeToolCode = (value = '') =>
   String(value ?? '').replace(/﻿/g, '').trim().replace(/\s+/g, '').toUpperCase();
 
-const fieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors';
-const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500';
+const fieldClass = 'w-full rounded-[10px] px-4 py-2.5 text-sm outline-none transition-colors';
+const fieldStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
+const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em]';
 const cellClass  = 'w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-1 focus:ring-sky-100 transition-colors';
 
 const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
@@ -178,7 +179,7 @@ const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] min-h-0 w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] min-h-0 w-full max-w-3xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
@@ -217,28 +218,28 @@ const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400 mb-3">Identité de la cosse</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className={labelClass}>Référence constructeur <span className="text-red-400">*</span></span>
+                <span className={labelClass} style={{ color: 'var(--text3)' }}>Référence constructeur <span className="text-red-400">*</span></span>
                 <input type="text" name="reference_constructeur" value={header.reference_constructeur}
-                  onChange={handleHeaderChange} required className={fieldClass} placeholder="ex : 43030-0001" />
+                  onChange={handleHeaderChange} required className={fieldClass} style={fieldStyle} placeholder="ex : 43030-0001" />
               </label>
               <label className="block">
-                <span className={labelClass}>Référence TEC <span className="text-red-400">*</span></span>
+                <span className={labelClass} style={{ color: 'var(--text3)' }}>Référence TEC <span className="text-red-400">*</span></span>
                 <input type="text" name="reference_tec" value={header.reference_tec}
-                  onChange={handleHeaderChange} required className={fieldClass} placeholder="ex : 270624420" />
+                  onChange={handleHeaderChange} required className={fieldClass} style={fieldStyle} placeholder="ex : 270624420" />
               </label>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 mt-4">
               <label className="block">
-                <span className={labelClass}>Désignation TEC</span>
+                <span className={labelClass} style={{ color: 'var(--text3)' }}>Désignation TEC</span>
                 <input type="text" name="designation_tec" value={header.designation_tec}
-                  onChange={handleHeaderChange} className={fieldClass} placeholder="Désignation produit" />
+                  onChange={handleHeaderChange} className={fieldClass} style={fieldStyle} placeholder="Désignation produit" />
               </label>
               <div>
-                <span className={labelClass}>
+                <span className={labelClass} style={{ color: 'var(--text3)' }}>
                   Outillage <span className="text-slate-400 normal-case font-normal">(optionnel)</span>
                 </span>
                 <input type="text" name="outillage" value={header.outillage}
-                  onChange={handleHeaderChange} list="cosse-outillage-opts" className={fieldClass}
+                  onChange={handleHeaderChange} list="cosse-outillage-opts" className={fieldClass} style={fieldStyle}
                   placeholder="ex : P1, P10, A1" />
                 <datalist id="cosse-outillage-opts">
                   {toolSuggestions.map((t) => <option key={t} value={t} />)}
@@ -291,9 +292,9 @@ const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
                   { name: 'observation',          label: 'Observation',  placeholder: 'Note…' },
                 ].map(({ name, label, placeholder }) => (
                   <label key={name} className="block">
-                    <span className={labelClass}>{label}</span>
+                    <span className={labelClass} style={{ color: 'var(--text3)' }}>{label}</span>
                     <input type="text" name={name} value={singleRow[name]}
-                      onChange={handleSingleRowChange} className={fieldClass} placeholder={placeholder} />
+                      onChange={handleSingleRowChange} className={fieldClass} style={fieldStyle} placeholder={placeholder} />
                   </label>
                 ))}
               </div>
@@ -358,7 +359,7 @@ const CosseForm = ({ cosse, isOpen, onClose, onSuccess }) => {
           <div className="flex gap-3 pt-1">
             <button type="submit" disabled={loading}
               className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
-              style={{ background: loading ? '#94a3b8' : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+              style={{ background: loading ? 'var(--text3)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
               {loading
                 ? 'Sauvegarde…'
                 : isEditing

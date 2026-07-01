@@ -42,7 +42,8 @@ const TYPE_STYLE = {
 const statutCls   = (v) => STATUT_OPTS.find(o => o.value === v)?.cls   || STATUT_OPTS[1].cls;
 const statutLabel = (v) => STATUT_OPTS.find(o => o.value === v)?.label || 'À commander';
 
-const fieldCls = 'w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors';
+const fieldCls = 'w-full rounded-[10px] px-3 py-2 text-sm outline-none transition-colors';
+const fieldClsStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
 const labelCls = 'mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500';
 
 const createCmpId = () => `cmp-${Date.now()}-${Math.floor(Math.random()*9999)}`;
@@ -178,26 +179,26 @@ const ComposantCard = ({ cmp, index, fournisseurs, onChange, onRemove }) => {
             <label className="block">
               <span className={labelCls}>Réf. fournisseur</span>
               <input type="text" value={cmp.ref_fournisseur} onChange={e => set('ref_fournisseur', e.target.value)}
-                className={fieldCls} placeholder="Ex: 966140-5" />
+                className={fieldCls} style={fieldClsStyle} placeholder="Ex: 966140-5" />
             </label>
             <label className="block">
               <span className={labelCls}>Réf. interne</span>
               <input type="text" value={cmp.ref_interne} onChange={e => set('ref_interne', e.target.value)}
-                className={fieldCls} placeholder="Ex: 27062567..." />
+                className={fieldCls} style={fieldClsStyle} placeholder="Ex: 27062567..." />
             </label>
           </div>
 
           <label className="block">
             <span className={labelCls}>Désignation</span>
             <input type="text" value={cmp.designation} onChange={e => set('designation', e.target.value)}
-              className={fieldCls} placeholder="Description courte…" />
+              className={fieldCls} style={fieldClsStyle} placeholder="Description courte…" />
           </label>
 
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
               <span className={labelCls}>Fournisseur</span>
               <input type="text" value={cmp.fournisseur} onChange={e => set('fournisseur', e.target.value)}
-                list="fourn-list-cmp" className={fieldCls} placeholder="Ex: Mouser…" />
+                list="fourn-list-cmp" className={fieldCls} style={fieldClsStyle} placeholder="Ex: Mouser…" />
               <datalist id="fourn-list-cmp">
                 {fournisseurs.map(f => <option key={f.id} value={f.nom} />)}
               </datalist>
@@ -434,7 +435,7 @@ const ChiffrageDetail = () => {
     <div className="flex flex-1 min-h-0 flex-col overflow-hidden" style={{ background: 'var(--content-bg)' }}>
 
       {/* Top bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 bg-white border-b border-slate-200 flex-shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 flex-shrink-0" style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-2 min-w-0">
           <button onClick={() => navigate('/industrialization')}
             className="flex items-center gap-1 text-xs font-semibold text-slate-500 hover:text-slate-800 flex-shrink-0">
@@ -456,7 +457,7 @@ const ChiffrageDetail = () => {
           </button>
           <button onClick={() => saveHeader()} disabled={saving}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white disabled:opacity-50"
-            style={{ background: saved ? '#10b981' : 'linear-gradient(135deg,#0ea5e9,#0369a1)' }}>
+            style={{ background: saved ? 'var(--ok)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
             {saved ? <><Check className="w-3.5 h-3.5" /> Sauvegardé</> : saving ? 'Sauvegarde…' : <><Save className="w-3.5 h-3.5" /> Sauvegarder</>}
           </button>
         </div>
@@ -567,7 +568,7 @@ const ChiffrageDetail = () => {
             <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-t border-slate-200">
               <button onClick={addLigne}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-                style={{ background: 'linear-gradient(135deg,#0ea5e9,#0369a1)' }}>
+                style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                 <Plus className="w-3.5 h-3.5" /> Ajouter un connecteur
               </button>
               <div className="text-right">
@@ -580,7 +581,7 @@ const ChiffrageDetail = () => {
 
         {/* Side panel */}
         {panelLigne && (
-          <div className="w-[420px] flex-shrink-0 border-l border-slate-200 bg-white flex flex-col overflow-hidden">
+          <div className="w-[420px] flex-shrink-0 flex flex-col overflow-hidden" style={{ borderLeft: '1px solid var(--border)', background: 'var(--panel)' }}>
             {/* Panel header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 flex-shrink-0"
               style={{ background: '#0f1d35' }}>
@@ -611,20 +612,20 @@ const ChiffrageDetail = () => {
                 <label className="block">
                   <span className={labelCls}>Désignation</span>
                   <input type="text" value={panelLigne.designation || ''} onChange={e => updatePanel('designation', e.target.value)}
-                    className={fieldCls} placeholder="CONN HSG 81PTS" />
+                    className={fieldCls} style={fieldClsStyle} placeholder="CONN HSG 81PTS" />
                 </label>
 
                 <label className="block">
                   <span className={labelCls}>Réf. interne</span>
                   <input type="text" value={panelLigne.ref_interne || ''} onChange={e => updatePanel('ref_interne', e.target.value)}
-                    className={fieldCls} placeholder="Ex: 27062594 / Ref TEC interne" />
+                    className={fieldCls} style={fieldClsStyle} placeholder="Ex: 27062594 / Ref TEC interne" />
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block">
                     <span className={labelCls}>Fournisseur</span>
                     <input type="text" value={panelLigne.fournisseur || ''} onChange={e => updatePanel('fournisseur', e.target.value)}
-                      list="fourn-list-conn" className={fieldCls} placeholder="Ex: Mouser" />
+                      list="fourn-list-conn" className={fieldCls} style={fieldClsStyle} placeholder="Ex: Mouser" />
                     <datalist id="fourn-list-conn">
                       {fournisseurs.map(f => <option key={f.id} value={f.nom} />)}
                     </datalist>
@@ -744,7 +745,7 @@ const ChiffrageDetail = () => {
               <label className="block">
                 <span className={labelCls}>Commentaire RAI</span>
                 <input type="text" value={panelLigne.commentaire_rai || ''} onChange={e => updatePanel('commentaire_rai', e.target.value)}
-                  className={fieldCls} placeholder="A commander, En attente de livraison…" />
+                  className={fieldCls} style={fieldClsStyle} placeholder="A commander, En attente de livraison…" />
               </label>
 
               {/* Total */}
@@ -757,7 +758,7 @@ const ChiffrageDetail = () => {
             <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
               <button onClick={savePanel} disabled={saving}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
-                style={{ background: 'linear-gradient(135deg,#0ea5e9,#0369a1)' }}>
+                style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                 {saving ? 'Sauvegarde…' : <><Check className="w-4 h-4 inline mr-1.5" />Enregistrer</>}
               </button>
               <button onClick={closePanel}

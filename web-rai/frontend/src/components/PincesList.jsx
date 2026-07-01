@@ -232,7 +232,7 @@ const PincesList = ({ searchQuery = '' }) => {
           <button
             onClick={() => { setEditingPince(null); setIsFormOpen(true); }}
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
-            style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}
           >
             <Plus className="w-3.5 h-3.5" />
             Nouvelle pince
@@ -242,7 +242,7 @@ const PincesList = ({ searchQuery = '' }) => {
         <div className="overflow-auto flex-1">
           <table className="min-w-full text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200">
+              <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">N° Pince</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Constructeur</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Référence</th>

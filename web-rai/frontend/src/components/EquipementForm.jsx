@@ -36,8 +36,9 @@ const buildInitialState = (equipement, defaultCategory) => ({
 });
 
 // ── Shared field styles ────────────────────────────────────
-const fieldClass = 'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-colors';
-const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-500';
+const fieldClass = 'w-full rounded-[10px] px-4 py-2.5 text-sm outline-none transition-colors';
+const fieldStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
+const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em]';
 
 // ── EquipementForm ─────────────────────────────────────────
 const EquipementForm = ({
@@ -180,16 +181,16 @@ const EquipementForm = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl" style={{ background: 'var(--panel)' }}>
 
         {/* ── Modal header ── */}
         <div
           className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
-          style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+          style={{ background: 'linear-gradient(135deg, #0d1828, #0a2820)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-sky-500/20 flex items-center justify-center flex-shrink-0">
-              {isEditing ? <Pencil className="w-4 h-4 text-sky-300" /> : <Package className="w-4 h-4 text-sky-300" />}
+            <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)' }}>
+              {isEditing ? <Pencil className="w-4 h-4" style={{ color: 'var(--accent3)' }} /> : <Package className="w-4 h-4" style={{ color: 'var(--accent3)' }} />}
             </div>
             <div>
               <h2 className="text-base font-bold text-white leading-tight">
@@ -212,7 +213,8 @@ const EquipementForm = ({
         <form onSubmit={handleSubmit} className="flex-1 min-h-0 overflow-y-auto p-6 space-y-5">
 
           {error && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="flex items-start gap-2.5 rounded-[10px] px-4 py-3 text-sm"
+              style={{ border: '1px solid var(--crit)', background: 'var(--crit-soft)', color: 'var(--crit)' }}>
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -221,16 +223,16 @@ const EquipementForm = ({
           {/* Row 1 */}
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>Code RAI <span className="text-red-400">*</span></span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Code RAI <span style={{ color: 'var(--crit)' }}>*</span></span>
               <input
                 type="text" name="code_rai" value={formData.code_rai}
-                onChange={handleChange} required className={fieldClass}
+                onChange={handleChange} required className={fieldClass} style={fieldStyle}
                 placeholder="ex : EQUIP999"
               />
             </label>
             <label className="block">
-              <span className={labelClass}>Catégorie</span>
-              <select name="categorie" value={formData.categorie} onChange={handleChange} className={fieldClass}>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Catégorie</span>
+              <select name="categorie" value={formData.categorie} onChange={handleChange} className={fieldClass} style={fieldStyle}>
                 <option value="equipement">Équipement</option>
                 <option value="pdr">PDR</option>
                 <option value="fer-et-bain">Fer et bain</option>
@@ -240,10 +242,10 @@ const EquipementForm = ({
 
           {/* Désignation full width */}
           <label className="block">
-            <span className={labelClass}>Désignation <span className="text-red-400">*</span></span>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Désignation <span style={{ color: 'var(--crit)' }}>*</span></span>
             <input
               type="text" name="designation" value={formData.designation}
-              onChange={handleChange} required className={fieldClass}
+              onChange={handleChange} required className={fieldClass} style={fieldStyle}
               placeholder="ex : Bain creuset"
             />
           </label>
@@ -251,15 +253,15 @@ const EquipementForm = ({
           {/* Row 2 */}
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>Fabricant</span>
-              <select name="fabricant_id" value={formData.fabricant_id} onChange={handleChange} className={fieldClass} disabled={loadingOptions}>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Fabricant</span>
+              <select name="fabricant_id" value={formData.fabricant_id} onChange={handleChange} className={fieldClass} style={fieldStyle} disabled={loadingOptions}>
                 <option value="">{loadingOptions ? 'Chargement…' : 'Aucun fabricant'}</option>
                 {fabricantOptions.map((f) => <option key={f.id} value={f.id}>{f.nom}</option>)}
               </select>
             </label>
             <label className="block">
-              <span className={labelClass}>Zone</span>
-              <select name="zone_id" value={formData.zone_id} onChange={handleChange} className={fieldClass} disabled={loadingOptions}>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Zone</span>
+              <select name="zone_id" value={formData.zone_id} onChange={handleChange} className={fieldClass} style={fieldStyle} disabled={loadingOptions}>
                 <option value="">{loadingOptions ? 'Chargement…' : 'Aucune zone'}</option>
                 {zoneGroups.rootZones
                   .filter((z) => !z.subzones?.length)
@@ -276,25 +278,25 @@ const EquipementForm = ({
           {/* Row 3 */}
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className={labelClass}>N° Série</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>N° Série</span>
               <input
                 type="text" name="numero_serie" value={formData.numero_serie}
-                onChange={handleChange} className={fieldClass} placeholder="Numéro de série"
+                onChange={handleChange} className={fieldClass} style={fieldStyle} placeholder="Numéro de série"
               />
             </label>
             <label className="block">
-              <span className={labelClass}>Date d'acquisition</span>
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Date d'acquisition</span>
               <input
                 type="date" name="date_acquisition" value={formData.date_acquisition}
-                onChange={handleChange} className={fieldClass}
+                onChange={handleChange} className={fieldClass} style={fieldStyle}
               />
             </label>
           </div>
 
           {/* Statut */}
           <label className="block">
-            <span className={labelClass}>Statut</span>
-            <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass}>
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Statut</span>
+            <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass} style={fieldStyle}>
               <option value="En service">En service</option>
               <option value="Hors service">Hors service</option>
               <option value="En maintenance">En maintenance</option>
@@ -303,63 +305,53 @@ const EquipementForm = ({
 
           {/* PDR details */}
           {formData.categorie === 'pdr' && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+            <div className="rounded-[10px] p-4 space-y-3" style={{ border: '1px solid var(--border)', background: 'var(--panel2)' }}>
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className={labelClass + ' pt-0'}>Détails PDR</p>
-                  <p className="text-xs text-slate-500">Ajoutez chaque pièce de rechange avec sa référence et quantité.</p>
+                  <p className={labelClass} style={{ color: 'var(--text3)' }}>Détails PDR</p>
+                  <p className="text-xs" style={{ color: 'var(--text3)' }}>Ajoutez chaque pièce de rechange avec sa référence et quantité.</p>
                 </div>
-                <button
-                  type="button" onClick={addPdrPiece}
-                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-white bg-sky-500 hover:bg-sky-600 transition-colors flex-shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  Ajouter
+                <button type="button" onClick={addPdrPiece}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] text-xs font-bold text-white transition-transform hover:-translate-y-0.5 flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
+                  <Plus className="w-3.5 h-3.5" /> Ajouter
                 </button>
               </div>
 
               {pdrPieces.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-4 text-xs text-slate-400 text-center">
+                <div className="rounded-[8px] px-4 py-4 text-xs text-center"
+                  style={{ border: '1px dashed var(--border)', background: 'var(--panel)', color: 'var(--text3)' }}>
                   Aucune pièce ajoutée. Cliquez sur «&nbsp;Ajouter&nbsp;» pour commencer.
                 </div>
               ) : (
                 <div className="space-y-2">
                   {pdrPieces.map((piece, index) => (
-                    <div
-                      key={`${piece.code || 'piece'}-${index}`}
-                      className="grid gap-2 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-[1.2fr_2fr_1fr_auto] sm:items-end"
-                    >
+                    <div key={`${piece.code || 'piece'}-${index}`}
+                      className="grid gap-2 rounded-[8px] p-3 sm:grid-cols-[1.2fr_2fr_1fr_auto] sm:items-end"
+                      style={{ border: '1px solid var(--border)', background: 'var(--panel)' }}>
                       <label className="block">
-                        <span className={labelClass}>Pièce</span>
-                        <select
-                          value={piece.code}
-                          onChange={(e) => handlePdrChange(index, 'code', e.target.value)}
-                          className={fieldClass}
-                        >
+                        <span className={labelClass} style={{ color: 'var(--text3)' }}>Pièce</span>
+                        <select value={piece.code} onChange={(e) => handlePdrChange(index, 'code', e.target.value)}
+                          className={fieldClass} style={fieldStyle}>
                           <option value="">Choisir…</option>
-                          {PDR_PIECE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                          {PDR_PIECE_OPTIONS.map((o) => <option key={o.value} value={o.value} style={{ color: '#000' }}>{o.label}</option>)}
                         </select>
                       </label>
                       <label className="block">
-                        <span className={labelClass}>Référence</span>
-                        <input
-                          type="text" value={piece.reference} placeholder="Référence pièce"
+                        <span className={labelClass} style={{ color: 'var(--text3)' }}>Référence</span>
+                        <input type="text" value={piece.reference} placeholder="Référence pièce"
                           onChange={(e) => handlePdrChange(index, 'reference', e.target.value)}
-                          className={fieldClass}
-                        />
+                          className={fieldClass} style={fieldStyle} />
                       </label>
                       <label className="block">
-                        <span className={labelClass}>Quantité</span>
-                        <input
-                          type="number" min="0" step="any" value={piece.quantity} placeholder="0"
+                        <span className={labelClass} style={{ color: 'var(--text3)' }}>Quantité</span>
+                        <input type="number" min="0" step="any" value={piece.quantity} placeholder="0"
                           onChange={(e) => handlePdrChange(index, 'quantity', e.target.value)}
-                          className={fieldClass}
-                        />
+                          className={fieldClass} style={fieldStyle} />
                       </label>
-                      <button
-                        type="button" onClick={() => removePdrPiece(index)}
-                        className="self-end h-[38px] px-3 rounded-xl border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1"
-                      >
+                      <button type="button" onClick={() => removePdrPiece(index)}
+                        className="self-end h-[38px] px-3 rounded-[8px] text-xs font-semibold transition-colors hover:bg-[var(--crit-soft)] hover:text-[var(--crit)] flex items-center gap-1"
+                        style={{ border: '1px solid var(--border)', color: 'var(--text3)' }}>
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
@@ -371,27 +363,22 @@ const EquipementForm = ({
 
           {/* Remarque */}
           <label className="block">
-            <span className={labelClass}>Remarque</span>
-            <textarea
-              name="remarque" value={formData.remarque} onChange={handleChange} rows={3}
-              className={fieldClass + ' resize-none'}
-              placeholder="Commentaires, état, observation…"
-            />
+            <span className={labelClass} style={{ color: 'var(--text3)' }}>Remarque</span>
+            <textarea name="remarque" value={formData.remarque} onChange={handleChange} rows={3}
+              className={fieldClass + ' resize-none'} style={fieldStyle}
+              placeholder="Commentaires, état, observation…" />
           </label>
 
           {/* Actions */}
           <div className="flex gap-3 pt-1">
-            <button
-              type="submit" disabled={loading}
-              className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: loading ? undefined : 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}
-            >
+            <button type="submit" disabled={loading}
+              className="flex-1 py-2.5 rounded-[10px] text-sm font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed transition-transform hover:-translate-y-0.5"
+              style={{ background: loading ? 'var(--text3)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
               {loading ? 'Sauvegarde en cours…' : isEditing ? 'Enregistrer les modifications' : 'Créer l\'équipement'}
             </button>
-            <button
-              type="button" onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
-            >
+            <button type="button" onClick={onClose}
+              className="px-5 py-2.5 rounded-[10px] text-sm font-semibold transition-colors hover:bg-[var(--panel3)]"
+              style={{ border: '1px solid var(--border)', color: 'var(--text2)' }}>
               Annuler
             </button>
           </div>

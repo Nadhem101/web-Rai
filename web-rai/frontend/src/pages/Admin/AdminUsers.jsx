@@ -1,47 +1,22 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
-import { Shield, User, Check, AlertCircle, RefreshCw } from 'lucide-react';
+import { Shield, Check, AlertCircle, RefreshCw } from 'lucide-react';
+import DataLabel from '../../components/ui/DataLabel.jsx';
+import StatusBadge from '../../components/ui/StatusBadge.jsx';
+import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const ROLES = [
-  {
-    value: 'admin',
-    label: 'Admin',
-    desc: 'Accès complet à tous les modules',
-    cls: 'bg-purple-100 text-purple-700 border-purple-200',
-    dot: 'bg-purple-500',
-  },
-  {
-    value: 'maintenance',
-    label: 'Maintenance',
-    desc: 'Inventaire · Maintenance · ECME',
-    cls: 'bg-sky-100 text-sky-700 border-sky-200',
-    dot: 'bg-sky-500',
-  },
-  {
-    value: 'indus',
-    label: 'Industrialisation',
-    desc: 'Inventaire · Industrialisation',
-    cls: 'bg-amber-100 text-amber-700 border-amber-200',
-    dot: 'bg-amber-500',
-  },
+  { value: 'admin',       label: 'Admin',            desc: 'Accès complet à tous les modules',     variant: 'crit'   },
+  { value: 'maintenance', label: 'Maintenance',       desc: 'Inventaire · Maintenance · ECME',      variant: 'info'   },
+  { value: 'indus',       label: 'Industrialisation', desc: 'Inventaire · Industrialisation',       variant: 'warn'   },
 ];
 
 const fmtDate = (d) => {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-};
-
-const RoleBadge = ({ value }) => {
-  const r = ROLES.find(x => x.value === value);
-  if (!r) return null;
-  return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ${r.cls}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${r.dot}`} />
-      {r.label}
-    </span>
-  );
 };
 
 const AdminUsers = () => {
@@ -78,20 +53,15 @@ const AdminUsers = () => {
   const handleRoleToggle = async (userId, roleValue, checked) => {
     const user = users.find(u => u.user_id === userId);
     if (!user) return;
-
     const currentRoles = user.roles || ['admin'];
     let nextRoles = checked
       ? [...new Set([...currentRoles, roleValue])]
       : currentRoles.filter(r => r !== roleValue);
-
-    // Always keep at least one role
     if (nextRoles.length === 0) nextRoles = [roleValue];
-
     setSaving(p => ({ ...p, [userId]: true }));
     try {
       const res = await fetch(`${API}/user-profiles/${userId}`, {
-        method: 'PUT',
-        headers: authHeader(),
+        method: 'PUT', headers: authHeader(),
         body: JSON.stringify({ roles: nextRoles }),
       });
       if (!res.ok) {
@@ -101,58 +71,57 @@ const AdminUsers = () => {
       setUsers(prev => prev.map(u => u.user_id === userId ? { ...u, roles: nextRoles } : u));
       setSaved(p => ({ ...p, [userId]: true }));
       setTimeout(() => setSaved(p => ({ ...p, [userId]: false })), 2000);
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setSaving(p => ({ ...p, [userId]: false }));
-    }
+    } catch (err) { alert(err.message); }
+    finally { setSaving(p => ({ ...p, [userId]: false })); }
   };
 
   if (!can('admin')) {
     return (
       <div className="flex-1 flex items-center justify-center p-6">
         <div className="text-center">
-          <Shield className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <p className="text-sm font-semibold text-slate-600">Accès réservé aux administrateurs</p>
+          <Shield className="w-12 h-12 mx-auto mb-3 opacity-30" style={{ color: 'var(--text3)' }} />
+          <p className="text-sm font-semibold" style={{ color: 'var(--text2)' }}>Accès réservé aux administrateurs</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 flex-1 overflow-auto">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Shield className="w-6 h-6 text-purple-500" />
-            Gestion des accès
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Cochez un ou plusieurs rôles par utilisateur. Les accès sont cumulatifs.
-          </p>
+    <div className="px-[26px] pt-6 pb-10 flex-1 overflow-auto space-y-[18px]" style={{ background: 'var(--bg)' }}>
+      {/* Header */}
+      <motion.div variants={staggerItemVariants} className="flex items-start justify-between">
+        <div className="flex items-center gap-3.5">
+          <div className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+            <Shield className="w-5 h-5" strokeWidth={1.8} />
+          </div>
+          <div>
+            <h1 className="font-display font-semibold text-[25px]" style={{ color: 'var(--text)', letterSpacing: '-0.4px' }}>Gestion des accès</h1>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>Cochez un ou plusieurs rôles par utilisateur. Les accès sont cumulatifs.</p>
+          </div>
         </div>
         <button onClick={load} disabled={loading}
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 disabled:opacity-50">
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[8px] text-xs font-semibold transition-colors hover:bg-[var(--panel3)] disabled:opacity-50"
+          style={{ border: '1px solid var(--border)', color: 'var(--text2)', background: 'var(--panel)' }}>
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           Actualiser
         </button>
-      </div>
+      </motion.div>
 
       {/* Role legend */}
-      <div className="grid gap-3 sm:grid-cols-3 mb-6">
+      <motion.div variants={staggerItemVariants} className="grid gap-3 sm:grid-cols-3">
         {ROLES.map(r => (
-          <div key={r.value} className={`rounded-xl border px-4 py-3 ${r.cls}`}>
+          <div key={r.value} className="rounded-[12px] px-4 py-3" style={{ border: '1px solid var(--border)', background: 'var(--panel2)' }}>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className={`w-2 h-2 rounded-full ${r.dot}`} />
-              <p className="text-xs font-bold uppercase tracking-wider">{r.label}</p>
+              <StatusBadge variant={r.variant}>{r.label}</StatusBadge>
             </div>
-            <p className="text-[11px] opacity-70">{r.desc}</p>
+            <p className="text-[11px] mt-1" style={{ color: 'var(--text3)' }}>{r.desc}</p>
           </div>
         ))}
-      </div>
+      </motion.div>
 
       {error && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="flex items-start gap-2.5 rounded-[10px] px-4 py-3 text-sm"
+          style={{ border: '1px solid var(--crit)', background: 'var(--crit-soft)', color: 'var(--crit)' }}>
           <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
@@ -160,105 +129,91 @@ const AdminUsers = () => {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <motion.div variants={staggerItemVariants} className="rounded-[14px] overflow-hidden"
+          style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Utilisateur</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 hidden sm:table-cell">Dernier accès</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Rôles actifs</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Accès</th>
-                <th className="px-4 py-3 w-10" />
+            <thead>
+              <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
+                {['Utilisateur','Dernier accès','Rôles actifs','Accès',''].map(h => (
+                  <th key={h} className={`px-4 py-3 text-left ${h === 'Dernier accès' ? 'hidden sm:table-cell' : ''} ${h === '' ? 'w-10' : ''}`}>
+                    {h && <DataLabel>{h}</DataLabel>}
+                  </th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {users.length === 0 ? (
-                <tr><td colSpan={5} className="py-8 text-center text-slate-400 text-xs">Aucun utilisateur trouvé</td></tr>
+                <tr><td colSpan={5} className="py-8 text-center text-xs" style={{ color: 'var(--text3)' }}>Aucun utilisateur trouvé</td></tr>
               ) : users.map(u => {
                 const isSelf = u.user_id === session?.user?.id;
                 const userRoles = u.roles || ['admin'];
                 return (
-                  <tr key={u.user_id} className={`hover:bg-slate-50 transition-colors ${isSelf ? 'bg-purple-50/40' : ''}`}>
-
-                    {/* User */}
+                  <tr key={u.user_id}
+                    className="transition-colors hover:bg-[var(--panel2)]"
+                    style={{ borderBottom: '1px solid var(--border2)', background: isSelf ? 'var(--accent-soft)' : undefined }}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs font-bold"
-                          style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+                          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
                           {(u.email || '?')[0].toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-800 truncate">{u.email}</p>
-                          {isSelf && <p className="text-[10px] text-purple-600 font-medium">Vous</p>}
+                          <p className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{u.email}</p>
+                          {isSelf && <p className="text-[10px] font-medium" style={{ color: 'var(--accent)' }}>Vous</p>}
                         </div>
                       </div>
                     </td>
-
-                    {/* Last access */}
-                    <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{fmtDate(u.last_sign_in)}</td>
-
-                    {/* Current roles as badges */}
+                    <td className="px-4 py-3 text-xs hidden sm:table-cell" style={{ color: 'var(--text3)' }}>{fmtDate(u.last_sign_in)}</td>
                     <td className="px-4 py-3">
                       <div className="flex flex-wrap gap-1">
-                        {userRoles.map(r => <RoleBadge key={r} value={r} />)}
+                        {userRoles.map(r => {
+                          const roleInfo = ROLES.find(x => x.value === r);
+                          return roleInfo ? <StatusBadge key={r} variant={roleInfo.variant}>{roleInfo.label}</StatusBadge> : null;
+                        })}
                       </div>
                     </td>
-
-                    {/* Checkbox toggles */}
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1.5">
                         {ROLES.map(r => {
                           const isChecked = userRoles.includes(r.value);
                           const isOnlyRole = isChecked && userRoles.length === 1;
                           return (
-                            <label key={r.value}
-                              className={`flex items-center gap-2 cursor-pointer select-none ${
-                                saving[u.user_id] || isOnlyRole ? 'opacity-50 cursor-not-allowed' : ''
-                              }`}>
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
+                            <label key={r.value} className={`flex items-center gap-2 cursor-pointer select-none ${saving[u.user_id] || isOnlyRole ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                              <input type="checkbox" checked={isChecked}
                                 disabled={saving[u.user_id] || isOnlyRole}
                                 onChange={e => handleRoleToggle(u.user_id, r.value, e.target.checked)}
-                                className="accent-sky-500 w-3.5 h-3.5 flex-shrink-0"
-                              />
-                              <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${r.cls}`}>
-                                {r.label}
-                              </span>
+                                className="w-3.5 h-3.5 flex-shrink-0" style={{ accentColor: 'var(--accent)' }} />
+                              <StatusBadge variant={r.variant}>{r.label}</StatusBadge>
                             </label>
                           );
                         })}
                       </div>
                     </td>
-
-                    {/* Save indicator */}
                     <td className="px-4 py-3 text-center">
                       {saving[u.user_id] && (
-                        <div className="w-4 h-4 border-2 border-sky-200 border-t-sky-500 rounded-full animate-spin mx-auto" />
+                        <div className="w-4 h-4 border-2 rounded-full animate-spin mx-auto" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
                       )}
-                      {saved[u.user_id] && (
-                        <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-                      )}
+                      {saved[u.user_id] && <Check className="w-4 h-4 mx-auto" style={{ color: 'var(--ok)' }} />}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-        </div>
+        </motion.div>
       )}
 
-      <div className="mt-4 space-y-2">
-        <div className="rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-700">
+      <div className="space-y-2">
+        <div className="rounded-[12px] px-4 py-3 text-xs" style={{ border: '1px solid var(--info)', background: 'var(--info-soft)', color: 'var(--info)' }}>
           <p className="font-semibold mb-0.5">Accès cumulatifs</p>
-          <p>Un utilisateur avec plusieurs rôles bénéficie de l'union de tous leurs accès. Exemple : <strong>Maintenance + Industrialisation</strong> donne accès à tous les modules sauf Administration.</p>
+          <p style={{ color: 'var(--text2)' }}>Un utilisateur avec plusieurs rôles bénéficie de l'union de tous leurs accès. Exemple : <strong>Maintenance + Industrialisation</strong> donne accès à tous les modules sauf Administration.</p>
         </div>
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-700">
+        <div className="rounded-[12px] px-4 py-3 text-xs" style={{ border: '1px solid var(--warn)', background: 'var(--warn-soft)', color: 'var(--warn)' }}>
           <p className="font-semibold mb-0.5">⚠ Note importante</p>
-          <p>Le changement de rôle est immédiat. L'utilisateur verra la nouvelle interface à sa prochaine connexion ou après rechargement. Un utilisateur doit toujours avoir au moins un rôle.</p>
+          <p style={{ color: 'var(--text2)' }}>Le changement de rôle est immédiat. L'utilisateur verra la nouvelle interface à sa prochaine connexion ou après rechargement. Un utilisateur doit toujours avoir au moins un rôle.</p>
         </div>
       </div>
     </div>

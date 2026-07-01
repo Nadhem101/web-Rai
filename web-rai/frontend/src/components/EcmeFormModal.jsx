@@ -119,23 +119,24 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
 
   const Field = ({ label, children, col = 1 }) => (
     <label className={`block ${col === 2 ? 'md:col-span-2' : ''}`}>
-      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">{label}</span>
+      <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.15em]" style={{ color: 'var(--text3)' }}>{label}</span>
       {children}
     </label>
   );
 
-  const inputCls = 'w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 transition-colors';
+  const inputCls = 'w-full rounded-[10px] px-3 py-2 text-sm outline-none transition-colors';
+  const inputStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl" style={{ background: 'var(--panel)' }}>
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
-          style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          style={{ background: 'linear-gradient(135deg, #0d1828, #0a2820)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center flex-shrink-0">
-              <FlaskConical className="w-4 h-4 text-blue-300" />
+            <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)' }}>
+              <FlaskConical className="w-4 h-4" style={{ color: 'var(--accent3)' }} />
             </div>
             <div>
               <h3 className="text-base font-bold text-white leading-tight">
@@ -157,7 +158,8 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
           <div className="p-6 space-y-6">
 
             {error && (
-              <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="flex items-start gap-2.5 rounded-[10px] px-4 py-3 text-sm"
+                style={{ border: '1px solid var(--crit)', background: 'var(--crit-soft)', color: 'var(--crit)' }}>
                 <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
@@ -165,33 +167,33 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
 
             {/* Section: Identification */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Identification</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text3)' }}>Identification</p>
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Code ECME *">
                   <input type="text" value={form.code} onChange={e => set('code', e.target.value)}
                     placeholder="ex: ECME317"
                     disabled={isEdit}
-                    className={`${inputCls} ${isEdit ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : ''}`} />
+                    className={inputCls} style={{ ...inputStyle, ...(isEdit ? { opacity: 0.5, cursor: 'not-allowed' } : {}) }} />
                 </Field>
                 <Field label="Désignation *">
                   <input type="text" value={form.designation} onChange={e => set('designation', e.target.value)}
                     placeholder="ex: Multimètre numérique"
-                    className={inputCls} />
+                    className={inputCls} style={inputStyle} />
                 </Field>
                 <Field label="Marque / Modèle">
                   <input type="text" value={form.marque} onChange={e => set('marque', e.target.value)}
                     placeholder="ex: FLUKE"
-                    className={inputCls} />
+                    className={inputCls} style={inputStyle} />
                 </Field>
                 <Field label="N° de série">
                   <input type="text" value={form.n_serie} onChange={e => set('n_serie', e.target.value)}
                     placeholder="ex: 74840401"
-                    className={inputCls} />
+                    className={inputCls} style={inputStyle} />
                 </Field>
                 <Field label="Affectation (zone)">
                   <input type="text" value={form.affectation} onChange={e => set('affectation', e.target.value)}
                     placeholder="ex: Electronique, Maintenance…"
-                    className={inputCls} />
+                    className={inputCls} style={inputStyle} />
                 </Field>
                 <Field label="Type de vérification">
                   <select value={form.verif_type} onChange={e => set('verif_type', e.target.value)}
@@ -205,7 +207,7 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
 
             {/* Section: Statut */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Statut & Vérification</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text3)' }}>Statut & Vérification</p>
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Statut alerte">
                   <select value={form.alerte} onChange={e => set('alerte', e.target.value)}
@@ -218,14 +220,14 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" checked={form.necessite_verification === true}
                         onChange={() => set('necessite_verification', true)}
-                        className="accent-blue-500" />
-                      <span className="text-sm text-slate-700">Oui</span>
+                        style={{ accentColor: 'var(--accent)' }} />
+                      <span className="text-sm" style={{ color: 'var(--text2)' }}>Oui</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input type="radio" checked={form.necessite_verification === false}
                         onChange={() => set('necessite_verification', false)}
-                        className="accent-blue-500" />
-                      <span className="text-sm text-slate-700">Non</span>
+                        style={{ accentColor: 'var(--accent)' }} />
+                      <span className="text-sm" style={{ color: 'var(--text2)' }}>Non</span>
                     </label>
                   </div>
                 </Field>
@@ -234,22 +236,22 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
 
             {/* Section: Dates — this is the key part for the maintenance director */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Dates de vérification</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text3)' }}>Dates de vérification</p>
               <div className="grid gap-4 md:grid-cols-3">
                 <Field label="Dernière vérification">
                   <input type="date" value={form.date_derniere_verification}
                     onChange={e => set('date_derniere_verification', e.target.value)}
-                    className={inputCls} />
+                    className={inputCls} style={inputStyle} />
                 </Field>
                 <Field label="Prochaine vérification">
                   <input type="date" value={form.date_prochaine_verification}
                     onChange={e => set('date_prochaine_verification', e.target.value)}
-                    className={inputCls} />
+                    className={inputCls} style={inputStyle} />
                 </Field>
                 <Field label="Date d'alerte">
                   <input type="date" value={form.date_alerte}
                     onChange={e => set('date_alerte', e.target.value)}
-                    className={inputCls} />
+                    className={inputCls} style={inputStyle} />
                 </Field>
               </div>
               <p className="mt-2 text-xs text-slate-400">
@@ -259,23 +261,24 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
 
             {/* Section: Remarques */}
             <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Remarques</p>
+              <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: 'var(--text3)' }}>Remarques</p>
               <textarea value={form.remarques} onChange={e => set('remarques', e.target.value)}
                 rows={3} placeholder="Notes, observations…"
-                className={`${inputCls} resize-none`} />
+                className={`${inputCls} resize-none`} style={inputStyle} />
             </div>
           </div>
 
           {/* Footer */}
           <div className="flex gap-3 px-6 pb-6">
             <button type="submit" disabled={saving}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition-colors"
-              style={{ background: saving ? '#94a3b8' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-[10px] text-sm font-bold text-white disabled:opacity-50 transition-transform hover:-translate-y-0.5"
+              style={{ background: saving ? 'var(--text3)' : 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
               <Save className="w-4 h-4" />
               {saving ? 'Sauvegarde…' : isEdit ? 'Enregistrer les modifications' : 'Créer l\'ECME'}
             </button>
             <button type="button" onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors">
+              className="px-5 py-2.5 rounded-[10px] text-sm font-semibold transition-colors hover:bg-[var(--panel3)]"
+              style={{ border: '1px solid var(--border)', color: 'var(--text2)' }}>
               Annuler
             </button>
           </div>

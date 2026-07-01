@@ -153,7 +153,7 @@ const ApplicateurMaintenanceModal = ({ group, activeRecords, onConfirm, onClose,
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
           style={{ background: '#0f1d35', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center gap-3">
@@ -354,7 +354,7 @@ const ApplicateursPreventifTable = () => {
 
   return (
     <>
-      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
@@ -408,7 +408,7 @@ const ApplicateursPreventifTable = () => {
           ) : (
             <table className="min-w-full border-collapse text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
+                <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                   {['N° Outil', 'Réf. TEC', 'Désignation', 'Section mm²', 'Seuil (N)', 'Dénudage', 'Statut', 'Prochaine', 'Actions'].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
                   ))}

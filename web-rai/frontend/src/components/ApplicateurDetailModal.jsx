@@ -42,8 +42,8 @@ const ApplicateurDetailModal = ({ applicateur, isOpen, onClose }) => {
   if (!isOpen || !applicateur) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto flex flex-col">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+      <div className="rounded-[18px] shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto flex flex-col" style={{ background: 'var(--panel)' }}>
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 flex justify-between items-center">
           <div>

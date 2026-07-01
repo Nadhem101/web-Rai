@@ -6,11 +6,11 @@ import { Pencil } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const ALERTE_CONFIG = {
-  VALABLE:      { label: 'Valable',      cls: 'bg-green-100 text-green-700 border-green-200', dot: '🟢' },
-  VERIFICATION: { label: 'Vérification requise', cls: 'bg-red-100 text-red-700 border-red-200', dot: '🔴' },
-  EXEMPTE:      { label: 'Exempté de vérification', cls: 'bg-gray-100 text-gray-600 border-gray-200', dot: '⚪' },
-  DECLASSE:     { label: 'Déclassé définitivement', cls: 'bg-zinc-100 text-zinc-600 border-zinc-300', dot: '⚫' },
-  INCONNU:      { label: 'Statut inconnu',    cls: 'bg-yellow-100 text-yellow-700 border-yellow-200', dot: '🟡' },
+  VALABLE:      { label: 'Valable',                  bg: 'var(--ok-soft)',   color: 'var(--ok)',   dot: '🟢' },
+  VERIFICATION: { label: 'Vérification requise',     bg: 'var(--crit-soft)', color: 'var(--crit)', dot: '🔴' },
+  EXEMPTE:      { label: 'Exempté de vérification',  bg: 'var(--info-soft)', color: 'var(--info)', dot: '⚪' },
+  DECLASSE:     { label: 'Déclassé définitivement',  bg: 'var(--panel2)',    color: 'var(--text3)', dot: '⚫' },
+  INCONNU:      { label: 'Statut inconnu',            bg: 'var(--warn-soft)', color: 'var(--warn)', dot: '🟡' },
 };
 
 function fmtDate(raw) {
@@ -22,9 +22,10 @@ function fmtDate(raw) {
 
 function InfoRow({ label, value, className = '' }) {
   return (
-    <div className={`flex flex-col sm:flex-row sm:items-start gap-1 py-2 border-b last:border-0 ${className}`}>
-      <dt className="text-xs font-semibold text-gray-500 sm:w-52 flex-shrink-0">{label}</dt>
-      <dd className="text-sm text-gray-800 flex-1">{value || '—'}</dd>
+    <div className={`flex flex-col sm:flex-row sm:items-start gap-1 py-2 last:border-0 ${className}`}
+      style={{ borderBottom: '1px solid var(--border2)' }}>
+      <dt className="text-xs font-semibold sm:w-52 flex-shrink-0" style={{ color: 'var(--text3)' }}>{label}</dt>
+      <dd className="text-sm flex-1" style={{ color: 'var(--text)' }}>{value || '—'}</dd>
     </div>
   );
 }
@@ -51,18 +52,18 @@ export default function FicheDeVie() {
   if (loading) {
     return (
       <div className="p-6 flex-1 overflow-auto flex items-center justify-center">
-        <p className="text-gray-400 animate-pulse">Chargement de la fiche...</p>
+        <p className="text-sm animate-pulse" style={{ color: 'var(--text3)' }}>Chargement de la fiche...</p>
       </div>
     );
   }
 
   if (error || !data) {
     return (
-      <div className="p-6 flex-1 overflow-auto">
-        <button onClick={() => navigate(-1)} className="mb-4 text-blue-600 hover:underline text-sm">
+      <div className="px-[26px] pt-6 flex-1 overflow-auto" style={{ background: 'var(--bg)' }}>
+        <button onClick={() => navigate(-1)} className="mb-4 text-sm hover:underline" style={{ color: 'var(--accent)' }}>
           ← Retour
         </button>
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded">
+        <div className="p-4 rounded-[10px]" style={{ background: 'var(--crit-soft)', border: '1px solid var(--crit)', color: 'var(--crit)' }}>
           {error || 'ECME non trouvé'}
         </div>
       </div>
@@ -79,136 +80,116 @@ export default function FicheDeVie() {
   const interventions = data.interventions || [];
 
   return (
-    <div className="p-6 flex-1 overflow-auto">
+    <div className="px-[26px] pt-6 pb-10 flex-1 overflow-auto space-y-4" style={{ background: 'var(--bg)' }}>
       {/* ── Back button + Edit ── */}
-      <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => navigate('/ecme')}
-          className="flex items-center gap-1 text-blue-600 hover:underline text-sm"
-        >
+      <div className="flex items-center justify-between">
+        <button onClick={() => navigate('/ecme')} className="flex items-center gap-1 text-sm hover:underline" style={{ color: 'var(--accent)' }}>
           ← Retour à la liste
         </button>
-        <button
-          onClick={() => setEditOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white"
-          style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}
-        >
-          <Pencil className="w-3.5 h-3.5" />
-          Modifier / Mettre à jour les dates
+        <button onClick={() => setEditOpen(true)}
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+          <Pencil className="w-3.5 h-3.5" /> Modifier / Mettre à jour les dates
         </button>
       </div>
 
       {/* ── Header ── */}
-      <div className="bg-white rounded-lg shadow p-5 mb-5">
+      <div className="rounded-[14px] p-5" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <span className="text-xs font-mono bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-[6px]"
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid var(--accent)' }}>
                 {data.code}
               </span>
-              <span className={`inline-flex items-center gap-1 px-3 py-0.5 rounded-full border text-xs font-semibold ${alerteCfg.cls}`}>
+              <span className="inline-flex items-center gap-1 px-3 py-0.5 rounded-[20px] text-xs font-bold"
+                style={{ background: alerteCfg.bg, color: alerteCfg.color }}>
                 {alerteCfg.dot} {alerteCfg.label}
               </span>
               {isOverdue && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[20px] text-xs font-bold text-white animate-pulse"
+                  style={{ background: 'var(--crit)' }}>
                   ⚠ EN RETARD
                 </span>
               )}
             </div>
-            <h1 className="text-xl font-bold text-gray-800">{data.designation}</h1>
+            <h1 className="font-display font-semibold text-[22px]" style={{ color: 'var(--text)', letterSpacing: '-0.3px' }}>{data.designation}</h1>
             {data.affectation && (
-              <p className="text-sm text-indigo-600 mt-0.5">
-                📍 {data.affectation}
-              </p>
+              <p className="text-sm mt-0.5" style={{ color: 'var(--accent)' }}>📍 {data.affectation}</p>
             )}
           </div>
-          <div className="text-right text-xs text-gray-400">
+          <div className="text-right text-xs" style={{ color: 'var(--text3)' }}>
             <div>Fiche de vie — FQ008/00</div>
-            <div>R.A.I.</div>
+            <div className="font-mono">R.A.I.</div>
           </div>
         </div>
       </div>
 
       {/* ── Info cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
-
-        {/* Identity */}
-        <div className="bg-white rounded-lg shadow p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">Identification</h2>
-          <dl>
-            <InfoRow label="Code" value={data.code} />
-            <InfoRow label="Désignation" value={data.designation} />
-            <InfoRow label="Marque / Modèle" value={data.marque || '—'} />
-            <InfoRow label="N° de série" value={data.n_serie || '—'} />
-            <InfoRow label="Affectation" value={data.affectation || '—'} />
-          </dl>
-        </div>
-
-        {/* Verification */}
-        <div className="bg-white rounded-lg shadow p-5">
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b">Vérification</h2>
-          <dl>
-            <InfoRow
-              label="Nécessite vérification"
-              value={data.necessite_verification ? 'Oui' : 'Non'}
-            />
-            <InfoRow label="Type de vérification" value={data.verif_type || '—'} />
-            <InfoRow label="Dernière vérification" value={fmtDate(data.date_derniere_verification)} />
-            <InfoRow
-              label="Prochaine vérification"
-              value={
-                <span className={isOverdue ? 'text-red-600 font-semibold' : ''}>
-                  {fmtDate(data.date_prochaine_verification)}
-                  {isOverdue && ' ⚠ Dépassée'}
-                </span>
-              }
-            />
-            <InfoRow label="Date alerte" value={fmtDate(data.date_alerte)} />
-          </dl>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          { title: 'Identification', rows: [
+            { label: 'Code', value: data.code },
+            { label: 'Désignation', value: data.designation },
+            { label: 'Marque / Modèle', value: data.marque || '—' },
+            { label: 'N° de série', value: data.n_serie || '—' },
+            { label: 'Affectation', value: data.affectation || '—' },
+          ]},
+          { title: 'Vérification', rows: [
+            { label: 'Nécessite vérification', value: data.necessite_verification ? 'Oui' : 'Non' },
+            { label: 'Type de vérification', value: data.verif_type || '—' },
+            { label: 'Dernière vérification', value: fmtDate(data.date_derniere_verification) },
+            { label: 'Prochaine vérification', value:
+              <span style={{ color: isOverdue ? 'var(--crit)' : undefined, fontWeight: isOverdue ? 600 : undefined }}>
+                {fmtDate(data.date_prochaine_verification)}{isOverdue && ' ⚠ Dépassée'}
+              </span>
+            },
+            { label: 'Date alerte', value: fmtDate(data.date_alerte) },
+          ]},
+        ].map(({ title, rows }) => (
+          <div key={title} className="rounded-[14px] p-5" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+            <h2 className="text-sm font-bold mb-3 pb-2" style={{ color: 'var(--text)', borderBottom: '1px solid var(--border2)' }}>{title}</h2>
+            <dl>{rows.map(r => <InfoRow key={r.label} label={r.label} value={r.value} />)}</dl>
+          </div>
+        ))}
       </div>
 
       {/* ── Remarks ── */}
       {data.remarques && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-5">
-          <h2 className="text-xs font-semibold text-amber-700 mb-1">📝 Remarques</h2>
-          <p className="text-sm text-amber-900">{data.remarques}</p>
+        <div className="rounded-[12px] p-4" style={{ background: 'var(--warn-soft)', border: '1px solid var(--warn)' }}>
+          <h2 className="text-xs font-semibold mb-1" style={{ color: 'var(--warn)' }}>📝 Remarques</h2>
+          <p className="text-sm" style={{ color: 'var(--text)' }}>{data.remarques}</p>
         </div>
       )}
 
       {/* ── Intervention history ── */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-5 py-4 border-b flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-gray-700">
-            📋 Historique des interventions
-          </h2>
-          <span className="text-xs text-gray-400">
-            {interventions.length} entrée(s)
-          </span>
+      <div className="rounded-[14px] overflow-hidden" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border2)' }}>
+          <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>📋 Historique des interventions</h2>
+          <span className="text-xs" style={{ color: 'var(--text3)' }}>{interventions.length} entrée(s)</span>
         </div>
 
         {interventions.length === 0 ? (
-          <div className="px-5 py-8 text-center text-gray-400 text-sm">
+          <div className="px-5 py-8 text-center text-sm" style={{ color: 'var(--text3)' }}>
             Aucune intervention enregistrée
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600 w-32">Date</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Nature</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600">Résultat</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-600 w-28">Visa</th>
+              <thead>
+                <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
+                  {['Date','Nature','Résultat','Visa'].map(h => (
+                    <th key={h} className="px-4 py-3 text-left text-[9.5px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--text3)' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {interventions.map((int, idx) => (
-                  <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td className="px-4 py-2.5 text-xs text-gray-500 font-mono">{int.date || '—'}</td>
-                    <td className="px-4 py-2.5">{int.nature || '—'}</td>
-                    <td className="px-4 py-2.5 text-gray-600">{int.resultat || '—'}</td>
-                    <td className="px-4 py-2.5 text-gray-500 text-xs">{int.visa || '—'}</td>
+                  <tr key={idx} style={{ borderBottom: '1px solid var(--border2)', background: idx%2===0 ? 'var(--panel)' : 'var(--panel2)' }}>
+                    <td className="px-4 py-2.5 text-xs font-mono" style={{ color: 'var(--text3)' }}>{int.date || '—'}</td>
+                    <td className="px-4 py-2.5" style={{ color: 'var(--text)' }}>{int.nature || '—'}</td>
+                    <td className="px-4 py-2.5" style={{ color: 'var(--text2)' }}>{int.resultat || '—'}</td>
+                    <td className="px-4 py-2.5 text-xs" style={{ color: 'var(--text3)' }}>{int.visa || '—'}</td>
                   </tr>
                 ))}
               </tbody>
