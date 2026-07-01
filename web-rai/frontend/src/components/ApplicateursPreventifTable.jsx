@@ -175,7 +175,7 @@ const ApplicateurMaintenanceModal = ({ group, activeRecords, onConfirm, onClose,
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-5">
           {error && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="flex items-start gap-2.5 rounded-[10px] px-4 py-3 text-sm" style={{ border: '1px solid var(--crit)', background: 'var(--crit-soft)', color: 'var(--crit)' }}>
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -183,16 +183,16 @@ const ApplicateurMaintenanceModal = ({ group, activeRecords, onConfirm, onClose,
 
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date de contrôle</span>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Date de contrôle</span>
               <input type="date" value={dateControle} onChange={(e) => handleDateControleChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>
                 Prochaine échéance <span className="text-emerald-600 normal-case font-medium">(auto +6 mois)</span>
               </span>
               <input type="date" value={dateProchaine} onChange={(e) => setDateProchaine(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
             </label>
           </div>
 
@@ -354,35 +354,35 @@ const ApplicateursPreventifTable = () => {
 
   return (
     <>
-      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px]" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: '1px solid var(--border2)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-4 h-4 text-amber-500" />
+            <div className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--warn-soft)', color: 'var(--warn)' }}>
+              <Zap className="w-4 h-4" strokeWidth={1.8} />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800">Suivi préventif des applicateurs</p>
-              <p className="text-xs text-slate-400">Seuils de sertissage groupés par outil</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Suivi préventif des applicateurs</p>
+              <p className="text-xs" style={{ color: 'var(--text3)' }}>Seuils de sertissage groupés par outil</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{summary.tools} outil(s)</span>
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{summary.groups} groupe(s)</span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{summary.tools} outil(s)</span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{summary.groups} groupe(s)</span>
             {overdueCount > 0 && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">{overdueCount} en retard</span>
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--crit-soft)', color: 'var(--crit)', border: '1px solid var(--crit)' }}>{overdueCount} en retard</span>
             )}
           </div>
         </div>
 
-        <div className="border-b border-slate-100 bg-white px-5 py-3">
+        <div className="px-5 py-3" style={{ borderBottom: '1px solid var(--border2)', background: 'var(--panel2)' }}>
           <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text3)' }} />
             <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              className="w-full pl-9 pr-8 py-2 rounded-[10px] text-sm outline-none"
+              style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text)' }}
               placeholder="N° outil, TEC, désignation, section, seuil…" />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+              <button onClick={() => setSearchQuery('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 hover:opacity-70" style={{ color: 'var(--text3)' }}>
                 <XCircle className="w-4 h-4" />
               </button>
             )}
@@ -410,7 +410,7 @@ const ApplicateursPreventifTable = () => {
               <thead>
                 <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                   {['N° Outil', 'Réf. TEC', 'Désignation', 'Section mm²', 'Seuil (N)', 'Dénudage', 'Statut', 'Prochaine', 'Actions'].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
+                    <th key={h} className="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap" style={{ color: 'var(--text3)' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -425,18 +425,22 @@ const ApplicateursPreventifTable = () => {
                   return group.rows.map((record, rowIndex) => {
                     const rowKey = record.id ?? `${group.key}-${rowIndex}`;
                     const isLastRow = rowIndex === group.rows.length - 1;
-                    const rowBg = rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/40';
+                    const rowBgStyle = {
+                      background: rowIndex % 2 === 0 ? 'var(--panel)' : 'var(--panel2)',
+                      borderBottom: isLastRow && groupIdx < groupedRecords.length - 1 ? '2px solid var(--border)' : '1px solid var(--border2)',
+                    };
 
                     return (
                       <tr key={rowKey}
-                        className={`${rowBg} ${isLastRow && groupIdx < groupedRecords.length - 1 ? 'border-b-2 border-slate-200' : 'border-b border-slate-100'} hover:bg-amber-50/20 transition-colors`}>
+                        className="transition-colors hover:bg-[var(--panel3)]"
+                        style={rowBgStyle}>
 
                         {/* N° Outil — merged, shows status + action */}
                         {rowIndex === 0 && (
                           <td rowSpan={group.rows.length} className="px-4 py-3 align-top font-mono font-bold text-amber-600 whitespace-nowrap border-l-2 border-amber-200">
                             <div className="flex flex-col gap-1.5">
                               <span>{formatValue(group.numeroOutil)}</span>
-                              {group.rows.length > 1 && <span className="text-[11px] text-slate-400">{group.rows.length} seuils</span>}
+                              {group.rows.length > 1 && <span className="text-[11px]" style={{ color: 'var(--text3)' }}>{group.rows.length} seuils</span>}
                               <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
                                 {schedule.label}
                               </span>
@@ -457,27 +461,27 @@ const ApplicateursPreventifTable = () => {
 
                         {/* Réf. TEC — merged */}
                         {rowIndex === 0 && (
-                          <td rowSpan={group.rows.length} className="px-4 py-3 align-top font-mono text-xs text-slate-600">
+                          <td rowSpan={group.rows.length} className="px-4 py-3 align-top font-mono text-xs" style={{ color: 'var(--text2)' }}>
                             {formatValue(group.referenceTec)}
                           </td>
                         )}
 
                         {/* Désignation — merged */}
                         {rowIndex === 0 && (
-                          <td rowSpan={group.rows.length} className="px-4 py-3 align-top text-sm text-slate-700 max-w-[180px]">
+                          <td rowSpan={group.rows.length} className="px-4 py-3 align-top text-sm max-w-[180px]" style={{ color: 'var(--text)' }}>
                             <span className="break-words">{formatValue(group.designation)}</span>
                           </td>
                         )}
 
-                        <td className="px-4 py-3 align-top text-xs font-mono text-slate-600 text-center">{formatValue(record.section_mm2)}</td>
+                        <td className="px-4 py-3 align-top text-xs font-mono text-center" style={{ color: 'var(--text2)' }}>{formatValue(record.section_mm2)}</td>
                         <td className="px-4 py-3 align-top">
                           {record.seuil_n ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200 font-mono">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold font-mono" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
                               {record.seuil_n} N
                             </span>
-                          ) : <span className="text-slate-400 text-xs">—</span>}
+                          ) : <span className="text-xs" style={{ color: 'var(--text3)' }}>—</span>}
                         </td>
-                        <td className="px-4 py-3 align-top text-xs font-mono text-slate-600">{formatValue(record.longueur_denudage)}</td>
+                        <td className="px-4 py-3 align-top text-xs font-mono" style={{ color: 'var(--text2)' }}>{formatValue(record.longueur_denudage)}</td>
 
                         {/* Statut — merged */}
                         {rowIndex === 0 && (
@@ -488,7 +492,7 @@ const ApplicateursPreventifTable = () => {
                                 activeRecs[0].statut_verification === 'Non-conforme' ? 'bg-red-50 text-red-700' :
                                 'bg-amber-50 text-amber-700'
                               }`}>{activeRecs[0].statut_verification}</span>
-                            ) : <span className="text-slate-400">—</span>}
+                            ) : <span style={{ color: 'var(--text3)' }}>—</span>}
                           </td>
                         )}
 
@@ -499,7 +503,7 @@ const ApplicateursPreventifTable = () => {
                               <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
                                 schedule.key === 'overdue' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
                               }`}>{formatDate(datePro)}</span>
-                            ) : <span className="text-slate-400">—</span>}
+                            ) : <span style={{ color: 'var(--text3)' }}>—</span>}
                           </td>
                         )}
 

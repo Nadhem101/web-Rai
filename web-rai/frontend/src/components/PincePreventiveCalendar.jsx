@@ -317,7 +317,7 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
 
         <form onSubmit={handleSubmit} className="flex-1 overflow-auto p-6 space-y-5">
           {error && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="flex items-start gap-2.5 rounded-[10px] px-4 py-3 text-sm" style={{ border: '1px solid var(--crit)', background: 'var(--crit-soft)', color: 'var(--crit)' }}>
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -326,16 +326,16 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
           {/* Dates */}
           <div className="grid gap-4 md:grid-cols-2">
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date de contrôle</span>
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Date de contrôle</span>
               <input type="date" value={dateControle} onChange={(e) => handleDateControleChange(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+              <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>
                 Prochaine échéance <span className="text-emerald-600 normal-case font-medium">(auto +6 mois)</span>
               </span>
               <input type="date" value={dateProchaine} onChange={(e) => setDateProchaine(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
             </label>
           </div>
 
@@ -386,7 +386,7 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
 
           {/* Global remark */}
           <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Remarque générale</span>
+            <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Remarque générale</span>
             <textarea value={globalRemarque} onChange={(e) => setGlobalRemarque(e.target.value)} rows={3}
               className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
               placeholder="Observations générales sur cette maintenance…" />
@@ -558,8 +558,8 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
     return (
       <div className="flex-1 flex items-center justify-center py-16">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-sm text-slate-400">Chargement du suivi préventif des pinces…</p>
+          <div className="w-8 h-8 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
+          <p className="text-sm" style={{ color: 'var(--text3)' }}>Chargement du suivi préventif des pinces…</p>
         </div>
       </div>
     );
@@ -567,19 +567,19 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   if (groupedRecords.length === 0) {
     return (
-      <div className="mt-4 flex min-h-0 flex-col overflow-hidden rounded-[14px]">
-        <div className="border-b border-slate-100 px-5 py-4 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
-            <Wrench className="w-4 h-4 text-sky-500" />
+      <div className="mt-4 flex min-h-0 flex-col overflow-hidden rounded-[14px]" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+        <div className="px-5 py-4 flex items-center gap-3" style={{ borderBottom: '1px solid var(--border2)' }}>
+          <div className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+            <Wrench className="w-4 h-4" strokeWidth={1.8} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-800">Suivi préventif des pinces</p>
-            <p className="text-xs text-slate-400">Aucun enregistrement ne correspond à la recherche.</p>
+            <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Suivi préventif des pinces</p>
+            <p className="text-xs" style={{ color: 'var(--text3)' }}>Aucun enregistrement ne correspond à la recherche.</p>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-center py-14">
-          <Wrench className="w-8 h-8 text-slate-300 mb-2" />
-          <p className="text-sm text-slate-400">Aucune pince trouvée</p>
+        <div className="flex flex-col items-center justify-center py-14" style={{ color: 'var(--text3)' }}>
+          <Wrench className="w-8 h-8 mb-2 opacity-30" />
+          <p className="text-sm">Aucune pince trouvée</p>
         </div>
       </div>
     );
@@ -587,22 +587,22 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   return (
     <>
-      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px]">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4">
+      <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden rounded-[14px]" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4" style={{ borderBottom: '1px solid var(--border2)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-sky-50 flex items-center justify-center flex-shrink-0">
-              <Wrench className="w-4 h-4 text-sky-500" />
+            <div className="w-8 h-8 rounded-[10px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+              <Wrench className="w-4 h-4" strokeWidth={1.8} />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800">Suivi préventif des pinces</p>
-              <p className="text-xs text-slate-400">Groupé par N° pince — valeurs de traction mesurées</p>
+              <p className="text-sm font-bold" style={{ color: 'var(--text)' }}>Suivi préventif des pinces</p>
+              <p className="text-xs" style={{ color: 'var(--text3)' }}>Groupé par N° pince — valeurs de traction mesurées</p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{groupedRecords.length} pince(s)</span>
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-600">{filteredRecords.length} ligne(s)</span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{groupedRecords.length} pince(s)</span>
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{filteredRecords.length} ligne(s)</span>
             {overdueCount > 0 && (
-              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200">{overdueCount} en retard</span>
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--crit-soft)', color: 'var(--crit)', border: '1px solid var(--crit)' }}>{overdueCount} en retard</span>
             )}
           </div>
         </div>
@@ -612,25 +612,25 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
             <thead>
               <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                 {['N° Pince', 'Date contrôle', 'Référence', 'Position', 'Cosse', 'Fil', 'Traction min.', 'Valeurs', 'Statut', 'Prochaine', 'Remarque', 'Actions'].map((h) => (
-                  <th key={h} className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">{h}</th>
+                  <th key={h} className="px-3 py-3 text-left text-xs font-bold uppercase tracking-wider whitespace-nowrap" style={{ color: 'var(--text3)' }}>{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 bg-white">
+            <tbody className="">
               {groupedRecords.map((group) =>
                 group.rows.map((record, rowIndex) => {
                   const rowKey = record.id ?? `${group.key}-${rowIndex}`;
                   const schedule = getGroupScheduleInfo(group);
                   return (
-                    <tr key={rowKey} className={`${rowIndex % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'} hover:bg-sky-50/30 transition-colors`}>
+                    <tr key={rowKey} className="transition-colors hover:bg-[var(--panel3)]" style={{ background: rowIndex % 2 === 0 ? 'var(--panel)' : 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                       {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-2 border-sky-200', (value) => (
                         <div className="flex flex-col gap-1.5 min-w-[130px]">
-                          <span className="font-mono font-bold text-sky-700 text-sm">{formatValue(value)}</span>
+                          <span className="font-mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{formatValue(value)}</span>
                           <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
                             {schedule.label}
                           </span>
                           {group.rows.length > 1 && (
-                            <span className="text-[11px] text-slate-400">{group.rows.length} mesures</span>
+                            <span className="text-[11px]" style={{ color: 'var(--text3)' }}>{group.rows.length} mesures</span>
                           )}
                           {/* Primary action: full maintenance cycle */}
                           <button type="button" onClick={() => openMaintenanceModal(group)} disabled={!schedule.canAdd}
@@ -755,7 +755,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
               <div className="mb-5 grid gap-3 md:grid-cols-3">
                 {['numero_pince', 'reference_more', 'cosse'].map((field) => (
                   <label key={field} className="block rounded-xl bg-slate-50 px-4 py-3">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>
                       {field === 'numero_pince' ? 'N° Pince' : field === 'reference_more' ? 'Référence' : 'Cosse'}
                     </span>
                     <input type="text" name={field} value={rowForm.data[field]} onChange={handleRowFormChange}
@@ -766,32 +766,32 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date contrôle</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Date contrôle</span>
                   <input type="date" name="date_controle" value={rowForm.data.date_controle} onChange={handleRowFormChange}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                    className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Date prochaine</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Date prochaine</span>
                   <input type="date" name="date_prochaine" value={rowForm.data.date_prochaine} onChange={handleRowFormChange}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
+                    className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Position</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Position</span>
                   <input type="text" name="position" value={rowForm.data.position} onChange={handleRowFormChange}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="ex: 0.75" />
+                    className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} placeholder="ex: 0.75" />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Fil</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Fil</span>
                   <input type="text" name="fil" value={rowForm.data.fil} onChange={handleRowFormChange}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="ex: 1" />
+                    className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} placeholder="ex: 1" />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Traction minimale</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Traction minimale</span>
                   <input type="text" name="traction_minimale_n" value={rowForm.data.traction_minimale_n} onChange={handleRowFormChange}
-                    className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="ex: 90" />
+                    className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} placeholder="ex: 90" />
                 </label>
                 <label className="block">
-                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Statut</span>
+                  <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Statut</span>
                   <select name="statut_verification" value={rowForm.data.statut_verification} onChange={handleRowFormChange}
                     className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none bg-white">
                     {STATUT_OPTIONS.map((s) => <option key={s} value={s}>{s || '— choisir —'}</option>)}
@@ -802,15 +802,15 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
               <div className="mt-5 grid gap-4 md:grid-cols-5">
                 {[1, 2, 3, 4, 5].map((index) => (
                   <label key={`test_value_${index}`} className="block">
-                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Valeur {index}</span>
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Valeur {index}</span>
                     <input type="text" name={`test_value_${index}`} value={rowForm.data[`test_value_${index}`]} onChange={handleRowFormChange}
-                      className="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" placeholder="0" />
+                      className="w-full rounded-[10px] px-4 py-2 text-sm outline-none" style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} placeholder="0" />
                   </label>
                 ))}
               </div>
 
               <label className="mt-5 block">
-                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Remarque</span>
+                <span className="mb-1 block text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: 'var(--text3)' }}>Remarque</span>
                 <textarea name="remarque" value={rowForm.data.remarque} onChange={handleRowFormChange} rows={3}
                   className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100" />
               </label>
