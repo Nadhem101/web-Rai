@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { equipementService, maintenanceEventService, ecmeService } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { getCurrentWeek, getTasksForWeek, getOverdueTasks } from '../../utils/maintenanceSchedule';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-} from 'recharts';
 import {
   Package, CheckCircle2, XCircle, Wrench,
   FlaskConical, BoxIcon, ArrowRight, BarChart2,
   CalendarClock, Clock,
 } from 'lucide-react';
+import KpiCard from '../../components/ui/KpiCard.jsx';
+import StatusBadge from '../../components/ui/StatusBadge.jsx';
+import DataLabel from '../../components/ui/DataLabel.jsx';
+import HudCorner from '../../components/ui/HudCorner.jsx';
+import CountUp from '../../components/motion/CountUp.jsx';
+import GrowRing from '../../components/motion/GrowRing.jsx';
+import GrowBar from '../../components/motion/GrowBar.jsx';
+import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 // ── Helpers ────────────────────────────────────────────────
 const PDR_LOW_STOCK_THRESHOLD = 1;
@@ -54,73 +60,68 @@ const buildPdrStockAlerts = (equipements = []) =>
       return String(a.codeRai || '').localeCompare(String(b.codeRai || ''), 'fr', { numeric: true, sensitivity: 'base' });
     });
 
-// ── KPI Card ───────────────────────────────────────────────
-const KpiCard = ({ label, value, icon: Icon, iconBg, iconColor, badge, loading }) => (
-  <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-    <div className="flex items-start justify-between mb-4">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-        <Icon className={`w-5 h-5 ${iconColor}`} />
-      </div>
-      {badge && <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${badge.cls}`}>{badge.text}</span>}
-    </div>
-    <div className={`text-3xl font-bold mb-1 ${loading ? 'text-slate-200 animate-pulse' : 'text-slate-800'}`}>
-      {loading ? '—' : value}
-    </div>
-    <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{label}</p>
-  </div>
-);
-
 // ── Alert section wrapper ──────────────────────────────────
 const AlertSection = ({ title, icon: Icon, alertCount, loading, children }) => {
   const hasAlert = !loading && alertCount > 0;
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/60">
-        <div className="flex items-center gap-2">
-          <Icon className={`w-4 h-4 ${hasAlert ? 'text-amber-500' : 'text-slate-400'}`} />
-          <span className="text-sm font-semibold text-slate-700">{title}</span>
+    <motion.div
+      variants={staggerItemVariants}
+      className="rounded-[14px] overflow-hidden"
+      style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}
+    >
+      <div
+        className="flex items-center justify-between px-4 py-[13px]"
+        style={{ borderBottom: '1px solid var(--border2)', background: 'var(--panel2)' }}
+      >
+        <div className="flex items-center gap-2.5">
+          <Icon className="w-4 h-4" style={{ color: hasAlert ? 'var(--warn)' : 'var(--text3)' }} strokeWidth={1.8} />
+          <span className="font-semibold text-[13.5px]" style={{ color: 'var(--text)' }}>{title}</span>
         </div>
         {loading ? (
-          <div className="w-3.5 h-3.5 border-2 border-slate-200 border-t-sky-400 rounded-full animate-spin" />
+          <div className="w-3.5 h-3.5 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
         ) : hasAlert ? (
-          <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200">
-            {alertCount}
-          </span>
+          <StatusBadge variant="crit">{alertCount}</StatusBadge>
         ) : (
-          <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+          <span className="text-xs font-semibold flex items-center gap-1" style={{ color: 'var(--ok)' }}>
             <CheckCircle2 className="w-3.5 h-3.5" /> À jour
           </span>
         )}
       </div>
       {loading ? (
-        <div className="px-4 py-3 text-xs text-slate-400 animate-pulse">Chargement…</div>
+        <div className="px-4 py-3 text-xs animate-pulse" style={{ color: 'var(--text3)' }}>Chargement…</div>
       ) : (
-        <div className="divide-y divide-slate-50">{children}</div>
+        <div>{children}</div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
 // ── Alert item row ─────────────────────────────────────────
+const SEVERITY_TOKENS = {
+  critical: { bg: 'var(--crit-soft)', text: 'var(--text)', dot: 'var(--crit)', pulse: true },
+  warning:  { bg: 'var(--warn-soft)', text: 'var(--text)', dot: 'var(--warn)', pulse: false },
+  info:     { bg: 'var(--info-soft)', text: 'var(--text)', dot: 'var(--info)', pulse: false },
+  ok:       { bg: 'transparent',      text: 'var(--text2)', dot: 'var(--ok)',  pulse: false },
+  neutral:  { bg: 'transparent',      text: 'var(--text2)', dot: 'var(--text3)', pulse: false },
+};
+
 const AlertItem = ({ severity = 'neutral', children, action, onAction }) => {
-  const cfg = {
-    critical: { bg: 'bg-red-50',     text: 'text-red-700',     dot: 'bg-red-500'    },
-    warning:  { bg: 'bg-amber-50',   text: 'text-amber-700',   dot: 'bg-amber-400'  },
-    info:     { bg: 'bg-orange-50',  text: 'text-orange-700',  dot: 'bg-orange-400' },
-    ok:       { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-    neutral:  { bg: 'bg-slate-50',   text: 'text-slate-600',   dot: 'bg-slate-400'  },
-  }[severity];
+  const cfg = SEVERITY_TOKENS[severity];
   return (
     <div
-      className={`flex items-start justify-between gap-3 px-4 py-2.5 text-sm ${cfg.bg} ${cfg.text} ${onAction ? 'cursor-pointer hover:brightness-95 transition-all' : ''}`}
+      className={`flex items-start justify-between gap-3 px-4 py-[11px] text-[13px] ${onAction ? 'cursor-pointer hover:brightness-95 transition-all' : ''}`}
+      style={{ background: cfg.bg, color: cfg.text }}
       onClick={onAction}
     >
-      <div className="flex items-center gap-2.5">
-        <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-px ${cfg.dot}`} />
+      <div className="flex items-center gap-[11px]">
+        <span
+          className="w-[7px] h-[7px] rounded-full flex-shrink-0"
+          style={{ background: cfg.dot, color: cfg.dot, animation: cfg.pulse ? 'led-pulse 1.8s infinite' : undefined }}
+        />
         <span className="leading-snug">{children}</span>
       </div>
       {action && onAction && (
-        <span className="text-xs underline whitespace-nowrap flex items-center gap-0.5 flex-shrink-0 mt-0.5">
+        <span className="text-xs underline whitespace-nowrap flex items-center gap-0.5 flex-shrink-0 mt-0.5" style={{ color: 'var(--text3)' }}>
           {action} <ArrowRight className="w-2.5 h-2.5" />
         </span>
       )}
@@ -221,55 +222,71 @@ const Dashboard = () => {
   if (loading && loadingMaint && loadingEcme) return (
     <div className="flex-1 flex items-center justify-center p-8">
       <div className="text-center">
-        <div className="w-10 h-10 border-4 border-sky-200 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-slate-400 text-sm font-medium">Chargement du tableau de bord…</p>
+        <div className="w-10 h-10 border-4 rounded-full animate-spin mx-auto mb-3" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
+        <p className="text-sm font-medium" style={{ color: 'var(--text3)' }}>Chargement du tableau de bord…</p>
       </div>
     </div>
   );
 
   return (
-    <div className="flex-1 overflow-auto p-6 space-y-5">
+    <div className="flex-1 overflow-auto px-[26px] pt-6 pb-10 space-y-[18px]">
 
       {/* ── Page title ─────────────────────────────────── */}
-      <div>
-        <h1 className="text-xl font-bold text-slate-800">Tableau de bord</h1>
-        <p className="text-sm text-slate-400 mt-0.5">Vue d'ensemble de la gestion des équipements</p>
-      </div>
+      <motion.div variants={staggerItemVariants} className="flex flex-wrap items-end justify-between gap-3.5 mb-1">
+        <div>
+          <h1 className="font-display font-semibold text-[25px]" style={{ color: 'var(--text)', letterSpacing: '-0.4px' }}>Vue d'ensemble</h1>
+          <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>
+            Supervision en temps réel du parc d'équipements · {loading ? '…' : stats.total} actifs surveillés
+          </p>
+        </div>
+        {!loading && (
+          <div
+            className="flex items-center gap-2 px-3.5 py-2 rounded-[10px]"
+            style={{ border: '1px solid var(--border)', background: 'var(--panel)' }}
+          >
+            <DataLabel>Disponibilité</DataLabel>
+            <span className="font-display font-bold text-[15px]" style={{ color: 'var(--ok)' }}>
+              <CountUp value={servicePct} suffix="%" />
+            </span>
+          </div>
+        )}
+      </motion.div>
 
       {/* ── Row 1: Equipment KPIs ──────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard label="Total équipements" value={stats.total}
-          icon={Package} iconBg="bg-slate-100" iconColor="text-slate-600"
-          loading={loading} />
-        <KpiCard label="En service" value={stats.enService}
-          icon={CheckCircle2} iconBg="bg-emerald-50" iconColor="text-emerald-600"
-          badge={{ text: `${servicePct}%`, cls: 'bg-emerald-50 text-emerald-700' }}
-          loading={loading} />
-        <KpiCard label="Hors service" value={stats.horsService}
-          icon={XCircle} iconBg="bg-red-50" iconColor="text-red-500"
-          loading={loading} />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <KpiCard label="Total équipements" value={stats.total} icon={Package} accentVariant="accent" loading={loading} />
+        <KpiCard
+          label="En service" value={stats.enService} icon={CheckCircle2} accentVariant="ok" loading={loading}
+          badge={{ text: `${servicePct}%`, variant: 'ok' }}
+        />
+        <KpiCard
+          label="Hors service" value={stats.horsService} icon={XCircle} accentVariant="crit" loading={loading}
+          badge={!loading && stats.horsService > 0 ? { text: 'ALERTE', variant: 'crit', pulse: true } : undefined}
+        />
         {canMaintenance && (
-          <KpiCard label="En maintenance" value={stats.enMaintenance}
-            icon={Wrench} iconBg="bg-amber-50" iconColor="text-amber-500"
-            loading={loading} />
+          <KpiCard label="En maintenance" value={stats.enMaintenance} icon={Wrench} accentVariant="warn" loading={loading} />
         )}
       </div>
 
       {/* ── Row 2: Alerts (left) + Progress/Chart (right) ── */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-4 items-start">
 
         {/* ── LEFT: Alert sections ──────────────────────── */}
-        <div className="space-y-4">
+        <div className="flex flex-col gap-3.5">
 
           {/* All-clear banner */}
           {allClear && (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-4 flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
+            <motion.div
+              variants={staggerItemVariants}
+              className="rounded-[14px] px-4 py-4 flex items-center gap-3"
+              style={{ border: '1px solid var(--ok)', background: 'var(--ok-soft)' }}
+            >
+              <CheckCircle2 className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--ok)' }} />
               <div>
-                <p className="text-sm font-semibold text-emerald-700">Situation nominale</p>
-                <p className="text-xs text-emerald-600 mt-0.5">Aucune alerte active — tous les systèmes sont à jour</p>
+                <p className="text-sm font-semibold" style={{ color: 'var(--ok)' }}>Situation nominale</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--text2)' }}>Aucune alerte active — tous les systèmes sont à jour</p>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* ── Maintenance préventive ── */}
@@ -279,7 +296,6 @@ const Dashboard = () => {
             alertCount={maintAlertCount}
             loading={loadingMaint || loading}
           >
-            {/* Overdue tasks */}
             {overdueTasks.length > 0 ? (
               <AlertItem severity="critical">
                 <strong>{overdueTasks.length}</strong> maintenance(s) préventive(s) en retard (semaines passées)
@@ -288,7 +304,6 @@ const Dashboard = () => {
               <AlertItem severity="ok">Aucun retard — maintenances passées à jour</AlertItem>
             )}
 
-            {/* This week */}
             {weekPending > 0 ? (
               <AlertItem severity="warning">
                 <strong>{weekPending}</strong> à réaliser cette semaine (KW{String(currentWeek).padStart(2, '0')})
@@ -299,14 +314,12 @@ const Dashboard = () => {
               </AlertItem>
             )}
 
-            {/* Rescheduled */}
             {weekRescheduled > 0 && (
               <AlertItem severity="info">
                 <strong>{weekRescheduled}</strong> maintenance(s) reprogrammée(s) cette semaine
               </AlertItem>
             )}
 
-            {/* Equipment hors service */}
             {stats.horsService > 0 && (
               <AlertItem severity="critical">
                 <strong>{stats.horsService}</strong> équipement(s) hors service nécessite(nt) une attention
@@ -325,20 +338,20 @@ const Dashboard = () => {
               <AlertItem severity="ok">Tous les ECME sont à jour — aucune vérification requise</AlertItem>
             ) : (
               <>
-                {/* Overdue ECME */}
                 {ecmeOverdue.length > 0 && (
                   <>
                     <AlertItem severity="critical" action="Voir tout" onAction={() => navigate('/ecme?alerte=VERIFICATION')}>
                       <strong>{ecmeOverdue.length}</strong> ECME en retard de vérification (date dépassée)
                     </AlertItem>
-                    <div className="bg-red-50/40 divide-y divide-red-100/60 max-h-36 overflow-y-auto">
+                    <div className="max-h-36 overflow-y-auto" style={{ background: 'rgba(224,71,75,0.04)' }}>
                       {ecmeOverdue.slice(0, 5).map((e) => (
                         <div key={e.code}
-                          className="flex items-center gap-3 px-4 py-2 text-xs cursor-pointer hover:bg-red-50 transition-colors"
+                          className="flex items-center gap-3 px-4 py-2 text-xs cursor-pointer transition-colors hover:bg-[var(--panel3)]"
+                          style={{ borderTop: '1px solid var(--border2)' }}
                           onClick={() => navigate(`/ecme/${e.code}`)}>
-                          <span className="font-mono font-bold text-red-700 flex-shrink-0 w-20 truncate">{e.code}</span>
-                          <span className="flex-1 truncate text-slate-500">{e.designation}</span>
-                          <span className="text-red-600 font-semibold whitespace-nowrap flex-shrink-0">
+                          <span className="font-mono font-bold flex-shrink-0 w-20 truncate" style={{ color: 'var(--accent)' }}>{e.code}</span>
+                          <span className="flex-1 truncate" style={{ color: 'var(--text2)' }}>{e.designation}</span>
+                          <span className="font-semibold whitespace-nowrap flex-shrink-0" style={{ color: 'var(--crit)' }}>
                             {e.date_prochaine_verification
                               ? new Date(e.date_prochaine_verification).toLocaleDateString('fr-FR')
                               : '—'}
@@ -346,9 +359,9 @@ const Dashboard = () => {
                         </div>
                       ))}
                       {ecmeOverdue.length > 5 && (
-                        <div className="px-4 py-2 text-xs text-slate-400">
+                        <div className="px-4 py-2 text-xs" style={{ color: 'var(--text3)' }}>
                           +{ecmeOverdue.length - 5} autres —{' '}
-                          <button className="underline text-sky-600" onClick={() => navigate('/ecme?alerte=VERIFICATION')}>
+                          <button className="underline" style={{ color: 'var(--accent)' }} onClick={() => navigate('/ecme?alerte=VERIFICATION')}>
                             voir tous
                           </button>
                         </div>
@@ -357,7 +370,6 @@ const Dashboard = () => {
                   </>
                 )}
 
-                {/* Upcoming (not yet overdue) */}
                 {(ecmeToVerif.length - ecmeOverdue.length) > 0 && (
                   <AlertItem severity="info" action="Voir" onAction={() => navigate('/ecme?alerte=VERIFICATION')}>
                     <strong>{ecmeToVerif.length - ecmeOverdue.length}</strong> ECME à vérifier prochainement
@@ -387,26 +399,32 @@ const Dashboard = () => {
                   {pdrCriticalCount > 0 && pdrWarningCount > 0 && ' et '}
                   {pdrWarningCount > 0 && <><strong>{pdrWarningCount}</strong> à surveiller</>}
                 </AlertItem>
-                <div className="divide-y divide-amber-50/80 max-h-52 overflow-y-auto">
+                <div className="max-h-52 overflow-y-auto">
                   {pdrStockAlerts.slice(0, 6).map((item) => (
                     <div key={item.id}
-                      className="flex items-center gap-3 px-4 py-2 text-xs cursor-pointer hover:bg-amber-50 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2 text-xs cursor-pointer transition-colors hover:bg-[var(--panel3)]"
+                      style={{ borderTop: '1px solid var(--border2)' }}
                       onClick={() => navigate('/inventaire?categorie=pdr')}>
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${
-                        item.level === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
-                      }`}>
+                      <span
+                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0"
+                        style={{
+                          background: item.level === 'critical' ? 'var(--crit-soft)' : 'var(--warn-soft)',
+                          color: item.level === 'critical' ? 'var(--crit)' : 'var(--warn)',
+                        }}
+                      >
                         {item.level === 'critical' ? '✗' : '!'}
                       </span>
-                      <span className="font-mono font-semibold text-amber-700 flex-shrink-0">{item.codeRai}</span>
-                      <span className="flex-1 truncate text-slate-500">{item.designation}</span>
+                      <span className="font-mono font-semibold flex-shrink-0" style={{ color: 'var(--warn)' }}>{item.codeRai}</span>
+                      <span className="flex-1 truncate" style={{ color: 'var(--text2)' }}>{item.designation}</span>
                       <div className="flex gap-1 flex-shrink-0 flex-wrap justify-end">
                         {item.lowParts.map((part) => (
                           <span key={part.key}
-                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${
-                              part.level === 'critical'
-                                ? 'bg-red-50 border-red-200 text-red-700'
-                                : 'bg-amber-50 border-amber-200 text-amber-700'
-                            }`}>
+                            className="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                            style={{
+                              background: part.level === 'critical' ? 'var(--crit-soft)' : 'var(--warn-soft)',
+                              color: part.level === 'critical' ? 'var(--crit)' : 'var(--warn)',
+                              border: `1px solid ${part.level === 'critical' ? 'var(--crit)' : 'var(--warn)'}`,
+                            }}>
                             {part.label.split(' ')[0]}: {part.quantity}
                           </span>
                         ))}
@@ -414,9 +432,9 @@ const Dashboard = () => {
                     </div>
                   ))}
                   {pdrStockAlerts.length > 6 && (
-                    <div className="px-4 py-2 text-xs text-slate-400 text-center">
+                    <div className="px-4 py-2 text-xs text-center" style={{ color: 'var(--text3)' }}>
                       +{pdrStockAlerts.length - 6} autres —{' '}
-                      <button className="underline text-sky-600" onClick={() => navigate('/inventaire?categorie=pdr')}>
+                      <button className="underline" style={{ color: 'var(--accent)' }} onClick={() => navigate('/inventaire?categorie=pdr')}>
                         voir tous
                       </button>
                     </div>
@@ -427,102 +445,131 @@ const Dashboard = () => {
           </AlertSection>}
         </div>
 
-        {/* ── RIGHT: Progress + Chart ───────────────────── */}
-        <div className="space-y-4">
+        {/* ── RIGHT: Progress gauge + Chart ───────────────────── */}
+        <div className="flex flex-col gap-3.5">
 
-          {/* Week maintenance progress — maintenance only */}
-          {canMaintenance && <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Préventives KW{String(currentWeek).padStart(2, '0')}
-              </p>
-              {!loadingMaint && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">
-                  Semaine en cours
-                </span>
+          {/* Week maintenance ring gauge — maintenance only */}
+          {canMaintenance && (
+            <motion.div
+              variants={staggerItemVariants}
+              className="relative overflow-hidden rounded-[14px] p-[18px]"
+              style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}
+            >
+              <HudCorner position="tl" />
+              <HudCorner position="tr" />
+              <div className="flex items-center justify-between mb-1.5">
+                <DataLabel>Préventives · KW{String(currentWeek).padStart(2, '0')}</DataLabel>
+                {!loadingMaint && <StatusBadge variant="warn">EN COURS</StatusBadge>}
+              </div>
+
+              <div className="flex items-center justify-center relative h-[172px]">
+                <svg width="172" height="172" viewBox="0 0 172 172">
+                  <circle cx="86" cy="86" r="64" fill="none" stroke="var(--panel3)" strokeWidth="13" />
+                  {!loadingMaint && (
+                    <GrowRing cx={86} cy={86} radius={64} percent={progressPct} strokeWidth={13} />
+                  )}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="font-display font-bold text-[34px] leading-none">
+                    <CountUp value={weekDone} />
+                    <span className="text-[18px] font-medium" style={{ color: 'var(--text3)' }}>/{weekTotal}</span>
+                  </div>
+                  <DataLabel className="mt-1">Réalisées</DataLabel>
+                </div>
+              </div>
+
+              <div className="flex justify-between mt-1.5 pt-3.5" style={{ borderTop: '1px solid var(--border2)' }}>
+                <div className="text-center">
+                  <div className="font-display font-bold text-[16px]" style={{ color: 'var(--ok)' }}>{weekDone}</div>
+                  <DataLabel className="mt-0.5">Faites</DataLabel>
+                </div>
+                <div className="text-center">
+                  <div className="font-display font-bold text-[16px]" style={{ color: 'var(--warn)' }}>{weekPending}</div>
+                  <DataLabel className="mt-0.5">Restantes</DataLabel>
+                </div>
+                <div className="text-center">
+                  <div className="font-display font-bold text-[16px]" style={{ color: 'var(--info)' }}>{weekRescheduled}</div>
+                  <DataLabel className="mt-0.5">Reprog.</DataLabel>
+                </div>
+              </div>
+
+              {/* Compact task list */}
+              {loadingMaint ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
+                </div>
+              ) : weekTasks.length === 0 ? (
+                <div className="flex flex-col items-center py-4" style={{ color: 'var(--text3)' }}>
+                  <Clock className="w-5 h-5 mb-1 opacity-50" />
+                  <p className="text-xs">Aucune tâche planifiée</p>
+                </div>
+              ) : (
+                <div className="space-y-1 max-h-44 overflow-y-auto mt-3.5">
+                  {weekTasks.map((t) => {
+                    const state = cellStates[t.key];
+                    const isDone = state?.status === 'done';
+                    const isRescheduled = state?.status === 'rescheduled';
+                    const bg = isDone ? 'var(--ok-soft)' : isRescheduled ? 'var(--info-soft)' : 'var(--panel2)';
+                    const fg = isDone ? 'var(--ok)' : isRescheduled ? 'var(--info)' : 'var(--text2)';
+                    return (
+                      <div key={t.key} className="flex items-center gap-2 text-xs px-2 py-1.5 rounded-[8px]" style={{ background: bg, color: fg }}>
+                        <span className="font-mono font-semibold flex-shrink-0 w-16 truncate">{t.equip.code}</span>
+                        <span className="flex-1 truncate text-[11px]" style={{ color: 'var(--text3)' }}>{t.equip.designation}</span>
+                        <span
+                          className="px-1.5 py-0.5 rounded text-[10px] font-semibold flex-shrink-0"
+                          style={{ background: t.color === 'blue' ? 'var(--info-soft)' : 'var(--ok-soft)', color: t.color === 'blue' ? 'var(--info)' : 'var(--ok)' }}
+                        >{t.intType}</span>
+                        <span className="w-10 text-right font-semibold flex-shrink-0 text-[10px]">
+                          {isDone ? '✓' : isRescheduled ? `→${state.newWeek}` : '⏳'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
-            </div>
-
-            <div className="flex items-end gap-2 mb-3">
-              <span className="text-4xl font-bold text-slate-800">{weekDone}</span>
-              <span className="text-base text-slate-400 mb-1">/ {weekTotal} faits</span>
-            </div>
-
-            <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
-              <div className={`h-2 rounded-full transition-all duration-500 ${
-                progressPct === 100 ? 'bg-emerald-500' : progressPct > 50 ? 'bg-sky-500' : 'bg-amber-400'
-              }`} style={{ width: `${progressPct}%` }} />
-            </div>
-
-            <div className="flex justify-between text-xs mb-4">
-              <span className="text-emerald-600 font-semibold">✓ {weekDone}</span>
-              <span className="text-amber-600 font-semibold">⏳ {weekPending} restant(s)</span>
-              {weekRescheduled > 0 && <span className="text-orange-500 font-semibold">→ {weekRescheduled}</span>}
-            </div>
-
-            {/* Compact task list */}
-            {loadingMaint ? (
-              <div className="flex items-center justify-center py-4">
-                <div className="w-4 h-4 border-2 border-slate-200 border-t-sky-400 rounded-full animate-spin" />
-              </div>
-            ) : weekTasks.length === 0 ? (
-              <div className="flex flex-col items-center py-4 text-slate-400">
-                <Clock className="w-5 h-5 mb-1 opacity-50" />
-                <p className="text-xs">Aucune tâche planifiée</p>
-              </div>
-            ) : (
-              <div className="space-y-1 max-h-44 overflow-y-auto">
-                {weekTasks.map((t) => {
-                  const state = cellStates[t.key];
-                  const isDone = state?.status === 'done';
-                  const isRescheduled = state?.status === 'rescheduled';
-                  return (
-                    <div key={t.key} className={`flex items-center gap-2 text-xs px-2 py-1.5 rounded-md ${
-                      isDone ? 'bg-emerald-50 text-emerald-700' :
-                      isRescheduled ? 'bg-orange-50 text-orange-700' :
-                      'bg-slate-50 text-slate-600'
-                    }`}>
-                      <span className="font-mono font-semibold flex-shrink-0 w-16 truncate">{t.equip.code}</span>
-                      <span className="flex-1 truncate text-slate-400 text-[11px]">{t.equip.designation}</span>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold flex-shrink-0 ${
-                        t.color === 'blue' ? 'bg-sky-100 text-sky-700' : 'bg-emerald-100 text-emerald-700'
-                      }`}>{t.intType}</span>
-                      <span className="w-10 text-right font-semibold flex-shrink-0 text-[10px]">
-                        {isDone ? '✓' : isRescheduled ? `→${state.newWeek}` : '⏳'}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>}
+            </motion.div>
+          )}
 
           {/* Availability chart */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <p className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-slate-400" />
-              Disponibilité par zone
-            </p>
+          <motion.div
+            variants={staggerItemVariants}
+            className="rounded-[14px] p-[18px]"
+            style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}
+          >
+            <div className="flex items-center gap-2.5 mb-4">
+              <BarChart2 className="w-[15px] h-[15px]" style={{ color: 'var(--text3)' }} strokeWidth={1.8} />
+              <span className="font-semibold text-[13.5px]" style={{ color: 'var(--text)' }}>Disponibilité par zone</span>
+            </div>
             {loading ? (
               <div className="h-[200px] flex items-center justify-center">
-                <div className="w-6 h-6 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
+                <div className="w-6 h-6 border-4 rounded-full animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
+              </div>
+            ) : stats.parZone.length === 0 ? (
+              <div className="h-[120px] flex items-center justify-center text-xs" style={{ color: 'var(--text3)' }}>
+                Aucune donnée de zone
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={stats.parZone} barSize={18}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                  <XAxis dataKey="name" angle={-35} textAnchor="end" height={55}
-                    tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 11 }}
-                    formatter={(v) => [`${v}%`, 'Disponibilité']}
-                  />
-                  <Bar dataKey="taux" fill="#0ea5e9" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div className="flex items-end gap-2">
+                {stats.parZone.map((z, i) => (
+                  <div key={z.name} className="flex-1 flex flex-col items-center min-w-0">
+                    <span className="font-mono text-[10px] font-semibold mb-1.5" style={{ color: 'var(--text2)' }}>{z.taux}%</span>
+                    <div className="w-full h-[148px] flex items-end justify-center">
+                      <GrowBar
+                        delay={0.15 + i * 0.048}
+                        className="w-[62%] max-w-[24px] rounded-[6px_6px_3px_3px]"
+                        style={{
+                          height: `${Math.max(4, (z.taux / 100) * 148)}px`,
+                          background: 'linear-gradient(180deg, var(--accent3), var(--accent))',
+                          boxShadow: '0 0 14px var(--accent-soft)',
+                        }}
+                      />
+                    </div>
+                    <span className="text-[9.5px] mt-2 text-center leading-tight truncate max-w-full" style={{ color: 'var(--text3)' }}>{z.name}</span>
+                  </div>
+                ))}
+              </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

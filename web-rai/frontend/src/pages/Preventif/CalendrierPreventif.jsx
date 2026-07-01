@@ -1,8 +1,10 @@
-﻿import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { equipementService, maintenanceEventService } from '../../services/api';
 import { EQUIPEMENTS, WEEKS, getCurrentWeek, isMaintenance } from '../../utils/maintenanceSchedule';
 import { getMaintenanceMachineTemplate, resolveMaintenanceMachineKeyFromEquipment } from '../../data/maintenanceMachines';
+import { Search } from 'lucide-react';
+import DataLabel from '../../components/ui/DataLabel.jsx';
 
 const DEFAULT_INTERVALS = [{ type: '1M', freq: 4, start: 1, color: 'blue' }];
 
@@ -105,36 +107,40 @@ function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, on
   if (!popup) return null;
   const { x, y, equip, week, intType, currentStatus, machineKey, machineLabel } = popup;
   return (
-    <div ref={ref} className="fixed z-50 bg-white border border-slate-200 rounded-xl shadow-2xl py-1 w-60 overflow-hidden" style={{ top: y, left: x }}>
-      <div className="px-3 py-2.5 border-b border-slate-100 bg-slate-50">
-        <div className="font-mono font-bold text-slate-800 text-xs">{equip.code}</div>
-        <div className="text-slate-500 text-xs truncate mt-0.5">{equip.designation}</div>
+    <div
+      ref={ref}
+      className="fixed z-50 rounded-[12px] py-1 w-60 overflow-hidden"
+      style={{ top: y, left: x, background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}
+    >
+      <div className="px-3 py-2.5" style={{ borderBottom: '1px solid var(--border2)', background: 'var(--panel2)' }}>
+        <div className="font-mono font-bold text-xs" style={{ color: 'var(--text)' }}>{equip.code}</div>
+        <div className="text-xs truncate mt-0.5" style={{ color: 'var(--text2)' }}>{equip.designation}</div>
         <div className="flex items-center gap-2 mt-1">
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-sky-50 text-sky-700 border border-sky-200">KW{String(week).padStart(2,'0')}</span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-600">{intType}</span>
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>KW{String(week).padStart(2,'0')}</span>
+          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{intType}</span>
         </div>
         {machineKey && (
-          <div className="mt-1 text-[11px] text-sky-600 font-medium">{machineLabel || machineKey}</div>
+          <div className="mt-1 text-[11px] font-medium" style={{ color: 'var(--accent)' }}>{machineLabel || machineKey}</div>
         )}
       </div>
       <div className="py-1">
         {machineKey && (
-          <button className="w-full text-left px-3 py-2 text-xs hover:bg-sky-50 flex items-center gap-2 text-sky-700 transition-colors" onClick={onOpenMachineSheet}>
+          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }} onClick={onOpenMachineSheet}>
             📋 Démarrer la fiche machine
           </button>
         )}
         {currentStatus !== 'done' && (
-          <button className="w-full text-left px-3 py-2 text-xs hover:bg-emerald-50 flex items-center gap-2 text-emerald-700 transition-colors" onClick={onDone}>
+          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--ok-soft)]" style={{ color: 'var(--ok)' }} onClick={onDone}>
             ✓ Marquer comme fait
           </button>
         )}
         {currentStatus !== 'rescheduled' && (
-          <button className="w-full text-left px-3 py-2 text-xs hover:bg-amber-50 flex items-center gap-2 text-amber-700 transition-colors" onClick={onReschedule}>
+          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--warn-soft)]" style={{ color: 'var(--warn)' }} onClick={onReschedule}>
             → Reprogrammer
           </button>
         )}
         {currentStatus && (
-          <button className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex items-center gap-2 text-slate-500 transition-colors" onClick={onReset}>
+          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--panel3)]" style={{ color: 'var(--text3)' }} onClick={onReset}>
             ↺ Réinitialiser
           </button>
         )}
@@ -156,38 +162,40 @@ function RescheduleModal({ modal, onConfirm, onClose }) {
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-2xl shadow-2xl w-80 overflow-hidden">
-        <div className="px-5 py-4 flex items-center justify-between" style={{ background: '#0f1d35' }}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative rounded-[16px] shadow-2xl w-80 overflow-hidden" style={{ background: 'var(--panel)' }}>
+        <div className="px-5 py-4 flex items-center justify-between" style={{ background: 'linear-gradient(135deg, #0d1828, #0a2820)' }}>
           <div>
-            <p className="text-sm font-bold text-white">Reprogrammer</p>
+            <p className="text-sm font-bold text-white font-display">Reprogrammer</p>
             <p className="text-[11px] text-slate-400 mt-0.5">
               <span className="font-mono text-slate-300">{modal.equip.code}</span> · KW{String(modal.week).padStart(2,'0')} · {modal.intType}
             </p>
           </div>
-          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors text-lg">✕</button>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors text-lg">✕</button>
         </div>
         <div className="p-5">
-          <label className="block mb-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">Nouvelle semaine (1 – 53)</label>
+          <label className="block mb-1.5 text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text3)' }}>Nouvelle semaine (1 – 53)</label>
           <div className="flex gap-2 mb-2">
             <input type="number" min={1} max={53} value={newWeek} autoFocus
-              className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-700 focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-100"
+              className="flex-1 rounded-[10px] px-3 py-2 text-sm outline-none"
+              style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }}
               onChange={(e) => { setNewWeek(e.target.value); setError(''); }}
               onKeyDown={(e) => e.key === 'Enter' && handleConfirm()} />
-            <span className="text-sm text-slate-500 self-center font-semibold">KW</span>
+            <span className="text-sm self-center font-semibold" style={{ color: 'var(--text2)' }}>KW</span>
           </div>
           <input type="range" min={1} max={53} value={newWeek || 1}
-            className="w-full accent-sky-500 mb-3"
+            className="w-full mb-3" style={{ accentColor: 'var(--accent)' }}
             onChange={(e) => { setNewWeek(e.target.value); setError(''); }} />
-          {error && <p className="text-xs text-red-600 mb-3">{error}</p>}
+          {error && <p className="text-xs mb-3" style={{ color: 'var(--crit)' }}>{error}</p>}
           <div className="flex gap-2">
             <button onClick={handleConfirm}
-              className="flex-1 py-2 rounded-xl text-sm font-semibold text-white"
-              style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+              className="flex-1 py-2 rounded-[10px] text-sm font-bold text-white transition-transform hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
               Confirmer
             </button>
             <button onClick={onClose}
-              className="flex-1 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+              className="flex-1 py-2 rounded-[10px] text-sm font-semibold transition-colors hover:bg-[var(--panel3)]"
+              style={{ border: '1px solid var(--border)', color: 'var(--text2)' }}>
               Annuler
             </button>
           </div>
@@ -428,52 +436,55 @@ const CalendrierPreventif = () => {
     const state   = cellStates[key];
     const target  = allCells[key]?.isRescheduledTarget;
     const saving  = savingKeys.has(key);
-    if (saving)                          return { cls: 'bg-gray-300 cursor-wait animate-pulse', icon: '…' };
-    if (state?.status === 'done')        return { cls: 'bg-slate-400 hover:bg-slate-500 cursor-pointer', icon: '✓' };
-    if (state?.status === 'rescheduled') return { cls: 'bg-orange-400 hover:bg-orange-500 cursor-pointer', icon: '→' };
-    if (target)                          return { cls: 'bg-orange-300 hover:bg-orange-400 cursor-pointer ring-2 ring-orange-500 ring-inset', icon: '!' };
-    if (baseColor === 'blue')            return { cls: `bg-blue-500 hover:bg-blue-400 cursor-pointer ${isHighlighted ? 'ring-2 ring-white ring-inset' : ''}`, icon: null };
-    if (baseColor === 'green')           return { cls: `bg-green-500 hover:bg-green-400 cursor-pointer ${isHighlighted ? 'ring-2 ring-white ring-inset' : ''}`, icon: null };
-    return { cls: '', icon: null };
+    if (saving)                          return { style: { background: 'var(--text3)', cursor: 'wait', opacity: 0.6 }, icon: '…' };
+    if (state?.status === 'done')        return { style: { background: 'var(--text3)', cursor: 'pointer' }, icon: '✓' };
+    if (state?.status === 'rescheduled') return { style: { background: 'var(--warn)', cursor: 'pointer' }, icon: '→' };
+    if (target)                          return { style: { background: 'var(--warn)', cursor: 'pointer', boxShadow: 'inset 0 0 0 2px var(--crit)' }, icon: '!' };
+    if (baseColor === 'blue')            return { style: { background: 'var(--accent)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (baseColor === 'green')           return { style: { background: 'var(--ok)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    return { style: {}, icon: null };
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 relative" style={{ background: 'var(--content-bg)' }} onClick={() => setPopup(null)}>
+    <div className="flex flex-col flex-1 min-h-0 relative" style={{ background: 'var(--bg)' }} onClick={() => setPopup(null)}>
 
       {/* API Error banner */}
       {apiError && (
-        <div className="bg-red-50 border-b border-red-200 px-5 py-2 flex items-center justify-between text-xs text-red-700">
+        <div
+          className="px-5 py-2 flex items-center justify-between text-xs"
+          style={{ background: 'var(--crit-soft)', borderBottom: '1px solid var(--crit)', color: 'var(--crit)' }}
+        >
           <span className="flex items-center gap-1.5">⚠ {apiError}</span>
-          <button className="ml-4 underline text-red-600 hover:text-red-800" onClick={() => setApiError(null)}>Fermer</button>
+          <button className="ml-4 underline hover:opacity-80" onClick={() => setApiError(null)}>Fermer</button>
         </div>
       )}
 
       {/* Loading overlay */}
       {(loadingEvents || loadingEquipements) && (
-        <div className="absolute inset-0 bg-white/80 z-40 flex flex-col items-center justify-center gap-3">
-          <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
-          <p className="text-sm text-slate-400 font-medium">Chargement du calendrier…</p>
+        <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3" style={{ background: 'rgba(7,11,19,0.05)', backdropFilter: 'blur(2px)' }}>
+          <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
+          <p className="text-sm font-medium" style={{ color: 'var(--text3)' }}>Chargement du calendrier…</p>
         </div>
       )}
 
       {/* HEADER */}
-      <div className="bg-white border-b border-slate-200 px-5 py-3 flex-shrink-0 shadow-sm">
+      <div className="px-5 py-3 flex-shrink-0" style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-sm font-bold text-slate-800 leading-tight">{selectedView.title}</h1>
-            <p className="text-xs text-slate-400 mt-0.5">{selectedView.subtitle}</p>
+            <h1 className="font-display text-sm font-bold leading-tight" style={{ color: 'var(--text)' }}>{selectedView.title}</h1>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text3)' }}>{selectedView.subtitle}</p>
           </div>
           <div className="flex flex-wrap gap-2 text-xs">
             {[
-              { label: 'Date',          value: new Date().toLocaleDateString('fr-FR'), cls: 'bg-sky-50 border-sky-200 text-sky-800' },
-              { label: 'Semaine',       value: `KW ${currentWeek}`,                   cls: 'bg-amber-50 border-amber-200 text-amber-800' },
-              { label: 'Réf.',          value: selectedView.reference,                cls: 'bg-slate-50 border-slate-200 text-slate-700' },
-              { label: 'Sem. courante', value: `${currentWeekDone}/${currentWeekTasks}`, cls: 'bg-emerald-50 border-emerald-200 text-emerald-800' },
-              { label: 'Total fait',    value: doneCount,                             cls: 'bg-slate-50 border-slate-200 text-slate-700' },
-            ].map(({ label, value, cls }) => (
-              <div key={label} className={`border rounded-lg px-2.5 py-1 text-center ${cls}`}>
-                <div className="text-[9px] font-semibold uppercase tracking-wide opacity-70 leading-none">{label}</div>
-                <div className="font-bold mt-0.5">{value}</div>
+              { label: 'Date',          value: new Date().toLocaleDateString('fr-FR'), color: 'var(--info)' },
+              { label: 'Semaine',       value: `KW ${currentWeek}`,                   color: 'var(--warn)' },
+              { label: 'Réf.',          value: selectedView.reference,                color: 'var(--text2)' },
+              { label: 'Sem. courante', value: `${currentWeekDone}/${currentWeekTasks}`, color: 'var(--ok)' },
+              { label: 'Total fait',    value: doneCount,                             color: 'var(--text2)' },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="rounded-[9px] px-2.5 py-1 text-center" style={{ border: '1px solid var(--border)', background: 'var(--panel2)' }}>
+                <DataLabel className="!text-[8px] leading-none">{label}</DataLabel>
+                <div className="font-bold mt-0.5" style={{ color }}>{value}</div>
               </div>
             ))}
           </div>
@@ -482,33 +493,33 @@ const CalendrierPreventif = () => {
         {/* Filters */}
         <div className="mt-2.5 flex flex-wrap items-center gap-2">
           <div className="relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">🔍</span>
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--text3)' }} />
             <input type="text" placeholder="Code ou désignation…"
-              className="border border-slate-200 rounded-lg pl-6 pr-2 py-1 text-xs w-44 focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-100 bg-white"
+              className="rounded-[8px] pl-7 pr-2 py-1 text-xs w-44 outline-none"
+              style={{ border: '1px solid var(--border)', background: 'var(--panel2)', color: 'var(--text)' }}
               value={searchCode} onChange={(e) => setSearchCode(e.target.value)} />
           </div>
           <div className="flex gap-1 flex-wrap">
             {CALENDAR_VIEWS.map((view) => (
               <button key={view.id} onClick={() => setViewFilter(view.id)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${
-                  viewFilter === view.id
-                    ? 'bg-sky-500 text-white shadow-sm'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}>
+                className="px-2.5 py-1 rounded-[8px] text-xs font-semibold transition-colors"
+                style={viewFilter === view.id
+                  ? { background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', color: '#fff' }
+                  : { background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text2)' }}>
                 {view.label}
               </button>
             ))}
           </div>
           <div className="ml-auto hidden sm:flex items-center gap-3 text-xs">
             {[
-              { bg: 'bg-blue-500',    label: 'Mensuel' },
-              { bg: 'bg-green-500',   label: '6 mois' },
-              { bg: 'bg-slate-400',   label: 'Fait' },
-              { bg: 'bg-orange-400',  label: 'Reporté' },
-              { bg: 'bg-amber-300',   label: 'Sem. en cours' },
-            ].map(({ bg, label }) => (
-              <span key={label} className="flex items-center gap-1.5 text-slate-500">
-                <span className={`w-2.5 h-2.5 rounded ${bg} flex-shrink-0`} />
+              { bg: 'var(--accent)', label: 'Mensuel' },
+              { bg: 'var(--ok)',     label: '6 mois' },
+              { bg: 'var(--text3)',  label: 'Fait' },
+              { bg: 'var(--warn)',   label: 'Reporté' },
+              { bg: 'var(--warn)',   label: 'Sem. en cours' },
+            ].map(({ bg, label }, i) => (
+              <span key={`${label}-${i}`} className="flex items-center gap-1.5" style={{ color: 'var(--text3)' }}>
+                <span className="w-2.5 h-2.5 rounded flex-shrink-0" style={{ background: bg }} />
                 {label}
               </span>
             ))}
@@ -521,18 +532,18 @@ const CalendrierPreventif = () => {
         <table className="border-collapse text-xs" style={{ minWidth: 'max-content' }}>
           <thead>
             <tr>
-              <th className="sticky left-0 z-30 bg-[#0f1d35] text-white border border-white/10 text-center" style={{ width:50, minWidth:50 }}>KW</th>
-              <th className="sticky bg-[#0f1d35] text-white border border-white/10 text-center z-20" style={{ left:50, width:38, minWidth:38 }}>Type</th>
+              <th className="sticky left-0 z-30 text-white text-center font-mono" style={{ width:50, minWidth:50, background:'#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}>KW</th>
+              <th className="sticky text-white text-center z-20 font-mono" style={{ left:50, width:38, minWidth:38, background:'#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}>Type</th>
               {filteredEquipements.map((equip) => (
                 <th key={equip.code}
-                  className={`bg-[#0f1d35] border border-white/10 text-white z-10 cursor-pointer select-none transition-colors ${highlightedEquip === equip.code ? 'bg-blue-800' : 'hover:bg-gray-700'}`}
-                  style={{ width:34, minWidth:34 }}
+                  className="text-white z-10 cursor-pointer select-none transition-colors"
+                  style={{ width:34, minWidth:34, background: highlightedEquip === equip.code ? 'var(--accent2)' : '#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}
                   onClick={(e) => { e.stopPropagation(); setHighlightedEquip(highlightedEquip === equip.code ? null : equip.code); }}>
                   <div style={{ height:130, width:34, display:'flex', alignItems:'flex-end', justifyContent:'center', overflow:'hidden' }}>
-                    <div style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', whiteSpace:'nowrap', fontSize:9, lineHeight:1 }}>{equip.designation}</div>
+                    <div style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', whiteSpace:'nowrap', fontSize:9, lineHeight:1, color: '#cbd5e1' }}>{equip.designation}</div>
                   </div>
-                  <div className="border-t border-white/10 text-yellow-300 font-bold flex items-center justify-center"
-                    style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', height:48, fontSize:8 }}>{equip.code}</div>
+                  <div className="font-bold flex items-center justify-center font-mono"
+                    style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', height:48, fontSize:8, borderTop:'1px solid rgba(255,255,255,0.1)', color: 'var(--accent3)' }}>{equip.code}</div>
                 </th>
               ))}
             </tr>
@@ -543,28 +554,28 @@ const CalendrierPreventif = () => {
               return ['1M','6M'].map((intType, rowIdx) => {
                 const isFirst = rowIdx === 0;
                 return (
-                  <tr key={`${week}-${intType}`} className={isFirst ? 'border-t border-gray-300' : ''} style={{ height:18 }}>
-                    <td className={`sticky left-0 z-20 border border-gray-300 text-center font-bold select-none ${isCurrentWeek ? 'bg-amber-300 text-amber-900' : 'bg-gray-100 text-gray-700'}`}
-                      style={{ fontSize:10, width:50 }}>
+                  <tr key={`${week}-${intType}`} style={{ height:18, borderTop: isFirst ? '1px solid var(--border)' : undefined }}>
+                    <td className="sticky left-0 z-20 text-center font-bold select-none font-mono"
+                      style={{ fontSize:10, width:50, border:'1px solid var(--border2)', background: isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel2)', color: isCurrentWeek ? 'var(--warn)' : 'var(--text2)' }}>
                       {isFirst ? `kw${String(week).padStart(2,'0')}` : ''}
                     </td>
-                    <td className={`sticky border border-gray-300 text-center font-semibold text-gray-500 select-none ${isCurrentWeek ? 'bg-amber-100' : 'bg-gray-50'}`}
-                      style={{ left:50, fontSize:9, width:38, zIndex:19 }}>{intType}</td>
+                    <td className="sticky text-center font-semibold select-none font-mono"
+                      style={{ left:50, fontSize:9, width:38, zIndex:19, border:'1px solid var(--border2)', background: isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel2)', color: 'var(--text3)' }}>{intType}</td>
                     {filteredEquipements.map((equip) => {
                       const key      = `${equip.code}__${intType}__${week}`;
                       const cellData = allCells[key];
                       const isHighlighted = highlightedEquip === equip.code;
                       if (!cellData) {
-                        const emptyBg = isCurrentWeek ? 'bg-amber-50' : isFirst ? 'bg-white' : 'bg-gray-50';
-                        return <td key={equip.code} className={`border border-gray-100 ${emptyBg} ${isHighlighted ? 'bg-blue-50' : ''}`} style={{ width:34, minWidth:34 }} />;
+                        const emptyBg = isCurrentWeek ? 'var(--warn-soft)' : isFirst ? 'var(--panel)' : 'var(--panel2)';
+                        return <td key={equip.code} style={{ width:34, minWidth:34, border:'1px solid var(--border2)', background: isHighlighted ? 'var(--accent-soft)' : emptyBg }} />;
                       }
-                      const { cls, icon } = getCellAppearance(key, cellData.color, isCurrentWeek, rowIdx, isHighlighted);
+                      const { style, icon } = getCellAppearance(key, cellData.color, isCurrentWeek, rowIdx, isHighlighted);
                       const state  = cellStates[key];
                       const tipSuffix = state?.status === 'done' ? '  Fait' : state?.status === 'rescheduled' ? `  Reporte KW${state.newWeek}` : '  Cliquer pour modifier';
                       return (
                         <td key={equip.code}
-                          className={`border border-gray-200 text-center text-white font-bold select-none transition-colors ${cls}`}
-                          style={{ width:34, minWidth:34, height:18, fontSize:9 }}
+                          className="text-center text-white font-bold select-none transition-colors"
+                          style={{ width:34, minWidth:34, height:18, fontSize:9, border:'1px solid var(--border2)', ...style }}
                           title={`${equip.code}  ${equip.designation}  KW${week}  ${intType}${tipSuffix}`}
                           onClick={(e) => handleCellClick(e, key, cellData)}>
                           {icon && <span style={{ fontSize:9 }}>{icon}</span>}
@@ -580,10 +591,10 @@ const CalendrierPreventif = () => {
       </div>
 
       {/* FOOTER */}
-      <div className="bg-white border-t border-slate-200 px-5 py-1.5 text-xs text-slate-400 flex flex-wrap justify-between gap-1 flex-shrink-0">
+      <div className="px-5 py-1.5 text-xs flex flex-wrap justify-between gap-1 flex-shrink-0" style={{ background: 'var(--panel)', borderTop: '1px solid var(--border)', color: 'var(--text3)' }}>
         <span>
           {filteredEquipements.length} équipement(s) · {doneCount} marqué(s) fait(s)
-          {savingKeys.size > 0 && <span className="ml-3 text-sky-500 animate-pulse font-medium">↻ Sauvegarde…</span>}
+          {savingKeys.size > 0 && <span className="ml-3 animate-pulse font-medium" style={{ color: 'var(--accent)' }}>↻ Sauvegarde…</span>}
         </span>
         <span>Année {currentYear} · KW01 – KW53</span>
       </div>

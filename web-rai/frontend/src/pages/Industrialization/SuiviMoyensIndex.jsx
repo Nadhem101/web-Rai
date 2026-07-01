@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { suiviMoyenService } from '../../services/api';
 import { Plus, Trash2, ChevronRight, Activity, User, Calendar } from 'lucide-react';
+import StatusBadge from '../../components/ui/StatusBadge.jsx';
+import DataLabel from '../../components/ui/DataLabel.jsx';
+import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 const fmtDate = (d) => {
   if (!d) return '—';
   return new Date(d).toLocaleDateString('fr-FR');
 };
 
-const statusCls = {
-  actif:   'bg-emerald-100 text-emerald-700 border-emerald-200',
-  archive: 'bg-slate-100 text-slate-500 border-slate-200',
-};
-
 const SuiviMoyensIndex = () => {
   const navigate = useNavigate();
-  const [items,   setItems]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [creating,setCreating]= useState(false);
+  const [items,    setItems]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [creating, setCreating] = useState(false);
 
   const load = async () => {
     try {
@@ -53,72 +52,86 @@ const SuiviMoyensIndex = () => {
   };
 
   return (
-    <div className="p-6 flex-1 overflow-auto">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Activity className="w-6 h-6 text-sky-500" />
-            Suivi des moyens
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Suivi création + réception des moyens — Département Industrialisation
-          </p>
+    <div className="flex-1 overflow-auto px-[26px] pt-6 pb-10" style={{ background: 'var(--bg)' }}>
+      {/* Header */}
+      <motion.div variants={staggerItemVariants} className="flex flex-wrap items-end justify-between gap-3.5 mb-[18px]">
+        <div className="flex items-center gap-3.5">
+          <div className="w-[42px] h-[42px] rounded-[12px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+            <Activity className="w-5 h-5" strokeWidth={1.8} />
+          </div>
+          <div>
+            <h1 className="font-display font-semibold text-[25px]" style={{ color: 'var(--text)', letterSpacing: '-0.4px' }}>Suivi des moyens</h1>
+            <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>Création + réception des moyens · Département Industrialisation</p>
+          </div>
         </div>
         <button onClick={handleCreate} disabled={creating}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
-          style={{ background: 'linear-gradient(135deg, #0ea5e9, #0369a1)' }}>
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white disabled:opacity-50 transition-transform hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
           <Plus className="w-4 h-4" />
           {creating ? 'Création…' : 'Nouveau suivi'}
         </button>
-      </div>
+      </motion.div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+        <div className="flex flex-col items-center justify-center py-20" style={{ color: 'var(--text3)' }}>
           <Activity className="w-12 h-12 mb-3 opacity-30" />
           <p className="text-sm font-medium">Aucun suivi — créez le premier</p>
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map(item => (
-            <div key={item.id}
+          {items.map((item, i) => (
+            <motion.div
+              key={item.id}
+              variants={staggerItemVariants}
               onClick={() => navigate(`/industrialization/suivi-moyens/${item.id}`)}
-              className="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-sky-300 transition-all cursor-pointer group p-5">
+              className="group cursor-pointer rounded-[14px] p-5 transition-all hover:-translate-y-1"
+              style={{
+                background: 'var(--panel)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow)',
+                transitionProperty: 'transform, border-color, box-shadow',
+                transitionDuration: '0.18s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.boxShadow = '0 10px 30px var(--accent-soft)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.boxShadow = 'var(--shadow)'; }}
+            >
               <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center flex-shrink-0">
-                  <Activity className="w-5 h-5 text-sky-500" />
+                <div className="w-10 h-10 rounded-[11px] flex items-center justify-center flex-shrink-0" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+                  <Activity className="w-5 h-5" strokeWidth={1.8} />
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusCls[item.status] || statusCls.actif}`}>
+                  <StatusBadge variant={item.status === 'actif' ? 'ok' : 'info'}>
                     {item.status === 'actif' ? 'Actif' : 'Archivé'}
-                  </span>
+                  </StatusBadge>
                   <button onClick={e => handleDelete(item, e)}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100">
+                    className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100 hover:bg-[var(--crit-soft)] hover:text-[var(--crit)]"
+                    style={{ color: 'var(--text3)' }}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-              <p className="text-sm font-bold text-slate-800 leading-tight mb-1 line-clamp-2">{item.titre}</p>
+              <p className="text-sm font-bold leading-tight mb-2 line-clamp-2" style={{ color: 'var(--text)' }}>{item.titre}</p>
               <div className="space-y-1 mt-2">
                 {item.pilote && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <User className="w-3 h-3" /> {item.pilote}
+                  <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text2)' }}>
+                    <User className="w-3 h-3" strokeWidth={1.8} /> {item.pilote}
                   </div>
                 )}
                 {item.date_debut && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                    <Calendar className="w-3 h-3" /> Début : {fmtDate(item.date_debut)}
+                  <div className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text2)' }}>
+                    <Calendar className="w-3 h-3" strokeWidth={1.8} /> Début : {fmtDate(item.date_debut)}
                   </div>
                 )}
               </div>
               <div className="mt-4 flex items-center justify-between">
-                <span className="text-xs text-slate-400">Créé le {fmtDate(item.createdAt)}</span>
-                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-sky-500 transition-colors" />
+                <DataLabel>Créé le {fmtDate(item.createdAt)}</DataLabel>
+                <ChevronRight className="w-4 h-4 transition-colors group-hover:text-[var(--accent)]" style={{ color: 'var(--text3)' }} />
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}

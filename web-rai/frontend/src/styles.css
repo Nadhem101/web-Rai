@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* v4's `dark:` variant defaults to a prefers-color-scheme media query — we drive
+   theme from the explicit toggle (ThemeContext → data-theme on <html>) instead. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* Legacy tokens — still referenced by pages not yet ported to the new design
+   system (FlowChartViewer, ChiffrageDetail, SuiviMoyensDetail, etc). Keep until
+   those screens are redesigned. */
 :root {
   --sidebar-bg: #0f1d35;
   --sidebar-border: rgba(255, 255, 255, 0.07);
@@ -9,17 +16,101 @@
   --brand-accent: #0ea5e9;
 }
 
+/* ── RAI Control Room design tokens (light) ─────────────────── */
+:root {
+  --bg: #e7ecf1;
+  --grid: rgba(15, 27, 45, 0.045);
+  --scan: transparent;
+  --panel: #ffffff;
+  --panel2: #f4f8fb;
+  --panel3: #eaf0f5;
+  --border: #d8e0e9;
+  --border2: #e6edf3;
+  --text: #0d1828;
+  --text2: #566576;
+  --text3: #8593a3;
+  --accent: #0d9488;
+  --accent2: #0f766e;
+  --accent3: #14b8a6;
+  --accent-soft: rgba(13, 148, 136, 0.1);
+  --ok: #0d9c6e;
+  --ok-soft: rgba(13, 156, 110, 0.12);
+  --warn: #d98207;
+  --warn-soft: rgba(217, 130, 7, 0.13);
+  --crit: #e0474b;
+  --crit-soft: rgba(224, 71, 75, 0.12);
+  --info: #0c8fd6;
+  --info-soft: rgba(12, 143, 214, 0.12);
+  --shadow: 0 1px 2px rgba(16, 30, 54, 0.05), 0 10px 30px -16px rgba(16, 30, 54, 0.22);
+  --topbar: rgba(255, 255, 255, 0.82);
+  color-scheme: light;
+}
+
+[data-theme='dark'] {
+  --bg: #070b13;
+  --grid: rgba(120, 180, 210, 0.05);
+  --scan: rgba(120, 200, 210, 0.014);
+  --panel: #0f1826;
+  --panel2: #0c1320;
+  --panel3: #15212f;
+  --border: #1d2a3c;
+  --border2: #192435;
+  --text: #e8eff8;
+  --text2: #93a6bc;
+  --text3: #5c6e85;
+  --accent: #2dd4bf;
+  --accent2: #14b8a6;
+  --accent3: #5eead4;
+  --accent-soft: rgba(45, 212, 191, 0.13);
+  --ok: #34d399;
+  --ok-soft: rgba(52, 211, 153, 0.13);
+  --warn: #fbbf24;
+  --warn-soft: rgba(251, 191, 36, 0.14);
+  --crit: #f87171;
+  --crit-soft: rgba(248, 113, 113, 0.14);
+  --info: #38bdf8;
+  --info-soft: rgba(56, 189, 248, 0.14);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 16px 40px -20px rgba(0, 0, 0, 0.8);
+  --topbar: rgba(10, 16, 26, 0.78);
+  color-scheme: dark;
+}
+
+/* Static font tokens (not theme-swapped) registered in Tailwind's @theme so
+   font-display/font-body/font-mono utilities are generated. A thin alias layer
+   for the highest-frequency color tokens gives bg-panel/text-text2/etc ergonomics
+   too — the long tail of tokens stays as arbitrary values (bg-[var(--panel2)]). */
+@theme {
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --color-panel: var(--panel);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text2: var(--text2);
+  --color-accent: var(--accent);
+}
+
+@keyframes led-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  50% { box-shadow: 0 0 0 5px transparent; opacity: 0.55; }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 * {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--content-bg);
-  color: #0f172a;
+  font-family: var(--font-body);
+  background-color: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.2s, color 0.2s;
 }
 
 /* ── Scrollbar ─────────────────────────────────────────── */
@@ -31,11 +122,11 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: var(--border);
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  background-color: var(--text3);
 }
 
 .sidebar-scroll::-webkit-scrollbar-thumb {
