@@ -465,16 +465,20 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
   const renderValues = (record) => {
     const measurementValues = getMeasurementValues(record);
     const hasAverage = record.moyenne !== null && record.moyenne !== undefined && record.moyenne !== '';
-    if (measurementValues.length === 0 && !hasAverage) return <span className="text-slate-400">-</span>;
+    if (measurementValues.length === 0 && !hasAverage) return <span style={{ color: 'var(--text3)' }}>-</span>;
     return (
-      <div className="flex items-center gap-2 whitespace-nowrap overflow-x-auto text-sm text-slate-700">
+      <div className="flex items-center gap-1.5 flex-wrap">
         {measurementValues.map((value, valueIndex) => (
-          <span key={`${record.id}-value-${valueIndex}`} className="font-medium text-slate-700">{value}</span>
+          <span key={`${record.id}-value-${valueIndex}`}
+            className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold font-mono"
+            style={{ background: 'var(--ok-soft)', color: 'var(--ok)' }}>
+            {value}
+          </span>
         ))}
         {hasAverage && (
           <>
-            {measurementValues.length > 0 && <span className="text-slate-300">|</span>}
-            <span className="font-semibold text-slate-900">moy. {record.moyenne}</span>
+            {measurementValues.length > 0 && <span className="text-xs" style={{ color: 'var(--border)' }}>|</span>}
+            <span className="text-xs font-bold font-mono" style={{ color: 'var(--ok)' }}>moy. {record.moyenne}</span>
           </>
         )}
       </div>
@@ -623,7 +627,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                   const schedule = getGroupScheduleInfo(group);
                   return (
                     <tr key={rowKey} className="transition-colors hover:bg-[var(--panel3)]" style={{ background: rowIndex % 2 === 0 ? 'var(--panel)' : 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
-                      {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-2 border-sky-200', (value) => (
+                      {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-[3px] border-l-[var(--accent)]', (value) => (
                         <div className="flex flex-col gap-1.5 min-w-[130px]">
                           <span className="font-mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{formatValue(value)}</span>
                           <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
@@ -635,76 +639,89 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                           {/* Primary action: full maintenance cycle */}
                           <button type="button" onClick={() => openMaintenanceModal(group)} disabled={!schedule.canAdd}
                             title={schedule.canAdd ? 'Démarrer une nouvelle maintenance (archive les anciennes valeurs)' : 'Disponible quand la pince est en retard ou prévue cette semaine'}
-                            className={`inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[11px] font-semibold transition ${
-                              schedule.canAdd
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-                                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                            }`}>
+                            className="inline-flex items-center gap-1 self-start rounded-[8px] px-2 py-1 text-[11px] font-semibold transition"
+                            style={schedule.canAdd
+                              ? { background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid var(--ok)' }
+                              : { background: 'var(--panel3)', color: 'var(--text3)', border: '1px solid var(--border)', cursor: 'not-allowed' }}>
                             <ClipboardList className="w-3 h-3" />
                             Nouvelle maintenance
                           </button>
                           {/* Secondary: add a single row */}
                           <button type="button" onClick={() => openAddRowModal(group)} disabled={!schedule.canAdd}
                             title="Ajouter une ligne isolée"
-                            className={`inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[11px] font-semibold transition ${
-                              schedule.canAdd
-                                ? 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100'
-                                : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
-                            }`}>
+                            className="inline-flex items-center gap-1 self-start rounded-[8px] px-2 py-1 text-[11px] font-semibold transition"
+                            style={schedule.canAdd
+                              ? { background: 'var(--accent-soft)', color: 'var(--accent)', border: '1px solid var(--accent)' }
+                              : { background: 'var(--panel3)', color: 'var(--text3)', border: '1px solid var(--border)', cursor: 'not-allowed' }}>
                             <Plus className="w-3 h-3" />
                             Ajouter
                           </button>
                         </div>
                       ))}
 
-                      {renderMergedCell(group, 'date_controle', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                        <span>{formatDate(value)}</span>
+                      {renderMergedCell(group, 'date_controle', record, rowIndex, 'px-3 py-3 align-top', (value) => (
+                        <span className="text-xs font-medium" style={{ color: 'var(--text2)' }}>{formatDate(value)}</span>
                       ))}
 
-                      {renderMergedCell(group, 'reference_more', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                        <span>{formatValue(value)}</span>
+                      {renderMergedCell(group, 'reference_more', record, rowIndex, 'px-3 py-3 align-top', (value) => (
+                        <span className="text-xs font-mono font-semibold" style={{ color: 'var(--text)' }}>{formatValue(value)}</span>
                       ))}
 
-                      <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.position)}</td>
+                      <td className="px-3 py-3 align-top text-xs font-mono" style={{ color: 'var(--text2)' }}>{formatValue(record.position)}</td>
 
-                      {renderMergedCell(group, 'cosse', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                        <span>{formatValue(value)}</span>
+                      {renderMergedCell(group, 'cosse', record, rowIndex, 'px-3 py-3 align-top', (value) => (
+                        <span className="text-xs font-mono font-semibold" style={{ color: 'var(--accent)' }}>{formatValue(value)}</span>
                       ))}
 
-                      <td className="px-3 py-3 align-top text-xs text-slate-600">{formatValue(record.fil)}</td>
-                      <td className="px-3 py-3 align-top text-xs font-mono text-slate-600">{formatValue(record.traction_minimale_n)}</td>
-                      <td className="px-3 py-3 align-top text-xs text-slate-600">{renderValues(record)}</td>
+                      <td className="px-3 py-3 align-top text-xs font-mono font-semibold" style={{ color: 'var(--text2)' }}>{formatValue(record.fil)}</td>
+
+                      <td className="px-3 py-3 align-top">
+                        {record.traction_minimale_n
+                          ? <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold font-mono" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
+                              {record.traction_minimale_n} N
+                            </span>
+                          : <span style={{ color: 'var(--text3)' }}>—</span>}
+                      </td>
+
+                      <td className="px-3 py-3 align-top">{renderValues(record)}</td>
 
                       <td className="px-3 py-3 align-top text-xs">
                         {record.statut_verification ? (
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold ${
-                            record.statut_verification === 'Conforme' ? 'bg-emerald-50 text-emerald-700' :
-                            record.statut_verification === 'Non-conforme' ? 'bg-red-50 text-red-700' :
-                            'bg-amber-50 text-amber-700'
-                          }`}>{record.statut_verification}</span>
-                        ) : <span className="text-slate-400">-</span>}
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold"
+                            style={{
+                              background: record.statut_verification === 'Conforme' ? 'var(--ok-soft)' : record.statut_verification === 'Non-conforme' ? 'var(--crit-soft)' : 'var(--warn-soft)',
+                              color: record.statut_verification === 'Conforme' ? 'var(--ok)' : record.statut_verification === 'Non-conforme' ? 'var(--crit)' : 'var(--warn)',
+                            }}>
+                            {record.statut_verification}
+                          </span>
+                        ) : <span style={{ color: 'var(--text3)' }}>-</span>}
                       </td>
 
                       {renderMergedCell(group, 'date_prochaine', record, rowIndex, 'px-3 py-3 align-top text-xs', (value) => (
-                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                          isPastDate(value) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                        }`}>{formatDate(value)}</span>
+                        <span className="inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                          style={isPastDate(value)
+                            ? { background: 'var(--crit-soft)', color: 'var(--crit)' }
+                            : { background: 'var(--ok-soft)', color: 'var(--ok)' }}>
+                          {formatDate(value)}
+                        </span>
                       ))}
 
-                      {renderMergedCell(group, 'remarque', record, rowIndex, 'px-3 py-3 align-top text-xs text-slate-600', (value) => (
-                        <span>{formatValue(value)}</span>
+                      {renderMergedCell(group, 'remarque', record, rowIndex, 'px-3 py-3 align-top text-xs', (value) => (
+                        <span style={{ color: 'var(--text2)' }}>{formatValue(value)}</span>
                       ))}
 
                       <td className="px-3 py-3 align-top">
                         <div className="flex items-center gap-1">
                           <button type="button" onClick={() => openEditRowModal(group, record)}
                             title="Modifier cette ligne"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]"
+                            style={{ color: 'var(--text3)' }}>
                             <Pencil className="w-3.5 h-3.5" />
                           </button>
                           <button type="button" onClick={() => handleDeleteRow(record)}
                             title="Supprimer cette ligne"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                            className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--crit-soft)] hover:text-[var(--crit)]"
+                            style={{ color: 'var(--text3)' }}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
