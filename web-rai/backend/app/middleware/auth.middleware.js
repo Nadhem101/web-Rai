@@ -18,10 +18,13 @@ module.exports = async (req, res, next) => {
 
   const admin = getAdmin();
 
-  // If Supabase admin is not configured, warn and allow all (dev without env vars)
   if (!admin) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[Auth] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not configured in production');
+      return res.status(503).json({ error: 'Authentication service unavailable' });
+    }
     if (process.env.NODE_ENV !== 'test') {
-      console.warn('[Auth] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set — auth disabled');
+      console.warn('[Auth] Supabase not configured — auth disabled (dev mode)');
     }
     return next();
   }

@@ -5,11 +5,12 @@ require('dotenv').config();
 
 const app = express();
 
-const allowedOrigins = process.env.FRONTEND_URL
-  ? [process.env.FRONTEND_URL, 'http://localhost:5173']
-  : true; // allow all in local dev
+const allowedOrigins = [
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+  ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:5173'] : []),
+];
 
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : false, credentials: true }));
 
 // ── Auth middleware (verify Supabase JWT on all /api routes) ──
 const authMiddleware = require('./app/middleware/auth.middleware');
@@ -51,7 +52,7 @@ const PORT = process.env.PORT || 3001;
 async function start() {
   await syncDatabase();
   const server = app.listen(PORT, () => {
-    console.log(`✅ Serveur démarré sur http://localhost:${PORT}`);
+    console.log(`✅ Serveur démarré sur port ${PORT}`);
   });
   server.on('error', (err) => {
     console.error('❌ Erreur serveur:', err.message);

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { pincePreventiveService } from '../services/api';
+import { pincePreventiveService, pinceService } from '../services/api';
 import { Pencil, Trash2, Plus, X, AlertCircle, Wrench, ClipboardList } from 'lucide-react';
 
 const normalizeText = (value = '') =>
@@ -85,13 +85,17 @@ const addMonths = (date, months) => {
 };
 
 const getGroupScheduleInfo = (group) => {
+  if (group.rows.length === 0) {
+    return { key: 'unset', label: 'Pas encore initié', chipClass: 'bg-slate-100 text-slate-500 border-slate-200', canAdd: true, nextDate: null };
+  }
+
   const validDates = group.rows
     .map((row) => parseDateOnly(row.date_prochaine))
     .filter(Boolean)
     .sort((left, right) => left - right);
 
   if (validDates.length === 0) {
-    return { key: 'unknown', label: 'Sans date', chipClass: 'bg-slate-100 text-slate-600 border-slate-200', canAdd: false, nextDate: null };
+    return { key: 'unknown', label: 'Sans date', chipClass: 'bg-slate-100 text-slate-600 border-slate-200', canAdd: true, nextDate: null };
   }
 
   const nextDate = validDates[0];
@@ -229,6 +233,61 @@ const buildGroupedRecords = (records) => {
     .sort(compareGroups);
 };
 
+const buildMergedGroups = (allPinces, allRecords) => {
+  // Index records by normalised numero_pince
+  const recordsByKey = new Map();
+  allRecords.forEach((record) => {
+    const key = normalizeText(record.numero_pince) || `record-${record.id}`;
+    if (!recordsByKey.has(key)) recordsByKey.set(key, []);
+    recordsByKey.get(key).push(record);
+  });
+
+  const coveredKeys = new Set();
+  const groups = [];
+
+  // Every inventory pince gets a group (with or without records)
+  allPinces.forEach((pince) => {
+    const key = normalizeText(pince.numero_pince);
+    coveredKeys.add(key);
+    const rows = (recordsByKey.get(key) || []).sort(compareGroupRows);
+    groups.push({
+      key,
+      numeroPince: pince.numero_pince,
+      rows,
+      sharedFields: {
+        numero_pince: { shared: true, value: pince.numero_pince },
+        date_controle: getSharedFieldInfo(rows, 'date_controle'),
+        reference_more: getSharedFieldInfo(rows, 'reference_more'),
+        cosse: getSharedFieldInfo(rows, 'cosse'),
+        date_prochaine: getSharedFieldInfo(rows, 'date_prochaine'),
+        remarque: getSharedFieldInfo(rows, 'remarque'),
+      },
+    });
+  });
+
+  // Orphan records (exist in preventive DB but not in inventory)
+  recordsByKey.forEach((rows, key) => {
+    if (coveredKeys.has(key)) return;
+    const sortedRows = [...rows].sort(compareGroupRows);
+    const numeroPince = sortedRows[0]?.numero_pince ?? null;
+    groups.push({
+      key,
+      numeroPince,
+      rows: sortedRows,
+      sharedFields: {
+        numero_pince: { shared: true, value: numeroPince },
+        date_controle: getSharedFieldInfo(sortedRows, 'date_controle'),
+        reference_more: getSharedFieldInfo(sortedRows, 'reference_more'),
+        cosse: getSharedFieldInfo(sortedRows, 'cosse'),
+        date_prochaine: getSharedFieldInfo(sortedRows, 'date_prochaine'),
+        remarque: getSharedFieldInfo(sortedRows, 'remarque'),
+      },
+    });
+  });
+
+  return groups.sort(compareGroups);
+};
+
 const getMeasurementValues = (record) =>
   [record.test_value_1, record.test_value_2, record.test_value_3, record.test_value_4, record.test_value_5]
     .filter((value) => value !== null && value !== undefined && value !== '');
@@ -244,9 +303,10 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
   const [dateControle, setDateControle] = useState(defaultDateControle);
   const [dateProchaine, setDateProchaine] = useState(defaultDateProchaine);
   const [globalRemarque, setGlobalRemarque] = useState('');
-  // One row of test values per position in the current group
-  const [rowDrafts, setRowDrafts] = useState(() =>
-    group.rows.map((r) => ({
+  // One row of test values per position in the current group (at least one empty row for new pinces)
+  const [rowDrafts, setRowDrafts] = useState(() => {
+    const source = group.rows.length > 0 ? group.rows : [{}];
+    return source.map((r) => ({
       position: r.position ?? '',
       fil: r.fil ?? '',
       traction_minimale_n: r.traction_minimale_n ?? '',
@@ -259,8 +319,8 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
       test_value_5: '',
       statut_verification: '',
       remarque: '',
-    }))
-  );
+    }));
+  });
 
   // When dateControle changes, recalculate dateProchaine to +6M
   const handleDateControleChange = (val) => {
@@ -411,6 +471,7 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
 
 // ── PincePreventiveCalendar ───────────────────────────────────────────────────
 const PincePreventiveCalendar = ({ searchQuery = '' }) => {
+  const [pinces, setPinces] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [rowForm, setRowForm] = useState({ open: false, mode: 'create', group: null, record: null, data: null, saving: false, error: '' });
@@ -421,8 +482,12 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
   const loadRecords = async () => {
     try {
       setLoading(true);
-      const response = await pincePreventiveService.getAll();
-      setRecords(Array.isArray(response) ? response : []);
+      const [pincesRes, recordsRes] = await Promise.all([
+        pinceService.getAll(),
+        pincePreventiveService.getAll(),
+      ]);
+      setPinces(Array.isArray(pincesRes?.data) ? pincesRes.data : []);
+      setRecords(Array.isArray(recordsRes) ? recordsRes : []);
     } catch (error) {
       console.error('Erreur chargement maintenance preventive pinces:', error);
     } finally {
@@ -432,19 +497,26 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   const normalizedSearch = normalizeText(searchQuery);
 
-  const filteredRecords = useMemo(() => {
-    return records.filter((record) => {
-      if (!normalizedSearch) return true;
-      return [
-        record.numero_pince, record.reference_more, record.position, record.cosse, record.fil,
-        record.traction_minimale_n, record.test_value_1, record.test_value_2, record.test_value_3,
-        record.test_value_4, record.test_value_5, record.date_controle, record.date_prochaine,
-        record.moyenne, record.statut_verification, record.remarque,
-      ].some((field) => normalizeText(field).includes(normalizedSearch));
-    });
-  }, [records, normalizedSearch]);
+  // All groups built from inventory (every pince appears, even without records)
+  const allGroups = useMemo(() => buildMergedGroups(pinces, records), [pinces, records]);
 
-  const groupedRecords = useMemo(() => buildGroupedRecords(filteredRecords), [filteredRecords]);
+  // Filter groups by search query
+  const groupedRecords = useMemo(() => {
+    if (!normalizedSearch) return allGroups;
+    return allGroups.filter((group) => {
+      if (normalizeText(group.numeroPince).includes(normalizedSearch)) return true;
+      return group.rows.some((record) =>
+        [record.numero_pince, record.reference_more, record.position, record.cosse, record.fil,
+         record.traction_minimale_n, record.test_value_1, record.test_value_2, record.test_value_3,
+         record.test_value_4, record.test_value_5, record.date_controle, record.date_prochaine,
+         record.moyenne, record.statut_verification, record.remarque,
+        ].some((field) => normalizeText(field).includes(normalizedSearch))
+      );
+    });
+  }, [allGroups, normalizedSearch]);
+
+  // Flat list of actual measurement records (for counters)
+  const filteredRecords = useMemo(() => groupedRecords.flatMap((g) => g.rows), [groupedRecords]);
 
   const overdueCount = useMemo(
     () => filteredRecords.filter((r) => isPastDate(r.date_prochaine)).length,
@@ -621,10 +693,37 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
               </tr>
             </thead>
             <tbody className="">
-              {groupedRecords.map((group) =>
-                group.rows.map((record, rowIndex) => {
+              {groupedRecords.flatMap((group) => {
+                const schedule = getGroupScheduleInfo(group);
+
+                // Stub row for pinces with no preventive records yet
+                if (group.rows.length === 0) {
+                  return [(
+                    <tr key={group.key} className="transition-colors hover:bg-[var(--panel3)]"
+                      style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border2)' }}>
+                      <td className="px-3 py-3 align-top border-l-[3px] border-l-[var(--accent)]">
+                        <div className="flex flex-col gap-1.5 min-w-[130px]">
+                          <span className="font-mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{group.numeroPince}</span>
+                          <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
+                            {schedule.label}
+                          </span>
+                          <button type="button" onClick={() => openMaintenanceModal(group)}
+                            className="inline-flex items-center gap-1 self-start rounded-[8px] px-2 py-1 text-[11px] font-semibold transition"
+                            style={{ background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid var(--ok)' }}>
+                            <ClipboardList className="w-3 h-3" />
+                            Initialiser
+                          </button>
+                        </div>
+                      </td>
+                      <td colSpan={11} className="px-3 py-3 text-xs" style={{ color: 'var(--text3)' }}>
+                        Aucune mesure enregistrée — cliquez sur Initialiser pour démarrer le suivi préventif.
+                      </td>
+                    </tr>
+                  )];
+                }
+
+                return group.rows.map((record, rowIndex) => {
                   const rowKey = record.id ?? `${group.key}-${rowIndex}`;
-                  const schedule = getGroupScheduleInfo(group);
                   return (
                     <tr key={rowKey} className="transition-colors hover:bg-[var(--panel3)]" style={{ background: rowIndex % 2 === 0 ? 'var(--panel)' : 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                       {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-[3px] border-l-[var(--accent)]', (value) => (
@@ -728,8 +827,8 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                       </td>
                     </tr>
                   );
-                })
-              )}
+                });
+              })}
             </tbody>
           </table>
         </div>

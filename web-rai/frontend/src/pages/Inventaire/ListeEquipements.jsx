@@ -284,7 +284,7 @@ const ListeEquipements = () => {
               <thead>
                 <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                   {['Code RAI','Désignation','N° Série',
-                    ...(isPdr ? ['Lame cuivre réf.','Qté','Lame isolant réf.','Qté','Enclume cuivre réf.','Qté','Enclume isolant réf.','Qté'] : []),
+                    ...(isPdr ? ['Lame cuivre réf.','Qté','Lame isolant réf.','Qté','Enclume cuivre réf.','Qté','Enclume isolant réf.','Qté','Lame dénudage qté'] : []),
                     'Zone','Fabricant','Statut','Actions'].map(h => (
                     <th key={h} className={`px-3.5 py-2.5 text-left whitespace-nowrap ${h==='Actions'?'text-center':''}`}>
                       <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--text3)' }}>{h}</span>
@@ -308,6 +308,7 @@ const ListeEquipements = () => {
                         <td className="px-3.5 py-2.5 text-center"><PdrQtyPill value={eq.pdr_details?.enclume_cuivre?.quantity} /></td>
                         <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text2)' }}>{formatPdrCell(eq.pdr_details?.enclume_isolant?.reference)}</td>
                         <td className="px-3.5 py-2.5 text-center"><PdrQtyPill value={eq.pdr_details?.enclume_isolant?.quantity} /></td>
+                        <td className="px-3.5 py-2.5 text-center"><PdrQtyPill value={eq.pdr_details?.lame_denudage?.quantity} /></td>
                       </>
                     )}
                     <td className="px-3.5 py-2.5 text-xs whitespace-nowrap" style={{ color: 'var(--text3)' }}>{eq.Zone?.nom_zone || '—'}</td>

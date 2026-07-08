@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { applicateurThresholdService, applicateurPreventiveService } from '../services/api';
+import { applicateurThresholdService, applicateurPreventiveService, applicateurService } from '../services/api';
 import { Search, Zap, PackageOpen, AlertCircle, XCircle, ClipboardList, X } from 'lucide-react';
 
 const normalizeText = (value = '') =>
@@ -112,7 +112,7 @@ const ApplicateurMaintenanceModal = ({ group, activeRecords, onConfirm, onClose,
   const [dateControle, setDateControle] = useState(formatDateForInput(today));
   const [dateProchaine, setDateProchaine] = useState(formatDateForInput(addMonths(today, 6)));
 
-  // If there are existing preventive records for this outil, use them as rows; otherwise use threshold rows
+  // Use preventive records if they exist; otherwise use threshold rows; fallback to one empty row
   const initialRows = useMemo(() => {
     if (activeRecords && activeRecords.length > 0) {
       return activeRecords.map((r) => ({
@@ -124,8 +124,9 @@ const ApplicateurMaintenanceModal = ({ group, activeRecords, onConfirm, onClose,
         remarque: '',
       }));
     }
-    // Bootstrap from threshold rows
-    return group.rows.map((r) => ({
+    // Bootstrap from threshold rows (or one empty row for applicateurs with no threshold config)
+    const source = group.rows.length > 0 ? group.rows : [{}];
+    return source.map((r) => ({
       section_mm2: r.section_mm2 ?? '',
       seuil_n: r.seuil_n ?? '',
       longueur_denudage: r.longueur_denudage ?? '',
@@ -257,6 +258,7 @@ const ApplicateurMaintenanceModal = ({ group, activeRecords, onConfirm, onClose,
 
 // ── Main component ────────────────────────────────────────────────────────────
 const ApplicateursPreventifTable = () => {
+  const [applicateurs, setApplicateurs] = useState([]);
   const [thresholds, setThresholds] = useState([]);
   const [preventiveRecords, setPreventiveRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -267,12 +269,14 @@ const ApplicateursPreventifTable = () => {
   const loadData = async () => {
     try {
       setLoading(true); setError('');
-      const [threshRes, preventiveRes] = await Promise.all([
+      const [threshRes, preventiveRes, applicateurRes] = await Promise.all([
         applicateurThresholdService.getAll(),
         applicateurPreventiveService.getAll(),
+        applicateurService.getAll(),
       ]);
       setThresholds(Array.isArray(threshRes?.records) ? threshRes.records : Array.isArray(threshRes) ? threshRes : []);
       setPreventiveRecords(Array.isArray(preventiveRes) ? preventiveRes : []);
+      setApplicateurs(Array.isArray(applicateurRes?.data) ? applicateurRes.data : []);
     } catch {
       setError('Impossible de charger le suivi préventif des applicateurs.');
     } finally {
@@ -303,10 +307,27 @@ const ApplicateursPreventifTable = () => {
 
   const groupedRecords = useMemo(() => buildGroupedThresholds(filteredThresholds), [filteredThresholds]);
 
+  // Merge: every applicateur from inventory appears, even without threshold config
+  const mergedGroups = useMemo(() => {
+    const outilsWithThresholds = new Set(groupedRecords.map((g) => normalizeText(g.numeroOutil)));
+    const stubGroups = applicateurs
+      .filter((a) => !outilsWithThresholds.has(normalizeText(a.numero_outil)))
+      .map((a) => ({
+        key: `inventory-${a.numero_outil}`,
+        numeroOutil: a.numero_outil,
+        referenceTec: null,
+        designation: a.designation || null,
+        rows: [],
+      }));
+    return [...groupedRecords, ...stubGroups].sort((a, b) =>
+      String(a.numeroOutil ?? '').localeCompare(String(b.numeroOutil ?? ''), 'fr', { numeric: true, sensitivity: 'base' })
+    );
+  }, [groupedRecords, applicateurs]);
+
   const summary = useMemo(() => {
-    const tools = new Set(filteredThresholds.map((r) => r.numero_outil).filter(Boolean));
-    return { tools: tools.size, groups: groupedRecords.length, rows: filteredThresholds.length };
-  }, [filteredThresholds, groupedRecords]);
+    const tools = new Set(mergedGroups.map((g) => g.numeroOutil).filter(Boolean));
+    return { tools: tools.size, groups: mergedGroups.length, rows: filteredThresholds.length };
+  }, [mergedGroups, filteredThresholds]);
 
   const overdueCount = useMemo(() => {
     const seen = new Set();
@@ -415,19 +436,47 @@ const ApplicateursPreventifTable = () => {
                 </tr>
               </thead>
               <tbody>
-                {groupedRecords.map((group, groupIdx) => {
+                {mergedGroups.flatMap((group, groupIdx) => {
                   const outilKey = String(group.numeroOutil ?? '').trim();
                   const activeRecs = preventiveByOutil[outilKey] || [];
-                  // The next date is the same for all sections of this outil
                   const datePro = activeRecs[0]?.date_prochaine ?? null;
                   const schedule = getScheduleInfo(datePro);
+
+                  // Stub row for applicateurs with no threshold configuration
+                  if (group.rows.length === 0) {
+                    return [(
+                      <tr key={group.key} className="transition-colors hover:bg-[var(--panel3)]"
+                        style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border2)' }}>
+                        <td className="px-4 py-3 align-top font-mono font-bold text-amber-600 whitespace-nowrap border-l-2 border-amber-200">
+                          <div className="flex flex-col gap-1.5">
+                            <span>{formatValue(group.numeroOutil)}</span>
+                            <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
+                              {schedule.label}
+                            </span>
+                            <button type="button" onClick={() => openMaintenanceModal(group)}
+                              className="inline-flex items-center gap-1 self-start rounded-lg px-2 py-1 text-[11px] font-semibold transition bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100">
+                              <ClipboardList className="w-3 h-3" />
+                              Initialiser
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 align-top font-mono text-xs" style={{ color: 'var(--text2)' }}>—</td>
+                        <td className="px-4 py-3 align-top text-sm max-w-[180px]" style={{ color: 'var(--text)' }}>
+                          <span className="break-words">{formatValue(group.designation)}</span>
+                        </td>
+                        <td colSpan={6} className="px-4 py-3 text-xs" style={{ color: 'var(--text3)' }}>
+                          Aucun seuil configuré — cliquez sur Initialiser pour démarrer le suivi préventif.
+                        </td>
+                      </tr>
+                    )];
+                  }
 
                   return group.rows.map((record, rowIndex) => {
                     const rowKey = record.id ?? `${group.key}-${rowIndex}`;
                     const isLastRow = rowIndex === group.rows.length - 1;
                     const rowBgStyle = {
                       background: rowIndex % 2 === 0 ? 'var(--panel)' : 'var(--panel2)',
-                      borderBottom: isLastRow && groupIdx < groupedRecords.length - 1 ? '2px solid var(--border)' : '1px solid var(--border2)',
+                      borderBottom: isLastRow && groupIdx < mergedGroups.length - 1 ? '2px solid var(--border)' : '1px solid var(--border2)',
                     };
 
                     return (

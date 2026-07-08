@@ -12,6 +12,7 @@ const PDR_PIECE_OPTIONS = [
   { value: 'lame_isolant',   label: 'Lame isolant' },
   { value: 'enclume_cuivre', label: 'Enclume cuivre' },
   { value: 'enclume_isolant',label: 'Enclume isolant' },
+  { value: 'lame_denudage',  label: 'Lame de dénudage' },
 ];
 
 const createEmptyPdrPiece = () => ({ code: '', reference: '', quantity: '' });
