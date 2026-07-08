@@ -276,7 +276,7 @@ const ApplicateursPreventifTable = () => {
       ]);
       setThresholds(Array.isArray(threshRes?.records) ? threshRes.records : Array.isArray(threshRes) ? threshRes : []);
       setPreventiveRecords(Array.isArray(preventiveRes) ? preventiveRes : []);
-      setApplicateurs(Array.isArray(applicateurRes?.data) ? applicateurRes.data : []);
+      setApplicateurs(Array.isArray(applicateurRes) ? applicateurRes : []);
     } catch {
       setError('Impossible de charger le suivi préventif des applicateurs.');
     } finally {
