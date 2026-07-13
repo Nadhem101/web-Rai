@@ -19,14 +19,15 @@ import { staggerItemVariants } from '../../components/motion/ScreenTransition.js
 
 // ── Helpers ────────────────────────────────────────────────
 const buildInitialFormState = (record = null) => ({
-  incident_date:     record?.incident_date     ?? '',
-  week_label:        record?.week_label        ?? '',
-  intervenant:       record?.intervenant       ?? '',
-  zone_production:   record?.zone_production   ?? '',
-  request_time:      record?.request_time      ?? '',
-  started_time:      record?.started_time      ?? '',
-  finished_time:     record?.finished_time     ?? '',
-  description_panne: record?.description_panne ?? '',
+  incident_date:              record?.incident_date              ?? '',
+  week_label:                 record?.week_label                 ?? '',
+  intervenant:                record?.intervenant                ?? '',
+  zone_production:            record?.zone_production            ?? '',
+  request_time:               record?.request_time               ?? '',
+  started_time:               record?.started_time               ?? '',
+  finished_time:              record?.finished_time              ?? '',
+  description_panne:          record?.description_panne          ?? '',
+  bon_fonctionnement_minutes: record?.bon_fonctionnement_minutes != null ? String(record.bon_fonctionnement_minutes) : '',
 });
 
 const formatDateOnly = (value) => {
@@ -197,8 +198,9 @@ const SuiviCuratif = () => {
       started_time:      formData.started_time,
       finished_time:     formData.finished_time,
       description_panne: formData.description_panne.trim() || null,
-      response_minutes:  formDurations.responseMinutes,
-      downtime_minutes:  formDurations.downtimeMinutes,
+      response_minutes:           formDurations.responseMinutes,
+      downtime_minutes:           formDurations.downtimeMinutes,
+      bon_fonctionnement_minutes: formData.bon_fonctionnement_minutes !== '' ? Number(formData.bon_fonctionnement_minutes) : null,
     };
     try {
       if (editingRecord?.id) await curativeMaintenanceService.update(editingRecord.id, payload);
@@ -278,7 +280,7 @@ const SuiviCuratif = () => {
             <table className="min-w-full text-sm">
               <thead>
                 <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
-                  {['Date','Équipement','Zone','Intervenant','Demande','Début','Fin','Arrêt','Actions'].map((h) => (
+                  {['Date','Équipement','Zone','Intervenant','Demande','Début','Fin','Arrêt','Bon fonct.','Actions'].map((h) => (
                     <th key={h} className="px-3.5 py-2.5 text-left whitespace-nowrap">
                       <DataLabel>{h}</DataLabel>
                     </th>
@@ -287,12 +289,12 @@ const SuiviCuratif = () => {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={9} className="py-12 text-center">
+                  <tr><td colSpan={10} className="py-12 text-center">
                     <div className="w-6 h-6 border-2 rounded-full animate-spin mx-auto mb-2" style={{ borderColor: 'var(--border)', borderTopColor: 'var(--accent)' }} />
                     <p className="text-xs" style={{ color: 'var(--text3)' }}>Chargement…</p>
                   </td></tr>
                 ) : filteredRecords.length === 0 ? (
-                  <tr><td colSpan={9} className="py-12 text-center">
+                  <tr><td colSpan={10} className="py-12 text-center">
                     <ClipboardList className="w-8 h-8 mx-auto mb-2" style={{ color: 'var(--text3)' }} />
                     <p className="text-sm" style={{ color: 'var(--text3)' }}>Aucun incident curatif trouvé</p>
                   </td></tr>
@@ -311,6 +313,9 @@ const SuiviCuratif = () => {
                     <td className="px-3.5 py-2.5 whitespace-nowrap font-mono text-xs" style={{ color: 'var(--text3)' }}>{record.finished_time || '—'}</td>
                     <td className="px-3.5 py-2.5 whitespace-nowrap">
                       <StatusBadge variant={downtimeSeverity(record.downtime_minutes)}>{formatMinutes(record.downtime_minutes)}</StatusBadge>
+                    </td>
+                    <td className="px-3.5 py-2.5 whitespace-nowrap font-mono text-xs" style={{ color: 'var(--text2)' }}>
+                      {record.bon_fonctionnement_minutes != null ? `${Number(record.bon_fonctionnement_minutes).toLocaleString('fr-FR')} min` : '—'}
                     </td>
                     <td className="px-3.5 py-2.5">
                       <div className="flex items-center gap-1">
@@ -433,6 +438,12 @@ const SuiviCuratif = () => {
                     <span className={labelClass} style={{ color: 'var(--text3)' }}>Description de la panne</span>
                     <textarea name="description_panne" value={formData.description_panne} onChange={handleChange} rows={3}
                       className={fieldClass + ' resize-none'} style={fieldStyle} placeholder="Décrivez le problème rencontré" />
+                  </label>
+                  <label className="block sm:col-span-2">
+                    <span className={labelClass} style={{ color: 'var(--text3)' }}>Bon fonctionnement <span className="font-normal normal-case tracking-normal" style={{ color: 'var(--text3)' }}>(min) — pour calcul MTBF</span></span>
+                    <input type="number" name="bon_fonctionnement_minutes" value={formData.bon_fonctionnement_minutes}
+                      onChange={handleChange} min="0" step="1"
+                      className={fieldClass} style={fieldStyle} placeholder="Durée de bon fonctionnement avant la panne (min)" />
                   </label>
                 </div>
 

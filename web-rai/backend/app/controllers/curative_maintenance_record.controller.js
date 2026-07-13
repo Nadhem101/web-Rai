@@ -93,6 +93,8 @@ const buildCalendarMonthDefinitions = () => ([
   { month: 12, label: 'Décembre' },
 ]);
 
+const MTTR_SEUIL = 15;
+
 const buildCalendarSummary = (records, selectedYear) => {
   const monthDefinitions = buildCalendarMonthDefinitions();
   const buckets = monthDefinitions.map((definition) => ({
@@ -100,6 +102,8 @@ const buildCalendarSummary = (records, selectedYear) => {
     count: 0,
     totalMinutes: 0,
     averageMinutes: null,
+    totalBonFonctionnement: 0,
+    mtbf: null,
   }));
 
   records.forEach((record) => {
@@ -120,16 +124,25 @@ const buildCalendarSummary = (records, selectedYear) => {
 
     bucket.count += 1;
     bucket.totalMinutes += downtime;
+
+    const bonFonct = Number(record.bon_fonctionnement_minutes);
+    if (Number.isFinite(bonFonct)) {
+      bucket.totalBonFonctionnement += bonFonct;
+    }
   });
 
   buckets.forEach((bucket) => {
     if (bucket.count > 0) {
       bucket.averageMinutes = Number((bucket.totalMinutes / bucket.count).toFixed(2));
+      if (bucket.totalBonFonctionnement > 0) {
+        bucket.mtbf = Number((bucket.totalBonFonctionnement / bucket.count).toFixed(2));
+      }
     }
   });
 
   const totalCount = buckets.reduce((sum, bucket) => sum + bucket.count, 0);
   const totalMinutes = buckets.reduce((sum, bucket) => sum + bucket.totalMinutes, 0);
+  const totalBonFonctionnement = buckets.reduce((sum, bucket) => sum + bucket.totalBonFonctionnement, 0);
 
   return {
     selectedYear,
@@ -138,6 +151,8 @@ const buildCalendarSummary = (records, selectedYear) => {
     totalCount,
     totalMinutes: Number(totalMinutes.toFixed(2)),
     averageMinutes: totalCount > 0 ? Number((totalMinutes / totalCount).toFixed(2)) : null,
+    mtbf: totalCount > 0 && totalBonFonctionnement > 0 ? Number((totalBonFonctionnement / totalCount).toFixed(2)) : null,
+    mttrSeuil: MTTR_SEUIL,
   };
 };
 
@@ -218,6 +233,11 @@ const parsePayload = async (body = {}, existingRecord = null) => {
     ? (startedTime && finishedTime ? computeDurationMinutes(startedTime, finishedTime) : null)
     : Number(downtimeMinutesInput);
 
+  const bonFonctionnementInput = body.bon_fonctionnement_minutes ?? existingRecord?.bon_fonctionnement_minutes;
+  const bonFonctionnementMinutes = bonFonctionnementInput === null || bonFonctionnementInput === undefined || bonFonctionnementInput === ''
+    ? null
+    : Number(bonFonctionnementInput);
+
   return {
     incident_date: incidentDate,
     week_label: weekLabel,
@@ -228,6 +248,7 @@ const parsePayload = async (body = {}, existingRecord = null) => {
     description_panne: normalizeText(body.description_panne || existingRecord?.description_panne) || null,
     response_minutes: Number.isFinite(responseMinutes) ? Number(responseMinutes.toFixed(2)) : null,
     downtime_minutes: Number.isFinite(downtimeMinutes) ? Number(downtimeMinutes.toFixed(2)) : null,
+    bon_fonctionnement_minutes: Number.isFinite(bonFonctionnementMinutes) ? Number(bonFonctionnementMinutes.toFixed(2)) : null,
     ...(await resolveEquipmentSnapshot(body, existingRecord)),
   };
 };
@@ -368,7 +389,7 @@ exports.delete = async (req, res) => {
 exports.monthlySummary = async (req, res) => {
   try {
     const records = await CurativeMaintenanceRecord.findAll({
-      attributes: ['incident_date', 'downtime_minutes'],
+      attributes: ['incident_date', 'downtime_minutes', 'bon_fonctionnement_minutes'],
       order: buildOrder(),
     });
 

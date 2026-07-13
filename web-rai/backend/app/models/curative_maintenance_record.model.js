@@ -65,6 +65,11 @@ const CurativeMaintenanceRecord = sequelize.define(
       allowNull: true,
       comment: 'Durée d\'arrêt liée à l\'intervention',
     },
+    bon_fonctionnement_minutes: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      comment: 'Durée de bon fonctionnement avant la panne (pour calcul MTBF)',
+    },
   },
   {
     tableName: 'curative_maintenance_records',

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { curativeMaintenanceService } from '../../services/api';
 import { formatMinutes } from '../../utils/curativeMaintenance';
-import { BarChart2, Clock, Timer, TrendingUp, AlertCircle, CalendarDays } from 'lucide-react';
+import { BarChart2, Clock, Timer, TrendingUp, AlertCircle, CalendarDays, Activity } from 'lucide-react';
 import KpiCard from '../../components/ui/KpiCard.jsx';
 import DataLabel from '../../components/ui/DataLabel.jsx';
 import GrowBar from '../../components/motion/GrowBar.jsx';
@@ -35,9 +35,13 @@ const IndicateurCuratif = () => {
 
   useEffect(() => { loadSummary(); }, []);
 
+  const MTTR_SEUIL = summary?.mttrSeuil ?? 15;
+
   const chartData = useMemo(() => buildChartData(summary || {}), [summary]);
   const hasData   = useMemo(() => chartData.some((m) => m.count > 0), [chartData]);
-  const maxAverage = useMemo(() => Math.max(1, ...chartData.map((m) => m.averageMinutesValue)), [chartData]);
+  const maxAverage = useMemo(() => Math.max(MTTR_SEUIL + 1, ...chartData.map((m) => m.averageMinutesValue)), [chartData, MTTR_SEUIL]);
+
+  const mttrExceedsSeuil = (summary?.averageMinutes ?? 0) > MTTR_SEUIL;
 
   const handleYearChange = (e) => {
     const y = Number(e.target.value);
@@ -87,12 +91,19 @@ const IndicateurCuratif = () => {
         )}
 
         {/* ── KPIs ── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3.5">
           <KpiCard label="Incidents · période" value={summary?.totalCount ?? 0} icon={TrendingUp} accentVariant="accent" loading={loading} />
           <KpiCard
-            label="Temps d'arrêt moyen"
-            value={summary?.averageMinutes ?? 0} suffix=" min" icon={Clock} accentVariant="warn"
+            label={`MTTR · seuil ${MTTR_SEUIL} min`}
+            value={summary?.averageMinutes ?? 0} suffix=" min" icon={Clock}
+            accentVariant={mttrExceedsSeuil ? 'crit' : 'ok'}
             loading={loading || summary?.averageMinutes === null || summary?.averageMinutes === undefined}
+          />
+          <KpiCard
+            label="MTBF · bon fonctionnement"
+            value={summary?.mtbf ?? 0} suffix=" min" icon={Activity}
+            accentVariant="accent"
+            loading={loading || summary?.mtbf === null || summary?.mtbf === undefined}
           />
           <KpiCard label="Temps d'arrêt total" value={summary?.totalMinutes ?? 0} suffix=" min" icon={Timer} accentVariant="crit" loading={loading} />
         </div>
@@ -122,25 +133,41 @@ const IndicateurCuratif = () => {
                 </div>
               ) : hasData ? (
                 <div className="flex items-end gap-1.5 h-full">
-                  {chartData.map((m, i) => (
-                    <div key={m.month} className="flex-1 flex flex-col items-center min-w-0">
-                      <span className="font-mono text-[9px] font-semibold mb-1" style={{ color: 'var(--text2)' }}>
-                        {m.averageMinutes === null || m.averageMinutes === undefined ? '—' : Math.round(m.averageMinutesValue)}
-                      </span>
-                      <div className="w-full h-[172px] flex items-end justify-center">
-                        <GrowBar
-                          delay={0.1 + i * 0.04}
-                          className="w-[64%] max-w-[22px] rounded-[5px_5px_2px_2px]"
-                          style={{
-                            height: `${Math.max(4, (m.averageMinutesValue / maxAverage) * 172)}px`,
-                            background: 'linear-gradient(180deg, var(--accent3), var(--accent))',
-                            boxShadow: '0 0 12px var(--accent-soft)',
-                          }}
-                        />
+                  {chartData.map((m, i) => {
+                    const overSeuil = m.averageMinutesValue > MTTR_SEUIL;
+                    return (
+                      <div key={m.month} className="flex-1 flex flex-col items-center min-w-0">
+                        <span className="font-mono text-[9px] font-semibold mb-1" style={{ color: overSeuil ? 'var(--crit)' : 'var(--text2)' }}>
+                          {m.averageMinutes === null || m.averageMinutes === undefined ? '—' : Math.round(m.averageMinutesValue)}
+                        </span>
+                        {/* bars area — threshold line sits inside this relative container */}
+                        <div className="relative w-full h-[172px] flex items-end justify-center">
+                          {i === 0 && (
+                            <div className="absolute left-0 w-[2000%] pointer-events-none z-10 flex items-center gap-1"
+                              style={{ bottom: `${(MTTR_SEUIL / maxAverage) * 172}px` }}>
+                              <div className="flex-1 border-t-2 border-dashed" style={{ borderColor: 'var(--crit)' }} />
+                              <span className="text-[9px] font-bold shrink-0 px-1 rounded whitespace-nowrap"
+                                style={{ color: 'var(--crit)', background: 'var(--crit-soft)' }}>
+                                Seuil {MTTR_SEUIL} min
+                              </span>
+                            </div>
+                          )}
+                          <GrowBar
+                            delay={0.1 + i * 0.04}
+                            className="w-[64%] max-w-[22px] rounded-[5px_5px_2px_2px]"
+                            style={{
+                              height: `${Math.max(4, (m.averageMinutesValue / maxAverage) * 172)}px`,
+                              background: overSeuil
+                                ? 'linear-gradient(180deg, #ff6b6b, var(--crit))'
+                                : 'linear-gradient(180deg, var(--accent3), var(--accent))',
+                              boxShadow: overSeuil ? '0 0 12px rgba(255,80,80,0.3)' : '0 0 12px var(--accent-soft)',
+                            }}
+                          />
+                        </div>
+                        <span className="font-mono text-[9px] mt-[7px]" style={{ color: 'var(--text3)' }}>{m.label}</span>
                       </div>
-                      <span className="font-mono text-[9px] mt-[7px]" style={{ color: 'var(--text3)' }}>{m.label}</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="h-full flex items-center justify-center rounded-[10px]" style={{ border: '1px dashed var(--border)' }}>
@@ -164,33 +191,42 @@ const IndicateurCuratif = () => {
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="sticky top-0" style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
-                    {['Mois','Incidents','Total','Moyenne'].map((h) => (
+                    {['Mois','Incidents','Total','MTTR','MTBF'].map((h) => (
                       <th key={h} className="px-4 py-2.5 text-left whitespace-nowrap"><DataLabel>{h}</DataLabel></th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={4} className="py-8 text-center text-xs" style={{ color: 'var(--text3)' }}>Chargement…</td></tr>
-                  ) : chartData.map((month) => (
-                    <tr key={month.month} className="transition-colors hover:bg-[var(--panel2)]" style={{ borderBottom: '1px solid var(--border2)' }}>
-                      <td className="px-4 py-2.5 font-mono font-semibold" style={{ color: 'var(--text)' }}>{month.label}</td>
-                      <td className="px-4 py-2.5" style={{ color: 'var(--text2)' }}>{month.count}</td>
-                      <td className="px-4 py-2.5 font-mono text-xs" style={{ color: 'var(--text2)' }}>{formatMinutes(month.totalMinutes)}</td>
-                      <td className="px-4 py-2.5">
-                        {month.averageMinutes === null || month.averageMinutes === undefined ? (
-                          <span style={{ color: 'var(--text3)' }}>—</span>
-                        ) : (
-                          <span
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] font-mono text-[11px] font-bold"
-                            style={{ background: 'var(--warn-soft)', color: 'var(--warn)', border: '1px solid var(--warn)' }}
-                          >
-                            {formatMinutes(month.averageMinutes)}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                    <tr><td colSpan={5} className="py-8 text-center text-xs" style={{ color: 'var(--text3)' }}>Chargement…</td></tr>
+                  ) : chartData.map((month) => {
+                    const overSeuil = month.count > 0 && (month.averageMinutes ?? 0) > MTTR_SEUIL;
+                    return (
+                      <tr key={month.month} className="transition-colors hover:bg-[var(--panel2)]"
+                        style={{ borderBottom: '1px solid var(--border2)', background: overSeuil ? 'var(--crit-soft)' : undefined }}>
+                        <td className="px-4 py-2.5 font-mono font-semibold" style={{ color: 'var(--text)' }}>{month.label}</td>
+                        <td className="px-4 py-2.5" style={{ color: 'var(--text2)' }}>{month.count || '—'}</td>
+                        <td className="px-4 py-2.5 font-mono text-xs" style={{ color: 'var(--text2)' }}>{month.count > 0 ? formatMinutes(month.totalMinutes) : '—'}</td>
+                        <td className="px-4 py-2.5">
+                          {month.averageMinutes === null || month.averageMinutes === undefined ? (
+                            <span style={{ color: 'var(--text3)' }}>—</span>
+                          ) : (
+                            <span
+                              className="inline-flex items-center px-2.5 py-0.5 rounded-[18px] font-mono text-[11px] font-bold"
+                              style={overSeuil
+                                ? { background: 'var(--crit-soft)', color: 'var(--crit)', border: '1px solid var(--crit)' }
+                                : { background: 'var(--ok-soft)', color: 'var(--ok)', border: '1px solid var(--ok)' }}
+                            >
+                              {formatMinutes(month.averageMinutes)}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2.5 font-mono text-xs" style={{ color: 'var(--text2)' }}>
+                          {month.mtbf != null ? formatMinutes(month.mtbf) : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
