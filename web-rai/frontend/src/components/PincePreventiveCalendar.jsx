@@ -509,7 +509,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
         [record.numero_pince, record.reference_more, record.position, record.cosse, record.fil,
          record.traction_minimale_n, record.test_value_1, record.test_value_2, record.test_value_3,
          record.test_value_4, record.test_value_5, record.date_controle, record.date_prochaine,
-         record.moyenne, record.statut_verification, record.remarque,
+         record.statut_verification, record.remarque,
         ].some((field) => normalizeText(field).includes(normalizedSearch))
       );
     });
@@ -536,8 +536,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   const renderValues = (record) => {
     const measurementValues = getMeasurementValues(record);
-    const hasAverage = record.moyenne !== null && record.moyenne !== undefined && record.moyenne !== '';
-    if (measurementValues.length === 0 && !hasAverage) return <span style={{ color: 'var(--text3)' }}>-</span>;
+    if (measurementValues.length === 0) return <span style={{ color: 'var(--text3)' }}>-</span>;
     return (
       <div className="flex items-center gap-1.5 flex-wrap">
         {measurementValues.map((value, valueIndex) => (
@@ -547,12 +546,6 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
             {value}
           </span>
         ))}
-        {hasAverage && (
-          <>
-            {measurementValues.length > 0 && <span className="text-xs" style={{ color: 'var(--border)' }}>|</span>}
-            <span className="text-xs font-bold font-mono" style={{ color: 'var(--ok)' }}>moy. {record.moyenne}</span>
-          </>
-        )}
       </div>
     );
   };

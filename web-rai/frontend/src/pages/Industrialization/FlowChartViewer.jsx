@@ -8,7 +8,7 @@ import {
 
 // ── Constants ──────────────────────────────────────────────
 const STEP_W = 210;
-const STEP_H = 84;
+const STEP_H = 96;
 
 const SHAPE_CONFIG = {
   'operation':         { label: 'Opération',             color: 'sky',    abbr: 'OP' },

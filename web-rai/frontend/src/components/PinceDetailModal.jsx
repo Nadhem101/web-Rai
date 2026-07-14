@@ -74,12 +74,6 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
     return `${refConstructeur}||${refTec}`;
   };
 
-  const hasValidMoyenne = (moyenne) => {
-    if (moyenne === null || moyenne === undefined || moyenne === '') return false;
-    const numericMoyenne = Number(moyenne);
-    return Number.isFinite(numericMoyenne);
-  };
-
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       <div className="rounded-[18px] shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto flex flex-col" style={{ background: 'var(--panel)' }}>
@@ -285,14 +279,6 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                           </div>
                         </div>
 
-                        {/* Average */}
-                        {hasValidMoyenne(record.moyenne) && (
-                          <div className="bg-gradient-to-r from-orange-100 to-orange-200 p-3 rounded border border-orange-300 text-center mb-2">
-                            <p className="text-xs font-semibold text-gray-700">Moyenne</p>
-                            <p className="text-2xl font-bold text-orange-700">{record.moyenne} N</p>
-                          </div>
-                        )}
-
                         {/* Remark */}
                         {record.remarque && (
                           <div className="bg-white p-2 rounded border border-gray-300 text-xs text-gray-700 italic">
@@ -335,7 +321,7 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                   <table className="w-full text-sm">
                     <thead className="bg-sky-50">
                       <tr>
-                        {['Date contrôle','Position','Cosse','Traction min.','V1','V2','V3','V4','V5','Moy.','Prochaine','Remarque'].map((h) => (
+                        {['Date contrôle','Position','Cosse','Traction min.','V1','V2','V3','V4','V5','Prochaine','Remarque'].map((h) => (
                           <th key={h} className="px-3 py-2 text-left text-xs font-bold text-gray-600 whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
@@ -352,7 +338,6 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                               {rec[`test_value_${n}`] ?? '-'}
                             </td>
                           ))}
-                          <td className="px-3 py-2 text-xs font-bold text-center text-sky-700">{rec.moyenne ?? '-'}</td>
                           <td className="px-3 py-2 text-xs whitespace-nowrap">
                             <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium ${
                               rec.date_prochaine && new Date(rec.date_prochaine) < new Date()

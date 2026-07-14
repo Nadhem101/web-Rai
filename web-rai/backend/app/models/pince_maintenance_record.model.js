@@ -34,21 +34,6 @@ const PinceMaintenanceRecord = sequelize.define(
       type: DataTypes.DECIMAL(10, 2),
       comment: 'Cinquième essai',
     },
-    moyenne: {
-      type: DataTypes.VIRTUAL,
-      get() {
-        const values = [
-          this.test_value_1,
-          this.test_value_2,
-          this.test_value_3,
-          this.test_value_4,
-          this.test_value_5,
-        ].filter(v => v !== null && v !== undefined);
-        if (values.length === 0) return null;
-        const sum = values.reduce((a, b) => a + b, 0);
-        return (sum / values.length).toFixed(2);
-      },
-    },
     statut_verification: {
       type: DataTypes.STRING(50),
       defaultValue: 'À reprendre',
