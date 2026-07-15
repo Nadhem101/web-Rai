@@ -23,6 +23,7 @@ export const inventaireFixedLinks = [
   { to: '/inventaire?categorie=cosses', label: 'Cosses' },
   { to: '/inventaire?categorie=fer-et-bain', label: 'Fer et bain' },
   { to: '/inventaire?categorie=pdr', label: 'PDR — Pièces de rechange' },
+  { to: '/inventaire/outillages', label: 'Outillages' },
 ];
 
 export const preventifLinks = (completedMaintenanceCount) => [
@@ -57,6 +58,8 @@ export const ROUTE_INFO = [
   { match: '/industrialization/flow-chart', number: '06', title: 'Flow Chart' },
   { match: '/industrialization/test-cables', number: '06', title: 'Test des câbles' },
   { match: '/industrialization/suivi-moyens', number: '06', title: 'Suivi des moyens' },
+  { match: '/inventaire/outillages', number: '02', title: 'Inventaire outillages' },
+  { match: '/industrialization/gamme-fab', number: '06', title: 'Gestion outillages' },
   { match: '/industrialization', number: '06', title: 'Chiffrage' },
   { match: '/admin', number: '07', title: 'Administration' },
 ];

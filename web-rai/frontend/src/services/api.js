@@ -205,3 +205,23 @@ export const articleTestService = {
   update:   (id, data)    => API.put(`/articles-test/${id}`, data).then((res) => res.data),
   delete:   (id)          => API.delete(`/articles-test/${id}`).then((res) => res.data),
 };
+
+export const outillageService = {
+  getAll:  ()         => API.get('/outillages').then(r => r.data),
+  getById: (id)       => API.get(`/outillages/${id}`).then(r => r.data),
+  create:  (data)     => API.post('/outillages', data).then(r => r.data),
+  update:  (id, data) => API.put(`/outillages/${id}`, data).then(r => r.data),
+  delete:  (id)       => API.delete(`/outillages/${id}`).then(r => r.data),
+};
+
+export const gammeFabService = {
+  getAll:                   ()         => API.get('/gamme-fab').then(r => r.data),
+  createProcessus:          (data)     => API.post('/gamme-fab', data).then(r => r.data),
+  updateProcessus:          (id, data) => API.put(`/gamme-fab/${id}`, data).then(r => r.data),
+  deleteProcessus:          (id)       => API.delete(`/gamme-fab/${id}`).then(r => r.data),
+  createEtape:              (data)     => API.post('/gamme-fab/etapes', data).then(r => r.data),
+  updateEtape:              (id, data) => API.put(`/gamme-fab/etapes/${id}`, data).then(r => r.data),
+  deleteEtape:              (id)       => API.delete(`/gamme-fab/etapes/${id}`).then(r => r.data),
+  addOutillageToEtape:      (data)     => API.post('/gamme-fab/etapes/outillages', data).then(r => r.data),
+  removeOutillageFromEtape: (id)       => API.delete(`/gamme-fab/etapes/outillages/${id}`).then(r => r.data),
+};

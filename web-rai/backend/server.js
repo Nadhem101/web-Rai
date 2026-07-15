@@ -43,6 +43,8 @@ app.use('/api/chiffrage-lignes',            require('./app/routes/chiffrage_lign
 app.use('/api/fournisseurs-catalogue',      require('./app/routes/fournisseur_catalogue.routes'));
 app.use('/api/connecteurs-catalogue',       require('./app/routes/connecteur_catalogue.routes'));
 app.use('/api/fer-bain-records',            require('./app/routes/fer_bain_record.routes'));
+app.use('/api/outillages',                  require('./app/routes/outillage.routes'));
+app.use('/api/gamme-fab',                   require('./app/routes/gamme_fab.routes'));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'API WEB-RAI fonctionne' });

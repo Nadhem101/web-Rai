@@ -17,6 +17,7 @@ import {
   List,
   Sun,
   Moon,
+  ScrollText,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useTheme } from '../../contexts/ThemeContext.jsx';
@@ -213,6 +214,7 @@ const Sidebar = ({ menuOpen, completedMaintenanceCount = 0 }) => {
             <NavItem to="/industrialization/flow-chart" icon={GitBranch} label="Flow Chart" />
             <NavItem to="/industrialization/test-cables" icon={Cable} label="Test des câbles" />
             <NavItem to="/industrialization/suivi-moyens" icon={CalendarCheck} label="Suivi des moyens" />
+            <NavItem to="/industrialization/gamme-fab" icon={ScrollText} label="Gestion outillages" />
           </>
         )}
 

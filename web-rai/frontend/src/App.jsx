@@ -22,6 +22,8 @@ import FlowChartViewer from './pages/Industrialization/FlowChartViewer.jsx';
 import TestCables from './pages/Industrialization/TestCables.jsx';
 import SuiviMoyensIndex from './pages/Industrialization/SuiviMoyensIndex.jsx';
 import SuiviMoyensDetail from './pages/Industrialization/SuiviMoyensDetail.jsx';
+import OutillagesInventaire from './pages/Industrialization/OutillagesInventaire.jsx';
+import GammeFabrication from './pages/Industrialization/GammeFabrication.jsx';
 import AdminUsers from './pages/Admin/AdminUsers.jsx';
 
 const App = () => (
@@ -51,6 +53,8 @@ const App = () => (
     <Route path="/industrialization/test-cables" element={<TestCables />} />
     <Route path="/industrialization/suivi-moyens" element={<SuiviMoyensIndex />} />
     <Route path="/industrialization/suivi-moyens/:id" element={<SuiviMoyensDetail />} />
+    <Route path="/inventaire/outillages" element={<OutillagesInventaire />} />
+    <Route path="/industrialization/gamme-fab" element={<GammeFabrication />} />
     <Route path="/admin/users" element={<AdminUsers />} />
   </Routes>
 );

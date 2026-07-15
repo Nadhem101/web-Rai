@@ -30,6 +30,12 @@ const ChiffrageLigne         = require('./chiffrage_ligne.model');
 const FournisseurCatalogue   = require('./fournisseur_catalogue.model');
 const ConnecteurCatalogue    = require('./connecteur_catalogue.model');
 const FerBainRecord          = require('./fer_bain_record.model');
+const Outillage              = require('./outillage.model');
+const OutillageReference     = require('./outillage_reference.model');
+const OutillagePhoto         = require('./outillage_photo.model');
+const ProcessusFab           = require('./processus_fab.model');
+const EtapeFab               = require('./etape_fab.model');
+const GammeOutillage         = require('./gamme_outillage.model');
 
 // Equipement relationships
 Zone.hasMany(Equipement, { foreignKey: 'zone_id' });
@@ -72,6 +78,20 @@ ApplicateurVariant.hasMany(ApplicateurMaintenanceRecord, { foreignKey: 'applicat
 // Suivi moyen relationships
 SuiviMoyen.hasMany(SuiviMoyenLigne, { foreignKey: 'suivi_moyen_id', as: 'lignes', onDelete: 'CASCADE' });
 SuiviMoyenLigne.belongsTo(SuiviMoyen, { foreignKey: 'suivi_moyen_id', as: 'suivi' });
+
+// Outillage relationships
+Outillage.hasMany(OutillageReference, { foreignKey: 'outillage_id', as: 'references' });
+OutillageReference.belongsTo(Outillage, { foreignKey: 'outillage_id' });
+Outillage.hasMany(OutillagePhoto, { foreignKey: 'outillage_id', as: 'photos' });
+OutillagePhoto.belongsTo(Outillage, { foreignKey: 'outillage_id' });
+
+// Gamme de fabrication relationships
+ProcessusFab.hasMany(EtapeFab, { foreignKey: 'processus_id', as: 'etapes' });
+EtapeFab.belongsTo(ProcessusFab, { foreignKey: 'processus_id', as: 'processus' });
+EtapeFab.hasMany(GammeOutillage, { foreignKey: 'etape_id', as: 'gammeOutillages' });
+GammeOutillage.belongsTo(EtapeFab, { foreignKey: 'etape_id', as: 'etape' });
+GammeOutillage.belongsTo(Outillage, { foreignKey: 'outillage_id', as: 'outillage' });
+Outillage.hasMany(GammeOutillage, { foreignKey: 'outillage_id', as: 'gammeOutillages' });
 
 const syncDatabase = async () => {
   try {
@@ -129,5 +149,11 @@ module.exports = {
   FournisseurCatalogue,
   ConnecteurCatalogue,
   FerBainRecord,
+  Outillage,
+  OutillageReference,
+  OutillagePhoto,
+  ProcessusFab,
+  EtapeFab,
+  GammeOutillage,
   syncDatabase,
 };
