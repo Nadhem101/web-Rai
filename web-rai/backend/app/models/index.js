@@ -29,13 +29,16 @@ const Chiffrage              = require('./chiffrage.model');
 const ChiffrageLigne         = require('./chiffrage_ligne.model');
 const FournisseurCatalogue   = require('./fournisseur_catalogue.model');
 const ConnecteurCatalogue    = require('./connecteur_catalogue.model');
+const FerBainRecord          = require('./fer_bain_record.model');
 
 // Equipement relationships
 Zone.hasMany(Equipement, { foreignKey: 'zone_id' });
 Fabricant.hasMany(Equipement, { foreignKey: 'fabricant_id' });
+MachineTemplate.hasMany(Equipement, { foreignKey: 'machine_template_id', as: 'equipements' });
 
 Equipement.belongsTo(Zone, { foreignKey: 'zone_id' });
 Equipement.belongsTo(Fabricant, { foreignKey: 'fabricant_id' });
+Equipement.belongsTo(MachineTemplate, { foreignKey: 'machine_template_id', as: 'MachineTemplate' });
 
 // ECME relationships
 EcmeEtat.hasMany(EcmeIntervention, { foreignKey: 'ecme_code', sourceKey: 'code', as: 'interventions' });
@@ -43,6 +46,10 @@ EcmeIntervention.belongsTo(EcmeEtat, { foreignKey: 'ecme_code', targetKey: 'code
 
 // Curative maintenance relationships
 Equipement.hasMany(CurativeMaintenanceRecord, { foreignKey: 'equipement_id' });
+
+// Fer et bain records
+Equipement.hasMany(FerBainRecord, { foreignKey: 'equipement_id', as: 'ferBainRecords', onDelete: 'CASCADE' });
+FerBainRecord.belongsTo(Equipement, { foreignKey: 'equipement_id' });
 
 // Chiffrage relationships
 Chiffrage.hasMany(ChiffrageLigne, { foreignKey: 'chiffrage_id', as: 'lignes', onDelete: 'CASCADE' });
@@ -121,5 +128,6 @@ module.exports = {
   ChiffrageLigne,
   FournisseurCatalogue,
   ConnecteurCatalogue,
+  FerBainRecord,
   syncDatabase,
 };

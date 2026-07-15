@@ -1,10 +1,10 @@
-const { Equipement, Zone, Fabricant } = require('../models');
+const { Equipement, Zone, Fabricant, MachineTemplate } = require('../models');
+
+const EQUIP_INCLUDES = [Zone, Fabricant, { model: MachineTemplate, as: 'MachineTemplate', attributes: ['id', 'machineKey', 'machineLabel'] }];
 
 exports.findAll = async (req, res) => {
   try {
-    const equipements = await Equipement.findAll({
-      include: [Zone, Fabricant],
-    });
+    const equipements = await Equipement.findAll({ include: EQUIP_INCLUDES });
     res.json(equipements);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -14,7 +14,7 @@ exports.findAll = async (req, res) => {
 exports.findOne = async (req, res) => {
   try {
     const equipement = await Equipement.findByPk(req.params.id, {
-      include: [Zone, Fabricant],
+      include: EQUIP_INCLUDES,
     });
     if (equipement) {
       res.json(equipement);

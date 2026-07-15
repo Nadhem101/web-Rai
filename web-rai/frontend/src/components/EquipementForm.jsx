@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { equipementService, fabricantService, zoneService } from '../services/api';
+import { equipementService, fabricantService, zoneService, machineTemplateService } from '../services/api';
 import { X, Plus, Trash2, AlertCircle, Pencil, Package } from 'lucide-react';
 
 const normalizeText = (value = '') =>
@@ -25,15 +25,16 @@ const buildPdrPieces = (equipement) =>
   }));
 
 const buildInitialState = (equipement, defaultCategory) => ({
-  code_rai:         equipement?.code_rai         ?? '',
-  designation:      equipement?.designation      ?? '',
-  numero_serie:     equipement?.numero_serie     ?? '',
-  date_acquisition: equipement?.date_acquisition ?? '',
-  categorie:        equipement?.categorie        ?? defaultCategory ?? 'equipement',
-  statut:           equipement?.statut           ?? 'En service',
-  zone_id:          String(equipement?.zone_id   ?? equipement?.Zone?.id    ?? ''),
-  fabricant_id:     String(equipement?.fabricant_id ?? equipement?.Fabricant?.id ?? ''),
-  remarque:         equipement?.remarque         ?? '',
+  code_rai:            equipement?.code_rai            ?? '',
+  designation:         equipement?.designation         ?? '',
+  numero_serie:        equipement?.numero_serie        ?? '',
+  date_acquisition:    equipement?.date_acquisition    ?? '',
+  categorie:           equipement?.categorie           ?? defaultCategory ?? 'equipement',
+  statut:              equipement?.statut              ?? 'En service',
+  zone_id:             String(equipement?.zone_id      ?? equipement?.Zone?.id      ?? ''),
+  fabricant_id:        String(equipement?.fabricant_id ?? equipement?.Fabricant?.id ?? ''),
+  machine_template_id: String(equipement?.machine_template_id ?? equipement?.MachineTemplate?.id ?? ''),
+  remarque:            equipement?.remarque            ?? '',
 });
 
 // ── Shared field styles ────────────────────────────────────
@@ -50,6 +51,7 @@ const EquipementForm = ({
   const [pdrPieces,      setPdrPieces]      = useState(() => buildPdrPieces(equipement));
   const [zones,          setZones]          = useState([]);
   const [fabricants,     setFabricants]     = useState([]);
+  const [templates,      setTemplates]      = useState([]);
   const [loading,        setLoading]        = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [error,          setError]          = useState('');
@@ -67,13 +69,14 @@ const EquipementForm = ({
     const load = async () => {
       setLoadingOptions(true);
       try {
-        const [zr, fr] = await Promise.all([zoneService.getAll(), fabricantService.getAll()]);
+        const [zr, fr, tr] = await Promise.all([zoneService.getAll(), fabricantService.getAll(), machineTemplateService.getAll()]);
         if (!cancelled) {
           setZones(Array.isArray(zr?.data) ? zr.data : []);
           setFabricants(Array.isArray(fr?.data) ? fr.data : []);
+          setTemplates(Array.isArray(tr) ? tr : []);
         }
       } catch {
-        if (!cancelled) { setZones([]); setFabricants([]); }
+        if (!cancelled) { setZones([]); setFabricants([]); setTemplates([]); }
       } finally {
         if (!cancelled) setLoadingOptions(false);
       }
@@ -152,15 +155,16 @@ const EquipementForm = ({
     }
 
     const payload = {
-      code_rai:         cleanedCode,
-      designation:      cleanedDes,
-      numero_serie:     normalizeFormValue(formData.numero_serie) || null,
-      date_acquisition: normalizeFormValue(formData.date_acquisition) || null,
-      categorie:        formData.categorie,
-      statut:           formData.statut,
-      zone_id:          formData.zone_id     ? Number(formData.zone_id)     : null,
-      fabricant_id:     formData.fabricant_id ? Number(formData.fabricant_id) : null,
-      remarque:         normalizeFormValue(formData.remarque) || null,
+      code_rai:            cleanedCode,
+      designation:         cleanedDes,
+      numero_serie:        normalizeFormValue(formData.numero_serie) || null,
+      date_acquisition:    normalizeFormValue(formData.date_acquisition) || null,
+      categorie:           formData.categorie,
+      statut:              formData.statut,
+      zone_id:             formData.zone_id             ? Number(formData.zone_id)             : null,
+      fabricant_id:        formData.fabricant_id        ? Number(formData.fabricant_id)        : null,
+      machine_template_id: formData.machine_template_id ? Number(formData.machine_template_id) : null,
+      remarque:            normalizeFormValue(formData.remarque) || null,
       ...(pdrDetails !== undefined ? { pdr_details: pdrDetails } : {}),
     };
 
@@ -236,7 +240,9 @@ const EquipementForm = ({
               <select name="categorie" value={formData.categorie} onChange={handleChange} className={fieldClass} style={fieldStyle}>
                 <option value="equipement">Équipement</option>
                 <option value="pdr">PDR</option>
-                <option value="fer-et-bain">Fer et bain</option>
+                <option value="fer-a-souder">Fer à souder</option>
+                <option value="bain-creuset">Bain creuset</option>
+                {formData.categorie === 'fer-et-bain' && <option value="fer-et-bain">Fer et bain (ancien)</option>}
               </select>
             </label>
           </div>
@@ -303,6 +309,19 @@ const EquipementForm = ({
               <option value="En maintenance">En maintenance</option>
             </select>
           </label>
+
+          {/* Fiche de maintenance */}
+          {formData.categorie !== 'pdr' && formData.categorie !== 'fer-a-souder' && formData.categorie !== 'bain-creuset' && formData.categorie !== 'fer-et-bain' && (
+            <label className="block">
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Fiche de maintenance associée</span>
+              <select name="machine_template_id" value={formData.machine_template_id} onChange={handleChange} className={fieldClass} style={fieldStyle} disabled={loadingOptions}>
+                <option value="">Aucune fiche</option>
+                {templates.map((t) => (
+                  <option key={t.id} value={t.id}>{t.machineLabel}</option>
+                ))}
+              </select>
+            </label>
+          )}
 
           {/* PDR details */}
           {formData.categorie === 'pdr' && (

@@ -32,9 +32,10 @@ const parsePdrQuantity = (value) => {
 };
 const hasPdrDetails = (eq) => Boolean(eq.pdr_details && Object.keys(eq.pdr_details).length > 0);
 const isFerEtBainItem = (eq) => {
-  const d = normalizeText(eq.designation);
   const c = normalizeText(eq.categorie);
-  return c === 'fer-et-bain' || d.includes('fer a souder') || d.includes('bain creuset');
+  if (['fer-et-bain', 'fer-a-souder', 'bain-creuset'].includes(c)) return true;
+  const d = normalizeText(eq.designation);
+  return d.includes('fer a souder') || d.includes('bain creuset');
 };
 
 // ── Status badge ───────────────────────────────────────────

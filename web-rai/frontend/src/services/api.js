@@ -94,6 +94,14 @@ export const maintenanceSheetService = {
   finish: (id, data) => API.post(`/maintenance-sheets/${id}/finish`, data).then((res) => res.data),
 };
 
+export const ferBainRecordService = {
+  getAll: () => API.get('/fer-bain-records').then((res) => res.data),
+  getByEquipement: (equipementId) => API.get(`/fer-bain-records/equipement/${equipementId}`).then((res) => res.data),
+  create: (data) => API.post('/fer-bain-records', data).then((res) => res.data),
+  update: (id, data) => API.put(`/fer-bain-records/${id}`, data).then((res) => res.data),
+  delete: (id) => API.delete(`/fer-bain-records/${id}`).then((res) => res.data),
+};
+
 export const curativeMaintenanceService = {
   getAll: (params = {}) => API.get('/curative-maintenance-records', { params }).then((res) => res.data),
   getById: (id) => API.get(`/curative-maintenance-records/${id}`).then((res) => res.data),

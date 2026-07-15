@@ -29,6 +29,7 @@ export const preventifLinks = (completedMaintenanceCount) => [
   { to: '/preventif', label: 'Calendrier préventif' },
   { to: '/preventif/suivi-pinces', label: 'Suivi des pinces' },
   { to: '/preventif/suivi-applicateurs', label: 'Suivi des applicateurs' },
+  { to: '/preventif/suivi-fer-bain', label: 'Suivi fer et bain' },
   { to: '/preventif/fiches-maintenance', label: 'Fiches machines', badge: completedMaintenanceCount },
 ];
 
@@ -45,6 +46,7 @@ export const ROUTE_INFO = [
   { match: '/inventaire', number: '02', title: 'Inventaire' },
   { match: '/preventif/suivi-pinces', number: '03', title: 'Suivi des pinces' },
   { match: '/preventif/suivi-applicateurs', number: '03', title: 'Suivi des applicateurs' },
+  { match: '/preventif/suivi-fer-bain', number: '03', title: 'Suivi fer et bain' },
   { match: '/preventif/fiches-maintenance', number: '03', title: 'Fiches de maintenance' },
   { match: '/preventif', number: '03', title: 'Calendrier préventif' },
   { match: '/curatif/indicateur', number: '04', title: 'Indicateur curatif' },

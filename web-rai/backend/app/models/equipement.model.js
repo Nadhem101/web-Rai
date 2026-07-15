@@ -43,9 +43,24 @@ const Equipement = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: 'equipement',
       validate: {
-        isIn: [['equipement', 'pdr', 'pinces', 'applicateurs', 'fer-et-bain']],
+        isIn: [['equipement', 'pdr', 'pinces', 'applicateurs', 'fer-et-bain', 'fer-a-souder', 'bain-creuset']],
       },
-      comment: 'Catégorie de l\'équipement: equipement (général), pdr (pièces de rechange), pinces (de sertissage), applicateurs (faisceaux), ou fer-et-bain',
+      comment: 'Catégorie de l\'équipement: equipement, pdr, pinces, applicateurs, fer-et-bain (générique), fer-a-souder, bain-creuset',
+    },
+    maintenance_intervals: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      comment: 'Planning de maintenance: [{type, freq, start, color}]. Prioritaire sur le planning statique.',
+    },
+    fer_bain_seuil: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      comment: 'Seuil de température de référence pour les fers à souder et bains creuset (°C)',
+    },
+    machine_template_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      comment: 'Fiche de maintenance assignée à cet équipement (FK machine_templates)',
     },
   },
   {

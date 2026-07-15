@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard/Dashboard.jsx';
 import CalendrierPreventif from './pages/Preventif/CalendrierPreventif.jsx';
 import SuiviPreventifPinces from './pages/Preventif/SuiviPreventifPinces.jsx';
 import SuiviPreventifApplicateurs from './pages/Preventif/SuiviPreventifApplicateurs.jsx';
+import SuiviFerBain from './pages/Preventif/SuiviFerBain.jsx';
 import FichesMaintenance from './pages/Preventif/FichesMaintenance.jsx';
 import CreateMachineTemplate from './pages/Preventif/CreateMachineTemplate.jsx';
 import SuiviCuratif from './pages/Curatif/SuiviCuratif.jsx';
@@ -30,6 +31,7 @@ const App = () => (
     <Route path="/preventif" element={<CalendrierPreventif />} />
     <Route path="/preventif/suivi-pinces" element={<SuiviPreventifPinces />} />
     <Route path="/preventif/suivi-applicateurs" element={<SuiviPreventifApplicateurs />} />
+    <Route path="/preventif/suivi-fer-bain" element={<SuiviFerBain />} />
     <Route path="/preventif/fiches-maintenance/create" element={<CreateMachineTemplate />} />
     <Route path="/preventif/fiches-maintenance" element={<FichesMaintenance />} />
     <Route path="/preventif/fiches-maintenance/:machineKey" element={<FichesMaintenance />} />
