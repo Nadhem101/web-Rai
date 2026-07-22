@@ -225,3 +225,9 @@ export const gammeFabService = {
   addOutillageToEtape:      (data)     => API.post('/gamme-fab/etapes/outillages', data).then(r => r.data),
   removeOutillageFromEtape: (id)       => API.delete(`/gamme-fab/etapes/outillages/${id}`).then(r => r.data),
 };
+
+export const assistantService = {
+  // `history` is the opaque provider-shaped message array returned by the
+  // previous call — pass it straight back to continue the conversation.
+  chat: (message, history = []) => API.post('/assistant/chat', { message, history }).then((res) => res.data),
+};

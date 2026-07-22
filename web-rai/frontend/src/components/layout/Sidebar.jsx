@@ -18,6 +18,7 @@ import {
   Sun,
   Moon,
   ScrollText,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext.jsx';
 import { useTheme } from '../../contexts/ThemeContext.jsx';
@@ -138,6 +139,7 @@ const Sidebar = ({ menuOpen, completedMaintenanceCount = 0 }) => {
       {/* Nav */}
       <nav className="flex-1 px-3 pt-[10px] pb-1 overflow-y-auto sidebar-scroll flex flex-col gap-0.5">
         <NavItem to="/" icon={LayoutDashboard} label="Tableau de bord" end />
+        <NavItem to="/assistant" icon={Bot} label="Assistant" />
 
         <ModuleLabel label="Gestion des actifs" />
         <ExpandBtn icon={Package} label="Inventaire" expanded={inventaireExpanded} onClick={() => setInventaireExpanded((v) => !v)} />

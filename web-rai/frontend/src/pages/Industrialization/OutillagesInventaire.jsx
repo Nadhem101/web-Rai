@@ -1,10 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { outillageService } from '../../services/api';
-import { Plus, Trash2, Pencil, X, Check, Package, Image } from 'lucide-react';
+import { Plus, Trash2, Pencil, X, Check, Package, Image, ZoomIn } from 'lucide-react';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
+import PhotoLightbox from '../../components/ui/PhotoLightbox.jsx';
 
 const EMPTY_FORM = { designation: '', quantity: 1, references: [{ reference: '', label: '' }], photos: [] };
+
+// ── Quantity pill — same low-stock color coding as the PDR stock view ──
+const OUTILLAGE_LOW_STOCK_THRESHOLD = 1;
+const OutillageQtyPill = ({ value }) => {
+  const qty = Number.isFinite(Number(value)) ? Number(value) : null;
+  let bg = 'var(--panel2)', color = 'var(--text3)';
+  if (qty !== null) {
+    if (qty === 0) { bg = 'var(--crit-soft)'; color = 'var(--crit)'; }
+    else if (qty <= OUTILLAGE_LOW_STOCK_THRESHOLD) { bg = 'var(--warn-soft)'; color = 'var(--warn)'; }
+    else { bg = 'var(--ok-soft)'; color = 'var(--ok)'; }
+  }
+  return (
+    <span className="inline-flex min-w-[2.5rem] items-center justify-center rounded-[20px] px-2 py-0.5 text-xs font-bold"
+      style={{ background: bg, color }}>
+      {qty !== null ? qty : '—'}
+    </span>
+  );
+};
 
 const OutillagesInventaire = () => {
   const [items,   setItems]   = useState([]);
@@ -12,7 +31,10 @@ const OutillagesInventaire = () => {
   const [modal,   setModal]   = useState(null); // null | { mode:'create'|'edit', data }
   const [saving,  setSaving]  = useState(false);
   const [form,    setForm]    = useState(EMPTY_FORM);
+  const [lightbox, setLightbox] = useState(null); // null | { photos, index }
   const fileRef = useRef();
+
+  const openLightbox = (photos, index) => setLightbox({ photos, index });
 
   const load = async () => {
     try {
@@ -158,17 +180,24 @@ const OutillagesInventaire = () => {
                       </div>
                     ) : <span style={{ color: 'var(--text3)' }}>—</span>}
                   </td>
-                  <td className="px-4 py-3 font-semibold" style={{ color: 'var(--text)' }}>{item.quantity}</td>
+                  <td className="px-4 py-3"><OutillageQtyPill value={item.quantity} /></td>
                   <td className="px-4 py-3">
                     {item.photos?.length ? (
                       <div className="flex gap-1">
                         {item.photos.slice(0, 3).map((p, i) => (
-                          <img key={i} src={p.photo_data} alt="" className="w-9 h-9 rounded-[6px] object-cover border"
-                            style={{ borderColor: 'var(--border)' }} />
+                          <button key={i} onClick={() => openLightbox(item.photos, i)}
+                            className="relative group/thumb w-9 h-9 rounded-[6px] overflow-hidden border flex-shrink-0"
+                            style={{ borderColor: 'var(--border)' }}>
+                            <img src={p.photo_data} alt="" className="w-full h-full object-cover" />
+                            <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/thumb:bg-black/40 transition-colors">
+                              <ZoomIn className="w-3.5 h-3.5 text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity" />
+                            </span>
+                          </button>
                         ))}
                         {item.photos.length > 3 && (
-                          <span className="w-9 h-9 rounded-[6px] flex items-center justify-center text-[11px] font-bold"
-                            style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>+{item.photos.length - 3}</span>
+                          <button onClick={() => openLightbox(item.photos, 3)}
+                            className="w-9 h-9 rounded-[6px] flex items-center justify-center text-[11px] font-bold hover:brightness-95 transition-all flex-shrink-0"
+                            style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>+{item.photos.length - 3}</button>
                         )}
                       </div>
                     ) : (
@@ -281,8 +310,10 @@ const OutillagesInventaire = () => {
                     <div className="flex flex-wrap gap-2">
                       {form.photos.map((p, i) => (
                         <div key={i} className="relative group/photo">
-                          <img src={p.photo_data} alt="" className="w-16 h-16 rounded-[8px] object-cover border"
-                            style={{ borderColor: 'var(--border)' }} />
+                          <button onClick={() => openLightbox(form.photos, i)} className="block">
+                            <img src={p.photo_data} alt="" className="w-16 h-16 rounded-[8px] object-cover border hover:brightness-90 transition-all"
+                              style={{ borderColor: 'var(--border)' }} />
+                          </button>
                           <button onClick={() => removePhoto(i)}
                             className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity"
                             style={{ background: 'var(--crit)', color: '#fff' }}>
@@ -311,6 +342,18 @@ const OutillagesInventaire = () => {
               </div>
             </motion.div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Photo lightbox */}
+      <AnimatePresence>
+        {lightbox && (
+          <PhotoLightbox
+            photos={lightbox.photos}
+            index={lightbox.index}
+            onIndexChange={(i) => setLightbox((l) => ({ ...l, index: i }))}
+            onClose={() => setLightbox(null)}
+          />
         )}
       </AnimatePresence>
     </div>

@@ -1,14 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { equipementService, maintenanceEventService } from '../../services/api';
-import { EQUIPEMENTS, WEEKS, getCurrentWeek, isMaintenance } from '../../utils/maintenanceSchedule';
+import { WEEKS, getCurrentWeek, isMaintenance, resolveEquipement } from '../../utils/maintenanceSchedule';
 import { getMaintenanceMachineTemplate, resolveMaintenanceMachineKeyFromEquipment } from '../../data/maintenanceMachines';
 import { Search, Settings2 } from 'lucide-react';
 import DataLabel from '../../components/ui/DataLabel.jsx';
-
-const DEFAULT_INTERVALS = [{ type: '1M', freq: 4, start: 1, color: 'blue' }];
-
-const SCHEDULE_LOOKUP = new Map(EQUIPEMENTS.map((equipement) => [equipement.code, equipement]));
 
 const normalizeText = (value = '') =>
   String(value ?? '')
@@ -90,43 +86,6 @@ const CALENDAR_VIEWS = [
     matches: (equipement) => isFerEtBainEquipment(equipement),
   },
 ];
-
-function resolveEquipement(item) {
-  const code = normalizeCode(item.code_rai || item.code);
-  const fromSchedule = SCHEDULE_LOOKUP.get(code);
-
-  // DB intervals take priority over the static schedule when explicitly set
-  const dbIntervals = Array.isArray(item.maintenance_intervals) && item.maintenance_intervals.length > 0
-    ? item.maintenance_intervals
-    : null;
-
-  if (fromSchedule) {
-    return {
-      ...fromSchedule,
-      code,
-      code_rai: code,
-      id: item.id,
-      categorie: item.categorie,
-      designation: item.designation || fromSchedule.designation,
-      zone: item.Zone?.nom_zone || item.zone || fromSchedule.zone,
-      intervals: dbIntervals ?? fromSchedule.intervals,
-      machine_template_id: item.machine_template_id ?? null,
-      MachineTemplate: item.MachineTemplate ?? null,
-    };
-  }
-
-  return {
-    code,
-    code_rai: code,
-    id: item.id,
-    categorie: item.categorie,
-    designation: item.designation,
-    zone: item.Zone?.nom_zone || item.zone,
-    intervals: dbIntervals ?? DEFAULT_INTERVALS,
-    machine_template_id: item.machine_template_id ?? null,
-    MachineTemplate: item.MachineTemplate ?? null,
-  };
-}
 
 const SCHEDULE_PRESETS = [
   {

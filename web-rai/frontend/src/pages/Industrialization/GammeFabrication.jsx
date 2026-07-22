@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { gammeFabService, outillageService } from '../../services/api';
-import { Plus, Trash2, Pencil, X, Check, ScrollText, Package, Search, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Pencil, X, Check, ScrollText, Package, Search, ChevronDown, ChevronRight, ZoomIn } from 'lucide-react';
+import PhotoLightbox from '../../components/ui/PhotoLightbox.jsx';
 
 // ─── flatten processus tree into table rows ────────────────────────────────
 function buildRows(processus, collapsed) {
@@ -72,6 +73,10 @@ export default function GammeFabrication() {
   // outillage picker
   const [pickerEtapeId, setPickerEtapeId] = useState(null);
   const [search,        setSearch]        = useState('');
+
+  // photo lightbox
+  const [lightbox, setLightbox] = useState(null); // null | { photos, index }
+  const openLightbox = (photos, index) => setLightbox({ photos, index });
 
   const loadAll = async () => {
     try {
@@ -373,15 +378,21 @@ export default function GammeFabrication() {
                           {row.g?.outillage?.photos?.length > 0 ? (
                             <div className="flex gap-1">
                               {row.g.outillage.photos.slice(0, 2).map((p, pi) => (
-                                <img key={pi} src={p.photo_data} alt=""
-                                  className="w-8 h-8 rounded-[5px] object-cover border"
-                                  style={{ borderColor: 'var(--border)' }} />
+                                <button key={pi} onClick={() => openLightbox(row.g.outillage.photos, pi)}
+                                  className="relative group/thumb w-8 h-8 rounded-[5px] overflow-hidden border flex-shrink-0"
+                                  style={{ borderColor: 'var(--border)' }}>
+                                  <img src={p.photo_data} alt="" className="w-full h-full object-cover" />
+                                  <span className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover/thumb:bg-black/40 transition-colors">
+                                    <ZoomIn className="w-3 h-3 text-white opacity-0 group-hover/thumb:opacity-100 transition-opacity" />
+                                  </span>
+                                </button>
                               ))}
                               {row.g.outillage.photos.length > 2 && (
-                                <span className="w-8 h-8 rounded-[5px] flex items-center justify-center text-[9px] font-bold"
+                                <button onClick={() => openLightbox(row.g.outillage.photos, 2)}
+                                  className="w-8 h-8 rounded-[5px] flex items-center justify-center text-[9px] font-bold hover:brightness-95 transition-all flex-shrink-0"
                                   style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>
                                   +{row.g.outillage.photos.length - 2}
-                                </span>
+                                </button>
                               )}
                             </div>
                           ) : <span style={{ color: 'var(--text3)' }}>—</span>}
@@ -499,6 +510,18 @@ export default function GammeFabrication() {
           </div>
         </div>
       )}
+
+      {/* Photo lightbox */}
+      <AnimatePresence>
+        {lightbox && (
+          <PhotoLightbox
+            photos={lightbox.photos}
+            index={lightbox.index}
+            onIndexChange={(i) => setLightbox((l) => ({ ...l, index: i }))}
+            onClose={() => setLightbox(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

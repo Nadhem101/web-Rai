@@ -1,46 +1,36 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Shared maintenance schedule data and helpers
-// Used by Dashboard and CalendrierPreventif
+// Shared maintenance schedule helpers — driven entirely by each equipement's
+// `maintenance_intervals` column (no static/hardcoded schedule).
+// Used by Dashboard and CalendrierPreventif.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export const EQUIPEMENTS = [
-  { code: 'EQUIP347', designation: 'Machine de coupe',       zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 2, color: 'blue'  }] },
-  { code: 'EQUIP210', designation: 'Marquage a chaud',       zone: 'Electronique', intervals: [{ type: '6M', freq: 26, start: 3, color: 'green' }] },
-  { code: 'EQUIP395', designation: 'Machine de coupe',       zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 3, color: 'blue'  }] },
-  { code: 'EQUIP432', designation: 'Machine de coupe',       zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 4, color: 'blue'  }] },
-  { code: 'EQUIP355', designation: 'Machine de coupe',       zone: 'Cablage',      intervals: [{ type: '6M', freq: 26, start: 2, color: 'green' }] },
-  { code: 'EQUIP349', designation: 'Machine de marquage',    zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }] },
-  { code: 'EQUIP451', designation: 'Machine de marquage',    zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 2, color: 'blue'  }] },
-  { code: 'EQUIP476', designation: 'Machine de degraissage', zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }, { type: '6M', freq: 26, start: 1, color: 'green' }] },
-  { code: 'EQUIP75',  designation: 'Machine de coupe',       zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 2, color: 'blue'  }] },
-  { code: 'EQUIP353', designation: 'Bottleuse',              zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 3, color: 'blue'  }] },
-  { code: 'EQUIP457', designation: 'Bottleuse',              zone: 'Cablage',      intervals: [{ type: '6M', freq: 26, start: 4, color: 'green' }] },
-  { code: 'EQUIP444', designation: 'Pressmanuel',            zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }, { type: '6M', freq: 26, start: 1, color: 'green' }] },
-  { code: 'EQUIP86',  designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 4, color: 'blue'  }] },
-  { code: 'EQUIP405', designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }] },
-  { code: 'EQUIP342', designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 2, color: 'blue'  }] },
-  { code: 'EQUIP343', designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 3, color: 'blue'  }] },
-  { code: 'EQUIP450', designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '6M', freq: 26, start: 2, color: 'green' }] },
-  { code: 'EQUIP194', designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 4, color: 'blue'  }] },
-  { code: 'EQUIP85',  designation: 'Machine coupe gain',     zone: 'Electronique', intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }, { type: '6M', freq: 26, start: 1, color: 'green' }] },
-  { code: 'EQUIP391', designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '6M', freq: 26, start: 5, color: 'green' }] },
-  { code: 'EQUIP458', designation: 'Machine de sertissage',  zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 2, color: 'blue'  }] },
-  { code: 'EQUIP340', designation: 'Machine de denudage',    zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 3, color: 'blue'  }] },
-  { code: 'EQUIP63',  designation: 'Machine de denudage',    zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 4, color: 'blue'  }] },
-  { code: 'EQUIP459', designation: 'Machine de denudage',    zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }] },
-  { code: 'EQUIP460', designation: 'Machine de denudage',    zone: 'Cablage',      intervals: [{ type: '6M', freq: 26, start: 3, color: 'green' }] },
-  { code: 'EQUIP461', designation: 'Machine de denudage',    zone: 'Cablage',      intervals: [{ type: '1M', freq: 4,  start: 2, color: 'blue'  }] },
-  { code: 'EQUIP462', designation: 'Machine de denudage',    zone: 'Cablage',      intervals: [{ type: '6M', freq: 26, start: 1, color: 'green' }] },
-  { code: 'EQUIP341', designation: 'Machine insertion',      zone: 'Electronique', intervals: [{ type: '1M', freq: 4,  start: 4, color: 'blue'  }, { type: '6M', freq: 26, start: 4, color: 'green' }] },
-  { code: 'EQUIP384', designation: 'Machine ULTRASON',       zone: 'Electronique', intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }] },
-  { code: 'EQUIP473', designation: 'Machine ULTRASON',       zone: 'Electronique', intervals: [{ type: '6M', freq: 26, start: 2, color: 'green' }] },
-  { code: 'EQUIP46',  designation: 'Machine Vague',          zone: 'Electronique', intervals: [{ type: '1M', freq: 4,  start: 3, color: 'blue'  }, { type: '6M', freq: 26, start: 3, color: 'green' }] },
-  { code: 'EQUIP466', designation: 'Machine de lavage',      zone: 'Electronique', intervals: [{ type: '1M', freq: 4,  start: 2, color: 'blue'  }] },
-  { code: 'EQUIP95',  designation: 'Machine de coupe PCB',   zone: 'Electronique', intervals: [{ type: '6M', freq: 26, start: 4, color: 'green' }] },
-  { code: 'EQUIP65',  designation: 'Insertion cross',        zone: 'Electronique', intervals: [{ type: '1M', freq: 4,  start: 1, color: 'blue'  }, { type: '6M', freq: 26, start: 27, color: 'green' }] },
-];
-
 export const WEEKS = Array.from({ length: 53 }, (_, i) => i + 1);
+
+const normalizeCode = (value = '') => String(value ?? '').replace(/﻿/g, '').trim().toUpperCase();
+
+/**
+ * Resolves an API equipement row into the shape the schedule/calendar UI needs:
+ * { code, code_rai, id, categorie, designation, zone, intervals, machine_template_id, MachineTemplate }
+ * `intervals` comes straight from the DB (`maintenance_intervals`); equipements
+ * without a configured schedule simply have no intervals — nothing is guessed.
+ */
+export function resolveEquipement(item) {
+  const code = normalizeCode(item.code_rai || item.code);
+  const intervals = Array.isArray(item.maintenance_intervals) ? item.maintenance_intervals : [];
+
+  return {
+    code,
+    code_rai: code,
+    id: item.id,
+    categorie: item.categorie,
+    designation: item.designation,
+    zone: item.Zone?.nom_zone || item.zone,
+    Zone: item.Zone,
+    intervals,
+    machine_template_id: item.machine_template_id ?? null,
+    MachineTemplate: item.MachineTemplate ?? null,
+  };
+}
 
 /** Returns the current ISO week number (1-53) */
 export function getCurrentWeek() {
@@ -57,14 +47,15 @@ export function isMaintenance(week, freq, start) {
 }
 
 /**
- * Returns all scheduled maintenance tasks for a given week.
+ * Returns all scheduled maintenance tasks for a given week, across the given
+ * (already-resolved) equipements list.
  * Each item: { key, equip, intType, color }
  * key format: `${equip.code}__${intType}__${week}`
  */
-export function getTasksForWeek(week) {
+export function getTasksForWeek(resolvedEquipements, week) {
   const tasks = [];
-  EQUIPEMENTS.forEach((equip) => {
-    equip.intervals.forEach((intv) => {
+  resolvedEquipements.forEach((equip) => {
+    (equip.intervals || []).forEach((intv) => {
       if (isMaintenance(week, intv.freq, intv.start)) {
         tasks.push({
           key: `${equip.code}__${intv.type}__${week}`,
@@ -82,10 +73,10 @@ export function getTasksForWeek(week) {
  * Returns all scheduled tasks from week 1 up to (but not including) the current week.
  * Used to detect overdue (past, not marked done) tasks.
  */
-export function getOverdueTasks(currentWeek) {
+export function getOverdueTasks(resolvedEquipements, currentWeek) {
   const tasks = [];
   for (let w = 1; w < currentWeek; w++) {
-    getTasksForWeek(w).forEach((t) => tasks.push({ ...t, week: w }));
+    getTasksForWeek(resolvedEquipements, w).forEach((t) => tasks.push({ ...t, week: w }));
   }
   return tasks;
 }

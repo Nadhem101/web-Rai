@@ -25,10 +25,12 @@ import SuiviMoyensDetail from './pages/Industrialization/SuiviMoyensDetail.jsx';
 import OutillagesInventaire from './pages/Industrialization/OutillagesInventaire.jsx';
 import GammeFabrication from './pages/Industrialization/GammeFabrication.jsx';
 import AdminUsers from './pages/Admin/AdminUsers.jsx';
+import Assistant from './pages/Assistant/Assistant.jsx';
 
 const App = () => (
   <Routes>
     <Route path="/" element={<Dashboard />} />
+    <Route path="/assistant" element={<Assistant />} />
     <Route path="/inventaire" element={<ListeEquipements />} />
     <Route path="/preventif" element={<CalendrierPreventif />} />
     <Route path="/preventif/suivi-pinces" element={<SuiviPreventifPinces />} />

@@ -62,6 +62,7 @@ export const ROUTE_INFO = [
   { match: '/industrialization/gamme-fab', number: '06', title: 'Gestion outillages' },
   { match: '/industrialization', number: '06', title: 'Chiffrage' },
   { match: '/admin', number: '07', title: 'Administration' },
+  { match: '/assistant', number: '08', title: 'Assistant' },
 ];
 
 export const getRouteInfo = (pathname) => {

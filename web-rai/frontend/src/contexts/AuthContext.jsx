@@ -18,11 +18,14 @@ const fetchRoles = async (session) => {
   }
 };
 
-// Section → which roles grant access to it
+// Section → which roles grant access to it.
+// Maintenance and Indus supervisors currently run the whole app day-to-day,
+// so all three roles are equivalent for now — full access, same as admin.
+const ALL_SECTIONS = ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme', 'indus', 'admin'];
 const PERMISSIONS = {
-  admin:       ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme', 'indus', 'admin'],
-  maintenance: ['dashboard', 'inventaire', 'maintenance', 'curatif', 'ecme'],
-  indus:       ['dashboard', 'inventaire', 'indus'],
+  admin:       ALL_SECTIONS,
+  maintenance: ALL_SECTIONS,
+  indus:       ALL_SECTIONS,
 };
 
 export const AuthProvider = ({ children }) => {
