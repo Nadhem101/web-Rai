@@ -181,10 +181,10 @@ export default function EtatECME() {
                 <th className="px-4 py-3 text-left"><DataLabel>Code</DataLabel></th>
                 <th className="px-4 py-3 text-left"><DataLabel>Désignation</DataLabel></th>
                 <th className="px-4 py-3 text-left hidden md:table-cell"><DataLabel>Marque</DataLabel></th>
+                <th className="px-4 py-3 text-left hidden md:table-cell"><DataLabel>N° Série</DataLabel></th>
                 <th className="px-4 py-3 text-left hidden lg:table-cell"><DataLabel>Affectation</DataLabel></th>
                 <th className="px-4 py-3 text-left"><DataLabel>Statut</DataLabel></th>
-                <th className="px-4 py-3 text-left hidden xl:table-cell"><DataLabel>Dernière vérif.</DataLabel></th>
-                <th className="px-4 py-3 text-left hidden lg:table-cell"><DataLabel>Prochaine vérif.</DataLabel></th>
+                <th className="px-4 py-3 text-left hidden xl:table-cell"><DataLabel>Remarques</DataLabel></th>
                 <th className="px-4 py-3 text-center"><DataLabel>Actions</DataLabel></th>
               </tr>
             </thead>
@@ -207,16 +207,18 @@ export default function EtatECME() {
                   <td className="px-4 py-3 hidden md:table-cell" style={{ color: 'var(--text2)' }}>
                     <Highlight text={row.marque} query={search} />
                   </td>
+                  <td className="px-4 py-3 hidden md:table-cell font-mono text-xs" style={{ color: 'var(--text3)' }}>
+                    {row.n_serie || '—'}
+                  </td>
                   <td className="px-4 py-3 hidden lg:table-cell">
                     <span className="px-2 py-0.5 rounded text-xs" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>
                       {row.affectation || '—'}
                     </span>
                   </td>
                   <td className="px-4 py-3"><AlerteBadge alerte={row.alerte} /></td>
-                  <td className="px-4 py-3 text-xs hidden xl:table-cell" style={{ color: 'var(--text3)' }}>{fmtDate(row.date_derniere_verification)}</td>
-                  <td className="px-4 py-3 text-xs font-medium hidden lg:table-cell"
-                    style={{ color: row.alerte === 'VERIFICATION' ? 'var(--crit)' : 'var(--text3)' }}>
-                    {fmtDate(row.date_prochaine_verification)}
+                  <td className="px-4 py-3 text-xs hidden xl:table-cell max-w-[200px] truncate" style={{ color: 'var(--text3)' }}
+                    title={row.remarques || ''}>
+                    {row.remarques || '—'}
                   </td>
                   <td className="px-4 py-3 text-center" onClick={e => e.stopPropagation()}>
                     <div className="flex items-center justify-center gap-1">

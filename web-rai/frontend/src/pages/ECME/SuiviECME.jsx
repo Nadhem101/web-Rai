@@ -52,6 +52,9 @@ function EcmeRow({ row, navigate }) {
       <td className="px-4 py-3 text-xs" style={{ color: 'var(--text2)' }}>
         {row.marque || '—'}
       </td>
+      <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--text3)' }}>
+        {row.n_serie || '—'}
+      </td>
       <td className="px-4 py-3">
         {row.affectation
           ? <span className="px-2 py-0.5 rounded text-xs" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>{row.affectation}</span>
@@ -91,7 +94,7 @@ function Section({ title, icon: Icon, color, colorSoft, rows, navigate, emptyTex
           <table className="min-w-full text-sm">
             <thead>
               <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
-                {['Code', 'Désignation', 'Marque', 'Affectation', 'Prochaine vérif.', 'Délai', ''].map(h => (
+                {['Code', 'Désignation', 'Marque', 'N° Série', 'Affectation', 'Prochaine vérif.', 'Délai', ''].map(h => (
                   <th key={h} className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--text3)' }}>{h}</th>
                 ))}
               </tr>
