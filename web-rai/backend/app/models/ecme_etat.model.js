@@ -50,6 +50,11 @@ const EcmeEtat = sequelize.define('EcmeEtat', {
     type: DataTypes.STRING(50),
     defaultValue: '',
   },
+  details_maintenance: {
+    type: DataTypes.JSONB,
+    defaultValue: [],
+    comment: 'Tableau de remarques superviseur: [{id, description, valeur}]',
+  },
 }, {
   tableName: 'ecme_etat',
   timestamps: true,

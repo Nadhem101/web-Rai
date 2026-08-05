@@ -52,6 +52,7 @@ export const ROUTE_INFO = [
   { match: '/preventif', number: '03', title: 'Calendrier préventif' },
   { match: '/curatif/indicateur', number: '04', title: 'Indicateur curatif' },
   { match: '/curatif', number: '04', title: 'Suivi curatif' },
+  { match: '/ecme/suivi', number: '05', title: 'Suivi des ECME' },
   { match: '/ecme', number: '05', title: 'État des ECME' },
   { match: '/industrialization/connecteurs', number: '06', title: 'Catalogue connecteurs' },
   { match: '/industrialization/fournisseurs', number: '06', title: 'Catalogue fournisseurs' },

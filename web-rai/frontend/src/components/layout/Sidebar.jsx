@@ -203,6 +203,7 @@ const Sidebar = ({ menuOpen, completedMaintenanceCount = 0 }) => {
         {can('ecme') && (
           <>
             <ModuleLabel label="Qualité &amp; Conformité" />
+            <NavItem to="/ecme/suivi" icon={FlaskConical} label="Suivi des ECME" />
             <NavItem to="/ecme" icon={FlaskConical} label="État des ECME" />
           </>
         )}

@@ -11,6 +11,7 @@ import CreateMachineTemplate from './pages/Preventif/CreateMachineTemplate.jsx';
 import SuiviCuratif from './pages/Curatif/SuiviCuratif.jsx';
 import IndicateurCuratif from './pages/Curatif/IndicateurCuratif.jsx';
 import EtatECME from './pages/ECME/EtatECME.jsx';
+import SuiviECME from './pages/ECME/SuiviECME.jsx';
 import FicheDeVie from './pages/ECME/FicheDeVie.jsx';
 import IndustrializationIndex from './pages/Industrialization/IndustrializationIndex.jsx';
 import ChiffrageDetail from './pages/Industrialization/ChiffrageDetail.jsx';
@@ -44,6 +45,7 @@ const App = () => (
     <Route path="/curatif/suivi" element={<SuiviCuratif />} />
     <Route path="/curatif/indicateur" element={<IndicateurCuratif />} />
     <Route path="/ecme" element={<EtatECME />} />
+    <Route path="/ecme/suivi" element={<SuiviECME />} />
     <Route path="/ecme/:code" element={<FicheDeVie />} />
     <Route path="/industrialization" element={<IndustrializationIndex />} />
     <Route path="/industrialization/connecteurs" element={<CatalogueConnecteurs />} />
