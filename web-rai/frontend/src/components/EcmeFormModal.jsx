@@ -23,6 +23,7 @@ const emptyForm = () => ({
   date_derniere_verification:'',
   date_prochaine_verification:'',
   date_alerte:               '',
+  emt:                       '',
   remarques:                 '',
 });
 
@@ -65,6 +66,7 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
         date_derniere_verification: toInputDate(ecme.date_derniere_verification),
         date_prochaine_verification:toInputDate(ecme.date_prochaine_verification),
         date_alerte:                toInputDate(ecme.date_alerte),
+        emt:                        ecme.emt || '',
         remarques:                  ecme.remarques || '',
       });
     } else {
@@ -97,6 +99,7 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
         date_derniere_verification: toNullable(form.date_derniere_verification),
         date_prochaine_verification:toNullable(form.date_prochaine_verification),
         date_alerte:                toNullable(form.date_alerte),
+        emt:                        toNullable(form.emt),
         remarques:                  toNullable(form.remarques),
       };
 
@@ -257,6 +260,15 @@ const EcmeFormModal = ({ ecme, isOpen, onClose, onSuccess }) => {
               <p className="mt-2 text-xs text-slate-400">
                 Entrez la date de retour du fabricant comme "Dernière vérification" et la date indiquée sur le rapport comme "Prochaine vérification".
               </p>
+            </div>
+
+            {/* Section: EMT */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text3)' }}>EMT — Erreur Maximale Tolérée</p>
+              <p className="text-xs mb-3" style={{ color: 'var(--text3)' }}>Intervalle acceptable pour les valeurs de test (ex: ± 1 Ω, ± 0.02 mm, ± 0.5 V)</p>
+              <input type="text" value={form.emt} onChange={e => set('emt', e.target.value)}
+                placeholder="ex: ± 1 Ω"
+                className={inputCls} style={inputStyle} />
             </div>
 
             {/* Section: Remarques */}

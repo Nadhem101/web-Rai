@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ecmeService } from '../../services/api';
-import { FlaskConical, AlertTriangle, CheckCircle2, Clock, ArrowRight } from 'lucide-react';
+import { FlaskConical, AlertTriangle, CheckCircle2, Clock, ArrowRight, Pencil } from 'lucide-react';
 
 function fmtDate(raw) {
   if (!raw) return '—';
@@ -39,8 +39,72 @@ function DaysBadge({ days }) {
   </span>;
 }
 
+function EmtCell({ row }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal]         = useState(row.emt || '');
+  const [saving, setSaving]   = useState(false);
+  const inputRef              = useRef(null);
+
+  useEffect(() => { setVal(row.emt || ''); }, [row.emt]);
+  useEffect(() => { if (editing) inputRef.current?.focus(); }, [editing]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await ecmeService.update(row.code, { emt: val.trim() || null });
+    } catch { /* silent */ }
+    finally { setSaving(false); setEditing(false); }
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1" onClick={e => e.stopPropagation()}>
+        <input
+          ref={inputRef}
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onBlur={save}
+          onKeyDown={e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') setEditing(false); }}
+          placeholder="ex: ± 1 Ω"
+          className="w-28 rounded-[6px] px-2 py-1 text-xs outline-none focus:ring-2 focus:ring-[var(--accent)]"
+          style={{ background: 'var(--panel2)', border: '1px solid var(--accent)', color: 'var(--text)' }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); setEditing(true); }}
+      className="group flex items-center gap-1.5 text-xs hover:opacity-80 transition-opacity text-left w-full"
+    >
+      <span className={val
+        ? 'font-mono font-medium'
+        : 'italic'}
+        style={{ color: val ? 'var(--text)' : 'var(--text3)' }}>
+        {val || 'Ajouter…'}
+      </span>
+      {saving
+        ? <span className="text-[10px]" style={{ color: 'var(--text3)' }}>…</span>
+        : <Pencil size={10} className="opacity-0 group-hover:opacity-50 transition-opacity flex-shrink-0" style={{ color: 'var(--accent)' }} />
+      }
+    </button>
+  );
+}
+
+const STATUT_CFG = {
+  VALABLE:      { label: 'Valable',      bg: 'var(--ok-soft)',   color: 'var(--ok)'   },
+  VERIFICATION: { label: 'À vérifier',   bg: 'var(--crit-soft)', color: 'var(--crit)' },
+  EXEMPTE:      { label: 'Exempté',      bg: 'var(--info-soft)', color: 'var(--info)' },
+  DECLASSE:     { label: 'Déclassé',     bg: 'var(--panel2)',    color: 'var(--text3)'},
+  INCONNU:      { label: 'Inconnu',      bg: 'var(--warn-soft)', color: 'var(--warn)' },
+};
+
 function EcmeRow({ row, navigate }) {
   const days = daysFromToday(row.date_prochaine_verification);
+  const needsVerif = row.alerte === 'VERIFICATION';
+  const cfg = STATUT_CFG[row.alerte] || STATUT_CFG.INCONNU;
+
   return (
     <tr
       className="cursor-pointer transition-colors hover:bg-[var(--panel2)]"
@@ -49,19 +113,28 @@ function EcmeRow({ row, navigate }) {
     >
       <td className="px-4 py-3 font-mono text-xs font-bold" style={{ color: 'var(--accent)' }}>{row.code}</td>
       <td className="px-4 py-3 text-sm font-medium" style={{ color: 'var(--text)' }}>{row.designation}</td>
-      <td className="px-4 py-3 text-xs" style={{ color: 'var(--text2)' }}>
-        {row.marque || '—'}
-      </td>
-      <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--text3)' }}>
-        {row.n_serie || '—'}
+      <td className="px-4 py-3 font-mono text-xs" style={{ color: 'var(--text3)' }}>{row.n_serie || '—'}</td>
+      <td className="px-4 py-3 text-xs" style={{ color: 'var(--text3)' }}>{fmtDate(row.date_derniere_verification)}</td>
+      <td className="px-4 py-3">
+        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold" style={{ background: cfg.bg, color: cfg.color }}>
+          {cfg.label}
+        </span>
       </td>
       <td className="px-4 py-3">
-        {row.affectation
-          ? <span className="px-2 py-0.5 rounded text-xs" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>{row.affectation}</span>
-          : <span style={{ color: 'var(--text3)' }}>—</span>}
+        {needsVerif ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-xs font-bold animate-pulse"
+            style={{ background: 'var(--crit)', color: '#fff' }}>
+            ⚠ {fmtDate(row.date_prochaine_verification)}
+          </span>
+        ) : (
+          <span className="text-xs" style={{ color: days !== null && days <= 30 ? 'var(--warn)' : 'var(--text3)' }}>
+            {fmtDate(row.date_prochaine_verification)}
+          </span>
+        )}
       </td>
-      <td className="px-4 py-3 text-xs" style={{ color: 'var(--text3)' }}>{fmtDate(row.date_prochaine_verification)}</td>
-      <td className="px-4 py-3"><DaysBadge days={days} /></td>
+      <td className="px-4 py-3 min-w-[120px]">
+        <EmtCell row={row} />
+      </td>
       <td className="px-4 py-3">
         <button className="p-1.5 rounded-lg transition-colors hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }}>
           <ArrowRight size={14} />
@@ -94,7 +167,7 @@ function Section({ title, icon: Icon, color, colorSoft, rows, navigate, emptyTex
           <table className="min-w-full text-sm">
             <thead>
               <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
-                {['Code', 'Désignation', 'Marque', 'N° Série', 'Affectation', 'Prochaine vérif.', 'Délai', ''].map(h => (
+                {['Code', 'Désignation', 'N° Série', 'Dernière vérif.', 'Statut', 'Prochaine vérif.', 'EMT', ''].map(h => (
                   <th key={h} className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--text3)' }}>{h}</th>
                 ))}
               </tr>

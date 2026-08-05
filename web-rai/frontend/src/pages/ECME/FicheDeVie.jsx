@@ -86,6 +86,7 @@ export default function FicheDeVie() {
       affectation:                data.affectation || '',
       necessite_verification:     data.necessite_verification ?? true,
       verif_type:                 data.verif_type || '',
+      emt:                        data.emt || '',
       alerte:                     data.alerte || 'VALABLE',
       date_derniere_verification: toInputDate(data.date_derniere_verification),
       date_prochaine_verification: toInputDate(data.date_prochaine_verification),
@@ -105,6 +106,7 @@ export default function FicheDeVie() {
     try {
       await ecmeService.update(code, {
         ...form,
+        emt: form.emt.trim() || null,
         details_maintenance: rows,
         date_derniere_verification:  form.date_derniere_verification  || null,
         date_prochaine_verification: form.date_prochaine_verification || null,
@@ -319,6 +321,12 @@ export default function FicheDeVie() {
               editNode={<input type="date" value={form.date_prochaine_verification} onChange={e => set('date_prochaine_verification', e.target.value)} className={inputCls} style={inputStyle} />} />
             <InfoRow label="Date alerte" value={fmtDate(data.date_alerte)} editing={editing}
               editNode={<input type="date" value={form.date_alerte} onChange={e => set('date_alerte', e.target.value)} className={inputCls} style={inputStyle} />} />
+            <InfoRow label="EMT"
+              value={data.emt
+                ? <span className="font-mono text-sm px-2 py-0.5 rounded" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>{data.emt}</span>
+                : '—'}
+              editing={editing}
+              editNode={<input value={form.emt} onChange={e => set('emt', e.target.value)} placeholder="ex: ± 1 Ω" className={inputCls} style={inputStyle} />} />
           </dl>
         </div>
       </div>

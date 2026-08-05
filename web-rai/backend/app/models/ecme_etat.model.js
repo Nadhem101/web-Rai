@@ -55,6 +55,11 @@ const EcmeEtat = sequelize.define('EcmeEtat', {
     defaultValue: [],
     comment: 'Tableau de remarques superviseur: [{id, description, valeur}]',
   },
+  emt: {
+    type: DataTypes.STRING(150),
+    allowNull: true,
+    comment: 'Erreur Maximale Tolérée — ex: ± 1 Ω, ± 0.02 mm',
+  },
 }, {
   tableName: 'ecme_etat',
   timestamps: true,
