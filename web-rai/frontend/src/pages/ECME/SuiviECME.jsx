@@ -132,9 +132,6 @@ function EcmeRow({ row, navigate }) {
           </span>
         )}
       </td>
-      <td className="px-4 py-3 min-w-[120px]">
-        <EmtCell row={row} />
-      </td>
       <td className="px-4 py-3">
         <button className="p-1.5 rounded-lg transition-colors hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }}>
           <ArrowRight size={14} />
@@ -167,7 +164,7 @@ function Section({ title, icon: Icon, color, colorSoft, rows, navigate, emptyTex
           <table className="min-w-full text-sm">
             <thead>
               <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
-                {['Code', 'Désignation', 'N° Série', 'Dernière vérif.', 'Statut', 'Prochaine vérif.', 'EMT', ''].map(h => (
+                {['Code', 'Désignation', 'N° Série', 'Dernière vérif.', 'Statut', 'Prochaine vérif.', ''].map(h => (
                   <th key={h} className="px-4 py-2.5 text-left text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--text3)' }}>{h}</th>
                 ))}
               </tr>

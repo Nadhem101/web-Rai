@@ -118,6 +118,10 @@ export const ecmeService = {
   create:          (data)   => API.post('/ecme', data),
   update:          (code, data) => API.put(`/ecme/${code}`, data),
   delete:          (code)   => API.delete(`/ecme/${code}`),
+  // Interventions
+  createIntervention: (code, data) => API.post(`/ecme/${code}/interventions`, data).then(r => r.data),
+  updateIntervention: (code, id, data) => API.put(`/ecme/${code}/interventions/${id}`, data).then(r => r.data),
+  deleteIntervention: (code, id) => API.delete(`/ecme/${code}/interventions/${id}`).then(r => r.data),
 };
 
 export const applicateurService = {

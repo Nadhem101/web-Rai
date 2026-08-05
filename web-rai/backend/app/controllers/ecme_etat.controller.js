@@ -93,6 +93,62 @@ exports.delete = async (req, res) => {
   }
 };
 
+// POST /api/ecme/:code/interventions — create intervention + optionally update ECME status/dates
+exports.createIntervention = async (req, res) => {
+  try {
+    const code = req.params.code.toUpperCase().replace(/\s+/g, '');
+    const ecme = await EcmeEtat.findByPk(code);
+    if (!ecme) return res.status(404).json({ error: 'ECME non trouvé' });
+
+    const { date, nature, resultat, visa, date_prochaine_verification, valider } = req.body;
+
+    const intervention = await EcmeIntervention.create({ ecme_code: code, date, nature, resultat, visa });
+
+    // If this is a "valider vérification" action, update the ECME record too
+    if (valider) {
+      await ecme.update({
+        alerte: 'VALABLE',
+        date_derniere_verification: date || new Date().toISOString().slice(0, 10),
+        ...(date_prochaine_verification ? { date_prochaine_verification } : {}),
+      });
+    }
+
+    // Return full updated record with interventions
+    const updated = await EcmeEtat.findByPk(code, {
+      include: [{ model: EcmeIntervention, as: 'interventions', order: [['date', 'ASC']] }],
+    });
+    return res.status(201).json(updated);
+  } catch (err) {
+    console.error(err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+// PUT /api/ecme/:code/interventions/:id — update a single intervention row
+exports.updateIntervention = async (req, res) => {
+  try {
+    const intervention = await EcmeIntervention.findByPk(req.params.id);
+    if (!intervention) return res.status(404).json({ error: 'Intervention non trouvée' });
+    await intervention.update(req.body);
+    return res.json(intervention);
+  } catch (err) {
+    console.error(err);
+    return res.status(400).json({ error: err.message });
+  }
+};
+
+// DELETE /api/ecme/:code/interventions/:id
+exports.deleteIntervention = async (req, res) => {
+  try {
+    const deleted = await EcmeIntervention.destroy({ where: { id: req.params.id } });
+    if (!deleted) return res.status(404).json({ error: 'Intervention non trouvée' });
+    return res.json({ message: 'Intervention supprimée' });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: err.message });
+  }
+};
+
 // GET /api/ecme/meta/affectations  — distinct affectation values for filter
 exports.getAffectations = async (req, res) => {
   try {

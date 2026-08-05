@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ecmeService } from '../../services/api';
-import { Pencil, Save, X, Plus, Trash2, FlaskConical } from 'lucide-react';
+import { Pencil, Save, X, Plus, Trash2, CheckCircle2 } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const ALERTE_CONFIG = {
@@ -47,6 +47,116 @@ function InfoRow({ label, value, editing, editNode }) {
 const inputCls = 'w-full rounded-[8px] px-2.5 py-1 text-sm outline-none focus:ring-2 focus:ring-[var(--accent)]';
 const inputStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
 
+// ── Valider Vérification Modal ────────────────────────────────────────────────
+function ValiderModal({ code, onClose, onSaved }) {
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = useState({
+    date:                       todayISO,
+    nature:                     'Vérification métrologique',
+    resultat:                   'Conforme',
+    visa:                       '',
+    date_prochaine_verification: '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error,  setError]  = useState('');
+
+  const set = (f, v) => setForm(p => ({ ...p, [f]: v }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.date) { setError('La date est obligatoire.'); return; }
+    setSaving(true); setError('');
+    try {
+      await ecmeService.createIntervention(code, { ...form, valider: true });
+      onSaved();
+      onClose();
+    } catch (err) {
+      setError(err?.response?.data?.error || err.message || 'Erreur lors de la sauvegarde');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const lbl = 'mb-1 block text-xs font-semibold uppercase tracking-[0.12em]';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-md rounded-[18px] shadow-2xl overflow-hidden" style={{ background: 'var(--panel)' }}>
+        {/* Header */}
+        <div className="px-6 py-5 flex items-center justify-between"
+          style={{ background: 'linear-gradient(135deg, #0a2820, #0d1828)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0"
+              style={{ background: 'var(--ok-soft)' }}>
+              <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--ok)' }} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-white">Valider une vérification</h3>
+              <p className="text-xs text-slate-400 mt-0.5">Le statut passera automatiquement à <span style={{ color: 'var(--ok)' }}>Valable</span></p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-colors">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Form */}
+        <form onSubmit={submit} className="p-6 space-y-4">
+          {error && <p className="text-xs rounded-[8px] px-3 py-2" style={{ background: 'var(--crit-soft)', color: 'var(--crit)', border: '1px solid var(--crit)' }}>{error}</p>}
+
+          <div className="grid grid-cols-2 gap-4">
+            <label className="block">
+              <span className={lbl} style={{ color: 'var(--text3)' }}>Date de vérification *</span>
+              <input type="date" value={form.date} onChange={e => set('date', e.target.value)}
+                className={inputCls} style={inputStyle} required />
+            </label>
+            <label className="block">
+              <span className={lbl} style={{ color: 'var(--text3)' }}>Prochaine vérification</span>
+              <input type="date" value={form.date_prochaine_verification} onChange={e => set('date_prochaine_verification', e.target.value)}
+                className={inputCls} style={inputStyle} />
+            </label>
+          </div>
+
+          <label className="block">
+            <span className={lbl} style={{ color: 'var(--text3)' }}>Nature de l'intervention</span>
+            <input type="text" value={form.nature} onChange={e => set('nature', e.target.value)}
+              placeholder="ex: Vérification métrologique interne"
+              className={inputCls} style={inputStyle} />
+          </label>
+
+          <label className="block">
+            <span className={lbl} style={{ color: 'var(--text3)' }}>Résultat</span>
+            <input type="text" value={form.resultat} onChange={e => set('resultat', e.target.value)}
+              placeholder="ex: Conforme, ± 0.02 mm"
+              className={inputCls} style={inputStyle} />
+          </label>
+
+          <label className="block">
+            <span className={lbl} style={{ color: 'var(--text3)' }}>Visa (technicien)</span>
+            <input type="text" value={form.visa} onChange={e => set('visa', e.target.value)}
+              placeholder="Initiales ou nom"
+              className={inputCls} style={inputStyle} />
+          </label>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-[10px] text-sm font-semibold transition-colors hover:bg-[var(--panel3)]"
+              style={{ border: '1px solid var(--border)', color: 'var(--text2)' }}>
+              Annuler
+            </button>
+            <button type="submit" disabled={saving}
+              className="flex-1 py-2.5 rounded-[10px] text-sm font-bold text-white disabled:opacity-50 transition-transform hover:-translate-y-0.5"
+              style={{ background: saving ? 'var(--text3)' : 'linear-gradient(135deg, var(--ok), #16a34a)', boxShadow: '0 4px 14px var(--ok-soft)' }}>
+              {saving ? 'Sauvegarde…' : '✓ Valider la vérification'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 export default function FicheDeVie() {
   const { code } = useParams();
@@ -55,10 +165,11 @@ export default function FicheDeVie() {
   const [data,    setData]    = useState(null);
   const [loading, setLoading] = useState(true);
   const [error,   setError]   = useState('');
-  const [editing, setEditing] = useState(false);
-  const [form,    setForm]    = useState({});
-  const [saving,  setSaving]  = useState(false);
-  const [saveErr, setSaveErr] = useState('');
+  const [editing,     setEditing]     = useState(false);
+  const [form,        setForm]        = useState({});
+  const [saving,      setSaving]      = useState(false);
+  const [saveErr,     setSaveErr]     = useState('');
+  const [validerOpen, setValiderOpen] = useState(false);
 
   // Remarques rows (always live-editable)
   const [rows,    setRows]    = useState([]);
@@ -210,11 +321,20 @@ export default function FicheDeVie() {
             </button>
           </div>
         ) : (
-          <button onClick={startEdit}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
-            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 4px 14px var(--accent-soft)' }}>
-            <Pencil size={14} /> Modifier
-          </button>
+          <div className="flex items-center gap-2">
+            {data.alerte === 'VERIFICATION' && (
+              <button onClick={() => setValiderOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white animate-pulse transition-transform hover:-translate-y-0.5 hover:[animation:none]"
+                style={{ background: 'linear-gradient(135deg, var(--ok), #16a34a)', boxShadow: '0 4px 14px var(--ok-soft)' }}>
+                <CheckCircle2 size={14} /> Valider la vérification
+              </button>
+            )}
+            <button onClick={startEdit}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
+              style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 4px 14px var(--accent-soft)' }}>
+              <Pencil size={14} /> Modifier
+            </button>
+          </div>
         )}
       </div>
 
@@ -415,37 +535,137 @@ export default function FicheDeVie() {
       )}
 
       {/* ── Intervention history ── */}
-      <div className="rounded-[14px] overflow-hidden" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
-        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border2)' }}>
+      <HistoriqueTable code={code} interventions={interventions} onChanged={reload} />
+
+      {/* ── Valider modal ── */}
+      {validerOpen && (
+        <ValiderModal
+          code={code}
+          onClose={() => setValiderOpen(false)}
+          onSaved={reload}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Historique editable table ─────────────────────────────────────────────────
+function HistoriqueTable({ code, interventions, onChanged }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editForm,  setEditForm]  = useState({});
+  const [saving,    setSaving]    = useState(false);
+
+  const startEdit = (int) => {
+    setEditingId(int.id);
+    setEditForm({ date: int.date || '', nature: int.nature || '', resultat: int.resultat || '', visa: int.visa || '' });
+  };
+
+  const cancelEdit = () => { setEditingId(null); setEditForm({}); };
+
+  const saveEdit = async () => {
+    setSaving(true);
+    try {
+      await ecmeService.updateIntervention(code, editingId, editForm);
+      setEditingId(null);
+      onChanged();
+    } catch { /* silent */ }
+    finally { setSaving(false); }
+  };
+
+  const deleteInt = async (id) => {
+    if (!window.confirm('Supprimer cette intervention ?')) return;
+    try {
+      await ecmeService.deleteIntervention(code, id);
+      onChanged();
+    } catch { /* silent */ }
+  };
+
+  const ic = 'w-full bg-transparent outline-none text-sm border-b border-transparent focus:border-[var(--accent)] py-0.5';
+
+  // Sort newest first for display
+  const sorted = [...interventions].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  return (
+    <div className="rounded-[14px] overflow-hidden" style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
+      <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border2)' }}>
+        <div>
           <h2 className="text-sm font-bold" style={{ color: 'var(--text)' }}>📋 Historique des interventions</h2>
-          <span className="text-xs" style={{ color: 'var(--text3)' }}>{interventions.length} entrée(s)</span>
+          <p className="text-[11px] mt-0.5" style={{ color: 'var(--text3)' }}>Enregistré automatiquement à chaque validation</p>
         </div>
-        {interventions.length === 0 ? (
-          <div className="px-5 py-8 text-center text-sm" style={{ color: 'var(--text3)' }}>Aucune intervention enregistrée</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
-                  {['Date','Nature','Résultat','Visa'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-[9.5px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--text3)' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {interventions.map((int, idx) => (
-                  <tr key={idx} style={{ borderBottom: '1px solid var(--border2)', background: idx%2===0 ? 'var(--panel)' : 'var(--panel2)' }}>
-                    <td className="px-4 py-2.5 text-xs font-mono" style={{ color: 'var(--text3)' }}>{int.date || '—'}</td>
-                    <td className="px-4 py-2.5" style={{ color: 'var(--text)' }}>{int.nature || '—'}</td>
-                    <td className="px-4 py-2.5" style={{ color: 'var(--text2)' }}>{int.resultat || '—'}</td>
-                    <td className="px-4 py-2.5 text-xs" style={{ color: 'var(--text3)' }}>{int.visa || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <span className="text-xs" style={{ color: 'var(--text3)' }}>{interventions.length} entrée(s)</span>
       </div>
+
+      {sorted.length === 0 ? (
+        <div className="px-5 py-8 text-center text-sm" style={{ color: 'var(--text3)' }}>Aucune intervention enregistrée</div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr style={{ background: 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
+                {['Date','Nature','Résultat','Visa',''].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-[9.5px] font-bold uppercase tracking-[0.1em]" style={{ color: 'var(--text3)' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.map((int, idx) => {
+                const isEditing = editingId === int.id;
+                return (
+                  <tr key={int.id} style={{ borderBottom: '1px solid var(--border2)', background: idx%2===0 ? 'var(--panel)' : 'var(--panel2)' }}>
+                    <td className="px-4 py-2.5 text-xs font-mono" style={{ color: 'var(--text3)', minWidth: 110 }}>
+                      {isEditing
+                        ? <input type="date" value={editForm.date} onChange={e => setEditForm(f => ({ ...f, date: e.target.value }))} className={ic} style={{ color: 'var(--text)' }} />
+                        : int.date || '—'}
+                    </td>
+                    <td className="px-4 py-2.5" style={{ color: 'var(--text)' }}>
+                      {isEditing
+                        ? <input value={editForm.nature} onChange={e => setEditForm(f => ({ ...f, nature: e.target.value }))} className={ic} style={{ color: 'var(--text)' }} />
+                        : int.nature || '—'}
+                    </td>
+                    <td className="px-4 py-2.5" style={{ color: 'var(--text2)' }}>
+                      {isEditing
+                        ? <input value={editForm.resultat} onChange={e => setEditForm(f => ({ ...f, resultat: e.target.value }))} className={ic} style={{ color: 'var(--text)' }} />
+                        : int.resultat || '—'}
+                    </td>
+                    <td className="px-4 py-2.5 text-xs" style={{ color: 'var(--text3)' }}>
+                      {isEditing
+                        ? <input value={editForm.visa} onChange={e => setEditForm(f => ({ ...f, visa: e.target.value }))} className={ic} style={{ color: 'var(--text)' }} />
+                        : int.visa || '—'}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {isEditing ? (
+                        <div className="flex items-center gap-1">
+                          <button onClick={saveEdit} disabled={saving}
+                            className="px-2 py-1 rounded text-[11px] font-bold text-white disabled:opacity-50"
+                            style={{ background: 'var(--accent)' }}>
+                            {saving ? '…' : 'OK'}
+                          </button>
+                          <button onClick={cancelEdit} className="p-1 rounded hover:opacity-70" style={{ color: 'var(--text3)' }}>
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 opacity-0 hover:opacity-100 group-hover:opacity-100">
+                          <button onClick={() => startEdit(int)}
+                            className="p-1 rounded transition-colors hover:bg-[var(--accent-soft)] hover:text-[var(--accent)]"
+                            style={{ color: 'var(--text3)' }}>
+                            <Pencil size={12} />
+                          </button>
+                          <button onClick={() => deleteInt(int.id)}
+                            className="p-1 rounded transition-colors hover:bg-[var(--crit-soft)] hover:text-[var(--crit)]"
+                            style={{ color: 'var(--text3)' }}>
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
