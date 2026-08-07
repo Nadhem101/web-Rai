@@ -220,6 +220,7 @@ export const outillageService = {
 
 export const gammeFabService = {
   getAll:                   ()         => API.get('/gamme-fab').then(r => r.data),
+  getById:                  (id)       => API.get(`/gamme-fab/${id}`).then(r => r.data),
   createProcessus:          (data)     => API.post('/gamme-fab', data).then(r => r.data),
   updateProcessus:          (id, data) => API.put(`/gamme-fab/${id}`, data).then(r => r.data),
   deleteProcessus:          (id)       => API.delete(`/gamme-fab/${id}`).then(r => r.data),

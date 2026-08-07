@@ -24,7 +24,8 @@ import TestCables from './pages/Industrialization/TestCables.jsx';
 import SuiviMoyensIndex from './pages/Industrialization/SuiviMoyensIndex.jsx';
 import SuiviMoyensDetail from './pages/Industrialization/SuiviMoyensDetail.jsx';
 import OutillagesInventaire from './pages/Industrialization/OutillagesInventaire.jsx';
-import GammeFabrication from './pages/Industrialization/GammeFabrication.jsx';
+import GammeFabricationIndex from './pages/Industrialization/GammeFabricationIndex.jsx';
+import GammeFabricationDetail from './pages/Industrialization/GammeFabricationDetail.jsx';
 import AdminUsers from './pages/Admin/AdminUsers.jsx';
 import Assistant from './pages/Assistant/Assistant.jsx';
 
@@ -58,7 +59,8 @@ const App = () => (
     <Route path="/industrialization/suivi-moyens" element={<SuiviMoyensIndex />} />
     <Route path="/industrialization/suivi-moyens/:id" element={<SuiviMoyensDetail />} />
     <Route path="/inventaire/outillages" element={<OutillagesInventaire />} />
-    <Route path="/industrialization/gamme-fab" element={<GammeFabrication />} />
+    <Route path="/industrialization/gamme-fab" element={<GammeFabricationIndex />} />
+    <Route path="/industrialization/gamme-fab/:id" element={<GammeFabricationDetail />} />
     <Route path="/admin/users" element={<AdminUsers />} />
   </Routes>
 );

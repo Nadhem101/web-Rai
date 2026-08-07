@@ -5,6 +5,7 @@ const ctrl = require('../controllers/gamme_fab.controller');
 // Processus
 router.get('/',               ctrl.getAll);
 router.post('/',              ctrl.createProcessus);
+router.get('/:id',            ctrl.getOne);
 router.put('/:id',            ctrl.updateProcessus);
 router.delete('/:id',         ctrl.deleteProcessus);
 

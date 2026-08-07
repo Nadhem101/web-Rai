@@ -454,8 +454,8 @@ const TOOLS = [
               nomEtape: e.nom_etape,
               outillages: (e.gammeOutillages || []).map((g) => g.outillage?.designation).filter(Boolean),
             })),
-          link: '/industrialization/gamme-fab',
-          linkLabel: `Voir « ${p.nom} » dans Gestion outillages`,
+          link: `/industrialization/gamme-fab/${p.id}`,
+          linkLabel: `Ouvrir « ${p.nom} »`,
         })),
       };
     },

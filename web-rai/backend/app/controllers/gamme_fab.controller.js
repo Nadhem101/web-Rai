@@ -31,6 +31,20 @@ exports.getAll = async (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 };
 
+exports.getOne = async (req, res) => {
+  try {
+    const p = await ProcessusFab.findByPk(req.params.id, {
+      include: fullInclude,
+      order: [
+        [{ model: EtapeFab, as: 'etapes' }, 'ordre', 'ASC'],
+        [{ model: EtapeFab, as: 'etapes' }, { model: GammeOutillage, as: 'gammeOutillages' }, 'ordre', 'ASC'],
+      ],
+    });
+    if (!p) return res.status(404).json({ error: 'Non trouvé' });
+    res.json(p);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+};
+
 exports.createProcessus = async (req, res) => {
   try {
     const { nom } = req.body;
