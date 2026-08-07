@@ -8,7 +8,7 @@ const {
   Outillage,
   Flowchart,
   Chiffrage, ChiffrageLigne,
-  ProcessusFab, EtapeFab, GammeOutillage,
+  Gamme, ProcessusFab, EtapeFab, GammeOutillage,
   ArticleTest, DetailArticle,
 } = require('../../models');
 const { canAny } = require('./permissions');
@@ -424,38 +424,48 @@ const TOOLS = [
   {
     name: 'findGammeFabrication',
     description:
-      'Search fabrication processes (gamme de fabrication) by name, with their étapes and associated outillages. ' +
-      'Use for "gamme de fabrication for X" / "which outillages does step Y need" questions.',
+      'Search fabrication routing files (gamme de fabrication) by name — each gamme holds one or more processus, ' +
+      'each with its own étapes and associated outillages. Use for "gamme de fabrication for X" / ' +
+      '"which outillages does step Y need" questions.',
     input_schema: {
       type: 'object',
-      properties: { query: { type: 'string', description: 'Search text (processus name). Omit to list all processus.' } },
+      properties: { query: { type: 'string', description: 'Search text (gamme name). Omit to list all gammes.' } },
       required: [],
     },
     kind: 'read',
     sections: ['indus'],
     handler: async (input = {}) => {
       const where = input.query ? { nom: { [Op.iLike]: `%${input.query}%` } } : {};
-      const processus = await ProcessusFab.findAll({
+      const gammes = await Gamme.findAll({
         where,
-        include: [{ model: EtapeFab, as: 'etapes', include: [{ model: GammeOutillage, as: 'gammeOutillages', include: [{ model: Outillage, as: 'outillage' }] }] }],
+        include: [{
+          model: ProcessusFab, as: 'processus',
+          include: [{ model: EtapeFab, as: 'etapes', include: [{ model: GammeOutillage, as: 'gammeOutillages', include: [{ model: Outillage, as: 'outillage' }] }] }],
+        }],
         order: [['ordre', 'ASC']],
         limit: 5,
       });
-      if (processus.length === 0) return { found: false, message: 'Aucun processus de fabrication trouvé.' };
+      if (gammes.length === 0) return { found: false, message: 'Aucune gamme de fabrication trouvée.' };
       return {
-        count: processus.length,
-        matches: processus.map((p) => ({
-          id: p.id,
-          nom: p.nom,
-          etapes: (p.etapes || [])
+        count: gammes.length,
+        matches: gammes.map((g) => ({
+          id: g.id,
+          nom: g.nom,
+          processus: (g.processus || [])
             .slice()
             .sort((a, b) => a.ordre - b.ordre)
-            .map((e) => ({
-              nomEtape: e.nom_etape,
-              outillages: (e.gammeOutillages || []).map((g) => g.outillage?.designation).filter(Boolean),
+            .map((p) => ({
+              nom: p.nom,
+              etapes: (p.etapes || [])
+                .slice()
+                .sort((a, b) => a.ordre - b.ordre)
+                .map((e) => ({
+                  nomEtape: e.nom_etape,
+                  outillages: (e.gammeOutillages || []).map((go) => go.outillage?.designation).filter(Boolean),
+                })),
             })),
-          link: `/industrialization/gamme-fab/${p.id}`,
-          linkLabel: `Ouvrir « ${p.nom} »`,
+          link: `/industrialization/gamme-fab/${g.id}`,
+          linkLabel: `Ouvrir « ${g.nom} »`,
         })),
       };
     },

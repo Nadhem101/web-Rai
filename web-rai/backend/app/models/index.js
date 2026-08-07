@@ -33,6 +33,7 @@ const FerBainRecord          = require('./fer_bain_record.model');
 const Outillage              = require('./outillage.model');
 const OutillageReference     = require('./outillage_reference.model');
 const OutillagePhoto         = require('./outillage_photo.model');
+const Gamme                  = require('./gamme.model');
 const ProcessusFab           = require('./processus_fab.model');
 const EtapeFab               = require('./etape_fab.model');
 const GammeOutillage         = require('./gamme_outillage.model');
@@ -86,6 +87,8 @@ Outillage.hasMany(OutillagePhoto, { foreignKey: 'outillage_id', as: 'photos' });
 OutillagePhoto.belongsTo(Outillage, { foreignKey: 'outillage_id' });
 
 // Gamme de fabrication relationships
+Gamme.hasMany(ProcessusFab, { foreignKey: 'gamme_id', as: 'processus', onDelete: 'CASCADE' });
+ProcessusFab.belongsTo(Gamme, { foreignKey: 'gamme_id', as: 'gamme' });
 ProcessusFab.hasMany(EtapeFab, { foreignKey: 'processus_id', as: 'etapes' });
 EtapeFab.belongsTo(ProcessusFab, { foreignKey: 'processus_id', as: 'processus' });
 EtapeFab.hasMany(GammeOutillage, { foreignKey: 'etape_id', as: 'gammeOutillages' });
@@ -152,6 +155,7 @@ module.exports = {
   Outillage,
   OutillageReference,
   OutillagePhoto,
+  Gamme,
   ProcessusFab,
   EtapeFab,
   GammeOutillage,

@@ -44,6 +44,7 @@ app.use('/api/fournisseurs-catalogue',      require('./app/routes/fournisseur_ca
 app.use('/api/connecteurs-catalogue',       require('./app/routes/connecteur_catalogue.routes'));
 app.use('/api/fer-bain-records',            require('./app/routes/fer_bain_record.routes'));
 app.use('/api/outillages',                  require('./app/routes/outillage.routes'));
+app.use('/api/gammes',                      require('./app/routes/gammes.routes'));
 app.use('/api/gamme-fab',                   require('./app/routes/gamme_fab.routes'));
 app.use('/api/assistant',                   require('./app/routes/assistant.routes'));
 

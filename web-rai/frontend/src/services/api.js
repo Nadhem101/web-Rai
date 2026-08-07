@@ -218,6 +218,17 @@ export const outillageService = {
   delete:  (id)       => API.delete(`/outillages/${id}`).then(r => r.data),
 };
 
+// The top-level "gamme de fabrication" file (named, like a Flow Chart) — it
+// holds one or more processus (gammeFabService below), each with their own
+// étapes/outillages.
+export const gammeService = {
+  getAll:  ()         => API.get('/gammes').then(r => r.data),
+  getById: (id)       => API.get(`/gammes/${id}`).then(r => r.data),
+  create:  (data)     => API.post('/gammes', data).then(r => r.data),
+  update:  (id, data) => API.put(`/gammes/${id}`, data).then(r => r.data),
+  delete:  (id)       => API.delete(`/gammes/${id}`).then(r => r.data),
+};
+
 export const gammeFabService = {
   getAll:                   ()         => API.get('/gamme-fab').then(r => r.data),
   getById:                  (id)       => API.get(`/gamme-fab/${id}`).then(r => r.data),

@@ -1,33 +1,57 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { gammeFabService, outillageService } from '../../services/api';
+import { gammeService, gammeFabService, outillageService } from '../../services/api';
 import {
   Plus, Trash2, Pencil, X, Check, ScrollText, Package, Search,
-  ZoomIn, ChevronLeft, Printer,
+  ChevronDown, ChevronRight, ZoomIn, ChevronLeft, Printer,
 } from 'lucide-react';
 import PhotoLightbox from '../../components/ui/PhotoLightbox.jsx';
 
-// ─── flatten one processus's étapes into table rows ────────────────────────
-function buildRows(etapes) {
+// ─── flatten this gamme's processus tree into table rows ──────────────────
+function buildRows(processus, collapsed) {
   const rows = [];
-  etapes.forEach((etape, ei) => {
-    const outs = etape.gammeOutillages || [];
-    const etapeStart = rows.length;
 
-    if (outs.length === 0) {
-      rows.push({ key: `e${etape.id}-ph`, type: 'empty-out', etape, etapeIndex: ei });
-    } else {
-      outs.forEach((g) => {
-        rows.push({ key: `e${etape.id}-g${g.id}`, type: 'data', etape, g, etapeIndex: ei });
-      });
+  for (const proc of processus) {
+    // Collapsed: single row showing only the processus name
+    if (collapsed.has(proc.id)) {
+      rows.push({ key: `p${proc.id}-coll`, type: 'collapsed', proc, _procStart: true, _procSpan: 1 });
+      continue;
     }
-    rows.push({ key: `e${etape.id}-ao`, type: 'add-out', etape, etapeIndex: ei });
 
-    const span = rows.length - etapeStart;
-    rows[etapeStart]._etapeStart = true;
-    rows[etapeStart]._etapeSpan = span;
-  });
+    const etapes = proc.etapes || [];
+    const procStart = rows.length;
+
+    if (etapes.length === 0) {
+      // empty processus: one placeholder row + one add-etape row
+      rows.push({ key: `p${proc.id}-ph`, type: 'placeholder', proc });
+      rows.push({ key: `p${proc.id}-ae`, type: 'add-etape', proc });
+    } else {
+      etapes.forEach((etape, ei) => {
+        const outs = etape.gammeOutillages || [];
+        const etapeStart = rows.length;
+
+        if (outs.length === 0) {
+          rows.push({ key: `e${etape.id}-ph`, type: 'empty-out', proc, etape, etapeIndex: ei });
+        } else {
+          outs.forEach((g) => {
+            rows.push({ key: `e${etape.id}-g${g.id}`, type: 'data', proc, etape, g, etapeIndex: ei });
+          });
+        }
+        rows.push({ key: `e${etape.id}-ao`, type: 'add-out', proc, etape, etapeIndex: ei });
+
+        const span = rows.length - etapeStart;
+        rows[etapeStart]._etapeStart = true;
+        rows[etapeStart]._etapeSpan = span;
+      });
+      rows.push({ key: `p${proc.id}-ae`, type: 'add-etape', proc });
+    }
+
+    const span = rows.length - procStart;
+    rows[procStart]._procStart = true;
+    rows[procStart]._procSpan = span;
+  }
+
   return rows;
 }
 
@@ -36,21 +60,26 @@ export default function GammeFabricationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [proc,        setProc]        = useState(null);
+  const [gamme,       setGamme]       = useState(null);
   const [outillages,  setOutillages]  = useState([]);
   const [loading,     setLoading]     = useState(true);
 
-  // processus rename
+  // gamme rename
   const [editingNom, setEditingNom] = useState(false);
   const [nomDraft,   setNomDraft]   = useState('');
+
+  // processus editing state
+  const [editProcId,  setEditProcId]  = useState(null);
+  const [editProcNom, setEditProcNom] = useState('');
+  const [addingProc,     setAddingProc]     = useState(false);
+  const [newProcNom,     setNewProcNom]     = useState('');
+  const [collapsed,      setCollapsed]      = useState(new Set());
 
   // étape editing state
   const [editEtapeId,  setEditEtapeId]  = useState(null);
   const [editEtapeNom, setEditEtapeNom] = useState('');
-
-  // adding state
-  const [addingEtape, setAddingEtape] = useState(false);
-  const [newEtapeNom, setNewEtapeNom] = useState('');
+  const [addingEtapeFor, setAddingEtapeFor] = useState(null); // proc.id
+  const [newEtapeNom,    setNewEtapeNom]    = useState('');
 
   // outillage picker
   const [pickerEtapeId, setPickerEtapeId] = useState(null);
@@ -60,21 +89,26 @@ export default function GammeFabricationDetail() {
   const [lightbox, setLightbox] = useState(null); // null | { photos, index }
   const openLightbox = (photos, index) => setLightbox({ photos, index });
 
-  const printRef = useRef(null);
-
   const load = async () => {
     try {
       setLoading(true);
-      const [p, outil] = await Promise.all([gammeFabService.getById(id), outillageService.getAll()]);
-      setProc(p);
+      const [g, outil] = await Promise.all([gammeService.getById(id), outillageService.getAll()]);
+      setGamme(g);
       setOutillages(Array.isArray(outil) ? outil : []);
-    } catch { setProc(null); setOutillages([]); }
+    } catch { setGamme(null); setOutillages([]); }
     finally { setLoading(false); }
   };
   useEffect(() => { load(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [id]);
 
-  const etapes = proc?.etapes || [];
-  const rows = useMemo(() => buildRows(etapes), [etapes]);
+  const processus = gamme?.processus || [];
+
+  const toggleCollapse = (procId) => setCollapsed((prev) => {
+    const next = new Set(prev);
+    next.has(procId) ? next.delete(procId) : next.add(procId);
+    return next;
+  });
+
+  const rows = useMemo(() => buildRows(processus, collapsed), [processus, collapsed]);
 
   const filteredOut = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -84,16 +118,32 @@ export default function GammeFabricationDetail() {
       (o.references || []).some((r) => r.reference.toLowerCase().includes(q)));
   }, [outillages, search]);
 
-  // ── CRUD ──────────────────────────────────────────────────────────────────
-  const saveNom = async () => {
+  // ── Gamme CRUD ──────────────────────────────────────────────────────────
+  const saveGammeNom = async () => {
     if (!nomDraft.trim()) return;
-    await gammeFabService.updateProcessus(id, { nom: nomDraft.trim() });
+    await gammeService.update(id, { nom: nomDraft.trim() });
     setEditingNom(false); load();
   };
-  const deleteProc = async () => {
-    if (!proc || !window.confirm(`Supprimer "${proc.nom}" et toutes ses étapes ?`)) return;
-    await gammeFabService.deleteProcessus(id);
+  const deleteGamme = async () => {
+    if (!gamme || !window.confirm(`Supprimer "${gamme.nom}" et tout son contenu (processus, étapes, outillages liés) ?`)) return;
+    await gammeService.delete(id);
     navigate('/industrialization/gamme-fab');
+  };
+
+  // ── Processus CRUD ────────────────────────────────────────────────────────
+  const saveProc = async (procId) => {
+    if (!editProcNom.trim()) return;
+    await gammeFabService.updateProcessus(procId, { nom: editProcNom.trim() });
+    setEditProcId(null); load();
+  };
+  const deleteProc = async (p) => {
+    if (!window.confirm(`Supprimer "${p.nom}" et toutes ses étapes ?`)) return;
+    await gammeFabService.deleteProcessus(p.id); load();
+  };
+  const createProc = async () => {
+    if (!newProcNom.trim()) return;
+    await gammeFabService.createProcessus({ nom: newProcNom.trim(), gamme_id: id });
+    setNewProcNom(''); setAddingProc(false); load();
   };
 
   const saveEtape = async (etapeId) => {
@@ -105,10 +155,10 @@ export default function GammeFabricationDetail() {
     if (!window.confirm(`Supprimer "${e.nom_etape}" ?`)) return;
     await gammeFabService.deleteEtape(e.id); load();
   };
-  const createEtape = async () => {
+  const createEtape = async (procId) => {
     if (!newEtapeNom.trim()) return;
-    await gammeFabService.createEtape({ processus_id: id, nom_etape: newEtapeNom.trim() });
-    setNewEtapeNom(''); setAddingEtape(false); load();
+    await gammeFabService.createEtape({ processus_id: procId, nom_etape: newEtapeNom.trim() });
+    setNewEtapeNom(''); setAddingEtapeFor(null); load();
   };
 
   const addOutillage = async (etape_id, outillage_id) => {
@@ -132,10 +182,10 @@ export default function GammeFabricationDetail() {
     );
   }
 
-  if (!proc) {
+  if (!gamme) {
     return (
       <div className="flex flex-col items-center justify-center flex-1 gap-3" style={{ background: 'var(--bg)', color: 'var(--text3)' }}>
-        <p className="text-sm font-medium">Processus introuvable.</p>
+        <p className="text-sm font-medium">Gamme introuvable.</p>
         <button onClick={() => navigate('/industrialization/gamme-fab')}
           className="inline-flex items-center gap-1.5 text-xs font-semibold" style={{ color: 'var(--accent)' }}>
           <ChevronLeft className="w-3.5 h-3.5" /> Retour aux gammes de fabrication
@@ -182,8 +232,8 @@ export default function GammeFabricationDetail() {
             <div className="flex items-center gap-1.5 min-w-0">
               <input autoFocus className={`${inp} font-semibold`} style={{ ...inpSt, minWidth: 220 }}
                 value={nomDraft} onChange={(e) => setNomDraft(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') saveNom(); if (e.key === 'Escape') setEditingNom(false); }} />
-              <button onClick={saveNom} className="p-1.5 rounded-[6px] text-white flex-shrink-0" style={{ background: 'var(--accent)' }}>
+                onKeyDown={(e) => { if (e.key === 'Enter') saveGammeNom(); if (e.key === 'Escape') setEditingNom(false); }} />
+              <button onClick={saveGammeNom} className="p-1.5 rounded-[6px] text-white flex-shrink-0" style={{ background: 'var(--accent)' }}>
                 <Check className="w-3.5 h-3.5" />
               </button>
               <button onClick={() => setEditingNom(false)} className="p-1.5 rounded-[6px] flex-shrink-0" style={{ color: 'var(--text3)' }}>
@@ -191,10 +241,10 @@ export default function GammeFabricationDetail() {
               </button>
             </div>
           ) : (
-            <button onClick={() => { setEditingNom(true); setNomDraft(proc.nom); }}
+            <button onClick={() => { setEditingNom(true); setNomDraft(gamme.nom); }}
               className="group/title flex items-center gap-2 min-w-0 text-left">
               <h1 className="font-display font-semibold text-[19px] truncate" style={{ color: 'var(--text)', letterSpacing: '-0.3px' }}>
-                {proc.nom}
+                {gamme.nom}
               </h1>
               <Pencil className="w-3.5 h-3.5 flex-shrink-0 opacity-0 group-hover/title:opacity-100 transition-opacity" style={{ color: 'var(--text3)' }} />
             </button>
@@ -208,7 +258,7 @@ export default function GammeFabricationDetail() {
             <Printer className="w-3.5 h-3.5" strokeWidth={1.8} />
             Imprimer / Export PDF
           </button>
-          <button onClick={deleteProc}
+          <button onClick={deleteGamme}
             className="w-[34px] h-[34px] rounded-[9px] flex items-center justify-center transition-colors hover:bg-[var(--crit-soft)] hover:text-[var(--crit)]"
             style={{ color: 'var(--text3)' }}>
             <Trash2 className="w-3.5 h-3.5" strokeWidth={1.8} />
@@ -220,7 +270,7 @@ export default function GammeFabricationDetail() {
         <div id="gamme-print-area">
           {/* Print-only title block (hidden on screen, shown only when printing) */}
           <div className="hidden print:block mb-4">
-            <h2 className="text-[18px] font-bold">{proc.nom}</h2>
+            <h2 className="text-[18px] font-bold">{gamme.nom}</h2>
             <p className="text-[11px] mt-0.5" style={{ color: '#475569' }}>
               Gamme de fabrication — exportée le {new Date().toLocaleDateString('fr-FR')}
             </p>
@@ -231,7 +281,8 @@ export default function GammeFabricationDetail() {
             <table className="w-full border-collapse text-[13px]">
               <thead>
                 <tr style={{ background: 'var(--bg3)', borderBottom: '2px solid var(--border)' }}>
-                  <th className={th} style={{ color: 'var(--text3)', width: '20%' }}>Étape</th>
+                  <th className={th} style={{ color: 'var(--text3)', width: '18%' }}>Processus de fabrication</th>
+                  <th className={th} style={{ color: 'var(--text3)', width: '18%' }}>Étape</th>
                   <th className={th} style={{ color: 'var(--text3)' }}>Désignation</th>
                   <th className={th} style={{ color: 'var(--text3)' }}>Références</th>
                   <th className={th} style={{ color: 'var(--text3)', width: '60px' }}>Qté</th>
@@ -243,8 +294,8 @@ export default function GammeFabricationDetail() {
               <tbody>
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-6 text-center text-[12px]" style={{ color: 'var(--text3)' }}>
-                      Aucune étape — ajoutez-en une ci-dessous.
+                    <td colSpan={7} className="px-4 py-6 text-center text-[12px]" style={{ color: 'var(--text3)' }}>
+                      Aucun processus — ajoutez-en un ci-dessous.
                     </td>
                   </tr>
                 )}
@@ -254,8 +305,100 @@ export default function GammeFabricationDetail() {
                     className={row.type === 'data' ? 'group/row hover:bg-[var(--bg3)] transition-colors' : ''}
                     style={{ borderBottom: '1px solid var(--border)' }}>
 
-                    {/* ── Col 1: Étape (rowspan) ── */}
-                    {row.type === 'add-out' ? null : row._etapeStart ? (
+                    {/* ── Col 1: Processus (rowspan) ── */}
+                    {row._procStart && (
+                      <td rowSpan={row._procSpan} className="px-4 py-3 align-middle group/proc"
+                        style={{ borderRight: '2px solid var(--border)', background: 'var(--bg3)', verticalAlign: 'top', paddingTop: '14px' }}>
+                        {editProcId === row.proc.id ? (
+                          <div className="flex flex-col gap-1.5">
+                            <input autoFocus className={`w-full ${inp}`} style={inpSt}
+                              value={editProcNom} onChange={(e) => setEditProcNom(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') saveProc(row.proc.id);
+                                if (e.key === 'Escape') setEditProcId(null);
+                              }} />
+                            <div className="flex gap-1 no-print">
+                              <button onClick={() => saveProc(row.proc.id)}
+                                className="flex-1 py-1 rounded-[6px] text-[12px] font-bold text-white"
+                                style={{ background: 'var(--accent)' }}>OK</button>
+                              <button onClick={() => setEditProcId(null)}
+                                className="px-2 py-1 rounded-[6px]"
+                                style={{ background: 'var(--bg)', color: 'var(--text3)' }}>
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <button onClick={() => toggleCollapse(row.proc.id)}
+                                className="no-print flex-shrink-0 p-0.5 rounded transition-colors hover:bg-[var(--bg)]"
+                                style={{ color: 'var(--text3)' }}>
+                                {collapsed.has(row.proc.id)
+                                  ? <ChevronRight className="w-3.5 h-3.5" />
+                                  : <ChevronDown className="w-3.5 h-3.5" />}
+                              </button>
+                              <span className="font-bold text-[13px] leading-snug" style={{ color: 'var(--text)' }}>
+                                {row.proc.nom}
+                              </span>
+                            </div>
+                            <div className="flex gap-0.5 opacity-0 group-hover/proc:opacity-100 transition-opacity flex-shrink-0 no-print">
+                              <button onClick={() => { setEditProcId(row.proc.id); setEditProcNom(row.proc.nom); }}
+                                className="p-1 rounded-[5px] hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }}>
+                                <Pencil className="w-3 h-3" />
+                              </button>
+                              <button onClick={() => deleteProc(row.proc)}
+                                className="p-1 rounded-[5px] hover:bg-red-100 dark:hover:bg-red-900/20" style={{ color: 'var(--crit)' }}>
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </td>
+                    )}
+
+                    {/* ── Collapsed processus: single summary row ── */}
+                    {row.type === 'collapsed' && (
+                      <td colSpan={6} className="px-4 py-3" style={{ color: 'var(--text3)', fontStyle: 'italic', fontSize: '12px' }}>
+                        {(row.proc.etapes || []).length} étape{(row.proc.etapes || []).length !== 1 ? 's' : ''} — cliquez sur
+                        {' '}<ChevronRight className="inline w-3 h-3" />{' '}pour développer
+                      </td>
+                    )}
+
+                    {/* ── Col 2: Étape (rowspan) ── */}
+                    {row.type === 'add-etape' ? (
+                      <td colSpan={6} className="px-4 py-2 no-print" style={{ background: 'var(--bg2)' }}>
+                        {addingEtapeFor === row.proc.id ? (
+                          <div className="flex items-center gap-2">
+                            <input autoFocus className={`flex-1 ${inp}`} style={inpSt}
+                              value={newEtapeNom} onChange={(e) => setNewEtapeNom(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') createEtape(row.proc.id);
+                                if (e.key === 'Escape') { setAddingEtapeFor(null); setNewEtapeNom(''); }
+                              }}
+                              placeholder="Nom de l'étape…" />
+                            <button onClick={() => createEtape(row.proc.id)}
+                              className="p-1.5 rounded-[6px] text-white" style={{ background: 'var(--accent)' }}>
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                            <button onClick={() => { setAddingEtapeFor(null); setNewEtapeNom(''); }}
+                              className="p-1.5 rounded-[6px]" style={{ color: 'var(--text3)' }}>
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button onClick={() => { setAddingEtapeFor(row.proc.id); setNewEtapeNom(''); }}
+                            className="inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-[7px] border border-dashed transition-colors hover:bg-[var(--bg3)]"
+                            style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
+                            <Plus className="w-3 h-3" /> Ajouter une étape
+                          </button>
+                        )}
+                      </td>
+                    ) : row.type === 'placeholder' ? (
+                      <td colSpan={6} className="px-4 py-3 text-[12px]" style={{ color: 'var(--text3)' }}>
+                        Aucune étape
+                      </td>
+                    ) : row._etapeStart ? (
                       <td rowSpan={row._etapeSpan} className="px-4 py-3 align-top group/etape"
                         style={{ borderRight: '1px solid var(--border)', verticalAlign: 'top', paddingTop: '14px' }}>
                         {editEtapeId === row.etape.id ? (
@@ -301,9 +444,9 @@ export default function GammeFabricationDetail() {
                           </div>
                         )}
                       </td>
-                    ) : null}
+                    ) : null /* cols 3-7 only, étape cell already rendered via rowspan */}
 
-                    {/* ── Cols 2-6: Data / add-out / empty-out ── */}
+                    {/* ── Cols 3-7: Data / add-out / empty-out ── */}
                     {row.type === 'data' && (
                       <>
                         <td className="px-4 py-2.5 font-medium" style={{ color: 'var(--text)' }}>
@@ -407,31 +550,31 @@ export default function GammeFabricationDetail() {
                   </tr>
                 ))}
 
-                {/* ── Add étape row ── */}
+                {/* ── Add processus row ── */}
                 <tr className="no-print" style={{ borderTop: '2px solid var(--border)' }}>
-                  <td colSpan={6} className="px-4 py-3" style={{ background: 'var(--bg3)' }}>
-                    {addingEtape ? (
+                  <td colSpan={7} className="px-4 py-3" style={{ background: 'var(--bg3)' }}>
+                    {addingProc ? (
                       <div className="flex items-center gap-2">
                         <input autoFocus className={`flex-1 max-w-xs ${inp}`} style={inpSt}
-                          value={newEtapeNom} onChange={(e) => setNewEtapeNom(e.target.value)}
+                          value={newProcNom} onChange={(e) => setNewProcNom(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') createEtape();
-                            if (e.key === 'Escape') { setAddingEtape(false); setNewEtapeNom(''); }
+                            if (e.key === 'Enter') createProc();
+                            if (e.key === 'Escape') { setAddingProc(false); setNewProcNom(''); }
                           }}
-                          placeholder="Nom de l'étape…" />
-                        <button onClick={createEtape} className="p-1.5 rounded-[7px] text-white" style={{ background: 'var(--accent)' }}>
+                          placeholder="Nom du processus de fabrication…" />
+                        <button onClick={createProc} className="p-1.5 rounded-[7px] text-white" style={{ background: 'var(--accent)' }}>
                           <Check className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => { setAddingEtape(false); setNewEtapeNom(''); }}
+                        <button onClick={() => { setAddingProc(false); setNewProcNom(''); }}
                           className="p-1.5 rounded-[7px]" style={{ color: 'var(--text3)', background: 'var(--bg)' }}>
                           <X className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     ) : (
-                      <button onClick={() => setAddingEtape(true)}
+                      <button onClick={() => setAddingProc(true)}
                         className="inline-flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-[8px] border border-dashed transition-colors hover:bg-[var(--bg2)]"
                         style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
-                        <Plus className="w-3.5 h-3.5" /> Ajouter une étape
+                        <Plus className="w-3.5 h-3.5" /> Nouveau processus de fabrication
                       </button>
                     )}
                   </td>

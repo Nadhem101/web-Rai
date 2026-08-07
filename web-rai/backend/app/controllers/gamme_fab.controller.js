@@ -47,9 +47,10 @@ exports.getOne = async (req, res) => {
 
 exports.createProcessus = async (req, res) => {
   try {
-    const { nom } = req.body;
-    const max = (await ProcessusFab.max('ordre')) || 0;
-    const p = await ProcessusFab.create({ nom, ordre: max + 1 });
+    const { nom, gamme_id } = req.body;
+    if (!gamme_id) return res.status(400).json({ error: 'gamme_id est requis.' });
+    const max = (await ProcessusFab.max('ordre', { where: { gamme_id } })) || 0;
+    const p = await ProcessusFab.create({ nom, gamme_id, ordre: max + 1 });
     res.status(201).json(p);
   } catch (err) { res.status(400).json({ error: err.message }); }
 };
