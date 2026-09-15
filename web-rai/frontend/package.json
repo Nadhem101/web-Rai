@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
     "axios": "^1.7.7",
+    "exceljs": "^4.4.0",
     "framer-motion": "^12.42.2",
     "html2canvas-pro": "^2.4.3",
     "jspdf": "^4.2.1",

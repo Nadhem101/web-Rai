@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { equipementService, maintenanceEventService } from '../../services/api';
 import { WEEKS, getCurrentWeek, isMaintenance, resolveEquipement } from '../../utils/maintenanceSchedule';
 import { getMaintenanceMachineTemplate, resolveMaintenanceMachineKeyFromEquipment } from '../../data/maintenanceMachines';
-import { Search, Settings2 } from 'lucide-react';
+import { Search, Settings2, AlertTriangle, FileSpreadsheet } from 'lucide-react';
 import DataLabel from '../../components/ui/DataLabel.jsx';
 
 const normalizeText = (value = '') =>
@@ -367,6 +367,283 @@ function RescheduleModal({ modal, onConfirm, onClose }) {
   );
 }
 
+// ── Pure schedule-computation helpers ───────────────────────
+// Shared by the live grid (bound to whatever's currently filtered/displayed)
+// and by the Excel export (which needs to run these same computations again
+// for view sets and custom selections that aren't currently on screen).
+function computeScheduledCells(equipList) {
+  const index = {};
+  equipList.forEach((equip) => {
+    (equip.intervals || []).forEach((intv) => {
+      WEEKS.forEach((w) => {
+        if (isMaintenance(w, intv.freq, intv.start)) {
+          index[`${equip.code}__${intv.type}__${w}`] = { color: intv.color, equip, week: w, intType: intv.type };
+        }
+      });
+    });
+  });
+  return index;
+}
+
+function computeAllCells(scheduledCells, cellStates) {
+  const cells = { ...scheduledCells };
+  Object.entries(cellStates).forEach(([key, state]) => {
+    if (state.status === 'rescheduled' && state.newWeek) {
+      const [equipCode, intType] = key.split('__');
+      const newKey = `${equipCode}__${intType}__${state.newWeek}`;
+      const original = scheduledCells[key];
+      // Only inject the target if that week isn't already its own scheduled maintenance
+      if (original && !scheduledCells[newKey]) {
+        cells[newKey] = { ...original, week: state.newWeek, isRescheduledTarget: true, originalKey: key };
+      }
+    }
+  });
+  return cells;
+}
+
+function computeActiveIntervalTypes(equipList) {
+  const seen = new Set();
+  equipList.forEach((eq) => (eq.intervals || []).forEach((intv) => seen.add(intv.type)));
+  const order = ['1M', '3M', '6M'];
+  const result = order.filter((t) => seen.has(t));
+  seen.forEach((t) => { if (!order.includes(t)) result.push(t); });
+  return result.length > 0 ? result : ['1M', '6M'];
+}
+
+function computeUnconfigured(equipList) {
+  return equipList.filter((e) => !(e.intervals && e.intervals.length > 0));
+}
+
+// ── Excel sheet builder — one worksheet, one equipment set ─────────────────
+// Used for a single-view export, for each tab in an all-views export, and
+// for a custom-selection export, so all three paths render identically to
+// what the live grid shows (same colors, same status marks).
+function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
+  const ws = wb.addWorksheet(meta.sheetName.slice(0, 31).replace(/[\\/*?:[\]]/g, ' '));
+  const unconfiguredCodes = new Set(computeUnconfigured(equipList).map((e) => e.code));
+  const scheduled = computeScheduledCells(equipList);
+  const cells = computeAllCells(scheduled, cellStates);
+  const activeTypes = computeActiveIntervalTypes(equipList);
+
+  const FIRST_COL = 3; // A=KW, B=Type, C.. = equipment
+  const lastCol = FIRST_COL + Math.max(equipList.length, 1) - 1;
+
+  ws.mergeCells(1, 1, 1, Math.max(lastCol, FIRST_COL));
+  const titleCell = ws.getCell(1, 1);
+  titleCell.value = meta.title;
+  titleCell.font = { bold: true, size: 13 };
+  titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+  titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDCEEFB' } };
+  ws.getRow(1).height = 22;
+
+  ws.mergeCells(2, 1, 2, Math.max(lastCol, FIRST_COL));
+  const subCell = ws.getCell(2, 1);
+  subCell.value = `${meta.subtitle}  —  Exporté le ${new Date().toLocaleDateString('fr-FR')}${meta.reference ? `  —  ${meta.reference}` : ''}`;
+  subCell.alignment = { horizontal: 'center' };
+  subCell.font = { italic: true, size: 9, color: { argb: 'FF64748B' } };
+
+  const HEADER_ROW_DESIG = 3;
+  const HEADER_ROW_CODE = 4;
+  ws.getCell(HEADER_ROW_DESIG, 1).value = 'KW';
+  ws.getCell(HEADER_ROW_DESIG, 2).value = 'Type';
+  ws.mergeCells(HEADER_ROW_DESIG, 1, HEADER_ROW_CODE, 1);
+  ws.mergeCells(HEADER_ROW_DESIG, 2, HEADER_ROW_CODE, 2);
+  [1, 2].forEach((c) => {
+    const cell = ws.getCell(HEADER_ROW_DESIG, c);
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D1828' } };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  if (equipList.length === 0) {
+    ws.getCell(HEADER_ROW_CODE + 1, 1).value = 'Aucun équipement dans cette sélection';
+    ws.getColumn(1).width = 30;
+    return ws;
+  }
+
+  equipList.forEach((equip, i) => {
+    const col = FIRST_COL + i;
+    const unconfigured = unconfiguredCodes.has(equip.code);
+    const desigCell = ws.getCell(HEADER_ROW_DESIG, col);
+    desigCell.value = equip.designation;
+    desigCell.alignment = { textRotation: 90, horizontal: 'center', vertical: 'bottom', wrapText: false };
+    const codeCell = ws.getCell(HEADER_ROW_CODE, col);
+    codeCell.value = unconfigured ? `${equip.code} ⚠` : equip.code;
+    codeCell.alignment = { textRotation: 90, horizontal: 'center', vertical: 'middle' };
+    [desigCell, codeCell].forEach((cell) => {
+      cell.font = { bold: true, size: 9, color: { argb: unconfigured ? 'FFF87171' : 'FF5EEAD4' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D1828' } };
+    });
+    ws.getColumn(col).width = 4.5;
+  });
+  ws.getColumn(1).width = 7;
+  ws.getColumn(2).width = 6;
+  ws.getRow(HEADER_ROW_DESIG).height = 90;
+
+  // Color map matching the live grid (see getCellAppearance)
+  const FILL_BLUE = 'FF0D9488'; // --accent (monthly)
+  const FILL_GREEN = 'FF0D9C6E'; // --ok (semi-annual)
+  const FILL_DONE = 'FF94A3B8'; // done marker
+
+  let row = HEADER_ROW_CODE + 1;
+  WEEKS.forEach((week) => {
+    const isCurrentWeek = week === currentWeek;
+    activeTypes.forEach((intType, rowIdx) => {
+      const isFirst = rowIdx === 0;
+      if (isFirst) {
+        ws.getCell(row, 1).value = `kw${String(week).padStart(2, '0')}`;
+        ws.getCell(row, 1).font = { bold: true, size: 9 };
+      }
+      ws.getCell(row, 2).value = intType;
+      ws.getCell(row, 2).font = { size: 8, color: { argb: 'FF64748B' } };
+      [1, 2].forEach((c) => {
+        ws.getCell(row, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isCurrentWeek ? 'FFFEF3C7' : 'FFF1F5F9' } };
+        ws.getCell(row, c).alignment = { horizontal: 'center', vertical: 'middle' };
+      });
+
+      equipList.forEach((equip, i) => {
+        const col = FIRST_COL + i;
+        const key = `${equip.code}__${intType}__${week}`;
+        const cellData = cells[key];
+        const cell = ws.getCell(row, col);
+        if (cellData) {
+          const state = cellStates[key];
+          if (state?.status === 'done') {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FILL_DONE } };
+            cell.value = '✓';
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 8 };
+            cell.alignment = { horizontal: 'center' };
+          } else if (state?.status === 'rescheduled') {
+            // original slot stays empty — shown at its rescheduled target instead
+          } else {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cellData.color === 'blue' ? FILL_BLUE : FILL_GREEN } };
+          }
+        }
+      });
+      row++;
+    });
+  });
+
+  return ws;
+}
+
+async function downloadWorkbook(wb, filename) {
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Export mode picker ──────────────────────────────────────
+function ExportModal({ isOpen, onClose, currentViewLabel, allEquipements, exporting, onExportCurrent, onExportAll, onExportCustom }) {
+  const [mode, setMode] = useState('current');
+  const [customSearch, setCustomSearch] = useState('');
+  const [customSelected, setCustomSelected] = useState(new Set());
+
+  useEffect(() => {
+    if (!isOpen) { setMode('current'); setCustomSearch(''); setCustomSelected(new Set()); }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const filteredPicker = allEquipements.filter((e) => {
+    if (!customSearch) return true;
+    const q = customSearch.toLowerCase();
+    return e.code.toLowerCase().includes(q) || e.designation.toLowerCase().includes(q);
+  });
+
+  const toggle = (code) => setCustomSelected((prev) => {
+    const next = new Set(prev);
+    if (next.has(code)) next.delete(code); else next.add(code);
+    return next;
+  });
+
+  const handleConfirm = () => {
+    if (mode === 'current') onExportCurrent();
+    else if (mode === 'all') onExportAll();
+    else onExportCustom([...customSelected]);
+  };
+
+  const MODES = [
+    { id: 'current', label: `Vue actuelle`, desc: `Seulement "${currentViewLabel}", comme affiché à l'écran.` },
+    { id: 'all', label: 'Toutes les vues', desc: 'Un seul fichier, un onglet par vue (Assemblage Meca, Faisceau Cable, Électronique, Maintenance, Fer et bain).' },
+    { id: 'custom', label: 'Sélection personnalisée', desc: 'Choisissez vous-même les équipements à inclure, tous vues confondues.' },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative rounded-[16px] shadow-2xl w-[440px] max-h-[85vh] flex flex-col overflow-hidden" style={{ background: 'var(--panel)' }}>
+        <div className="px-5 py-4 flex items-center justify-between flex-shrink-0" style={{ background: 'linear-gradient(135deg, #0d1828, #0a2820)' }}>
+          <p className="text-sm font-bold text-white font-display flex items-center gap-2">
+            <FileSpreadsheet className="w-4 h-4 opacity-70" /> Exporter en Excel
+          </p>
+          <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors text-base flex-shrink-0">✕</button>
+        </div>
+
+        <div className="p-5 space-y-3 overflow-y-auto flex-1 min-h-0">
+          <div className="space-y-1.5">
+            {MODES.map((m) => {
+              const active = mode === m.id;
+              return (
+                <button key={m.id} onClick={() => setMode(m.id)}
+                  className="w-full text-left px-3 py-2.5 rounded-[10px] transition-colors"
+                  style={active
+                    ? { background: 'var(--accent-soft)', border: '1.5px solid var(--accent)' }
+                    : { border: '1px solid var(--border)', background: 'var(--panel2)' }}>
+                  <p className="text-xs font-semibold" style={{ color: active ? 'var(--accent)' : 'var(--text)' }}>{m.label}</p>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--text3)' }}>{m.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+
+          {mode === 'custom' && (
+            <div className="pt-1">
+              <div className="relative mb-2">
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: 'var(--text3)' }} />
+                <input type="text" placeholder="Rechercher un équipement…"
+                  className="w-full rounded-[8px] pl-7 pr-2 py-1.5 text-xs outline-none"
+                  style={{ border: '1px solid var(--border)', background: 'var(--panel2)', color: 'var(--text)' }}
+                  value={customSearch} onChange={(e) => setCustomSearch(e.target.value)} />
+              </div>
+              <div className="rounded-[10px] max-h-56 overflow-y-auto" style={{ border: '1px solid var(--border)' }}>
+                {filteredPicker.length === 0 ? (
+                  <p className="px-3 py-3 text-xs italic" style={{ color: 'var(--text3)' }}>Aucun équipement trouvé</p>
+                ) : filteredPicker.map((e) => (
+                  <label key={e.code} className="flex items-center gap-2 px-3 py-1.5 cursor-pointer transition-colors hover:bg-[var(--panel2)]" style={{ borderBottom: '1px solid var(--border2)' }}>
+                    <input type="checkbox" checked={customSelected.has(e.code)} onChange={() => toggle(e.code)} style={{ accentColor: 'var(--accent)' }} />
+                    <span className="font-mono text-[11px] font-bold flex-shrink-0" style={{ color: 'var(--accent)' }}>{e.code}</span>
+                    <span className="text-[11px] truncate" style={{ color: 'var(--text2)' }}>{e.designation}</span>
+                  </label>
+                ))}
+              </div>
+              <p className="text-[11px] mt-1.5" style={{ color: 'var(--text3)' }}>{customSelected.size} équipement(s) sélectionné(s)</p>
+            </div>
+          )}
+        </div>
+
+        <div className="p-5 pt-3 border-t flex gap-2 flex-shrink-0" style={{ borderColor: 'var(--border2)' }}>
+          <button onClick={handleConfirm} disabled={exporting || (mode === 'custom' && customSelected.size === 0)}
+            className="flex-1 py-2 rounded-[10px] text-sm font-bold text-white transition-transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+            {exporting ? 'Export…' : 'Exporter'}
+          </button>
+          <button onClick={onClose}
+            className="flex-1 py-2 rounded-[10px] text-sm font-semibold transition-colors hover:bg-[var(--panel3)]"
+            style={{ border: '1px solid var(--border)', color: 'var(--text2)' }}>
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const CalendrierPreventif = () => {
   const navigate = useNavigate();
   const currentWeek = getCurrentWeek();
@@ -384,6 +661,8 @@ const CalendrierPreventif = () => {
   const [loadingEvents, setLoadingEvents]       = useState(true);
   const [savingKeys, setSavingKeys]             = useState(new Set());
   const [apiError, setApiError]                 = useState(null);
+  const [exporting, setExporting]               = useState(false);
+  const [exportModalOpen, setExportModalOpen]   = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -460,37 +739,26 @@ const CalendrierPreventif = () => {
     });
   }, [viewEquipements, searchCode]);
 
-  const scheduledCells = useMemo(() => {
-    const index = {};
-    filteredEquipements.forEach((equip) => {
-      equip.intervals.forEach((intv) => {
-        WEEKS.forEach((w) => {
-          if (isMaintenance(w, intv.freq, intv.start)) {
-            index[`${equip.code}__${intv.type}__${w}`] = { color: intv.color, equip, week: w, intType: intv.type };
-          }
-        });
-      });
-    });
-    return index;
-  }, [filteredEquipements]);
+  // All equipment, resolved and sorted, regardless of the active view —
+  // needed for the export modal's "custom selection" and "all views" modes.
+  const allResolvedEquipements = useMemo(() => {
+    return equipements
+      .slice()
+      .sort((a, b) => String(a.code_rai || a.code || '').localeCompare(String(b.code_rai || b.code || ''), 'fr', { numeric: true, sensitivity: 'base' }))
+      .map(resolveEquipement);
+  }, [equipements]);
 
-  const allCells = useMemo(() => {
-    const cells = { ...scheduledCells };
-    Object.entries(cellStates).forEach(([key, state]) => {
-      if (state.status === 'rescheduled' && state.newWeek) {
-        const parts = key.split('__');
-        const equipCode = parts[0];
-        const intType   = parts[1];
-        const newKey    = `${equipCode}__${intType}__${state.newWeek}`;
-        const original  = scheduledCells[key];
-        // Only inject the target if that week isn't already its own scheduled maintenance
-        if (original && !scheduledCells[newKey]) {
-          cells[newKey] = { ...original, week: state.newWeek, isRescheduledTarget: true, originalKey: key };
-        }
-      }
-    });
-    return cells;
-  }, [scheduledCells, cellStates]);
+  // Equipment with no maintenance_intervals at all — nothing scheduled, ever,
+  // for the whole year. Easy to miss since an unconfigured column just looks
+  // like an empty grid, same as a column with a legitimately sparse schedule.
+  const unconfiguredEquipements = useMemo(() => computeUnconfigured(filteredEquipements), [filteredEquipements]);
+  const unconfiguredCodes = useMemo(
+    () => new Set(unconfiguredEquipements.map((e) => e.code)),
+    [unconfiguredEquipements]
+  );
+
+  const scheduledCells = useMemo(() => computeScheduledCells(filteredEquipements), [filteredEquipements]);
+  const allCells = useMemo(() => computeAllCells(scheduledCells, cellStates), [scheduledCells, cellStates]);
 
   const doneCount         = Object.values(cellStates).filter(s => s.status === 'done').length;
   const currentWeekTasks  = Object.keys(allCells).filter(k => k.endsWith(`__${currentWeek}`)).length;
@@ -596,6 +864,87 @@ const CalendrierPreventif = () => {
       .finally(() => setSavingKeys(s => { const n = new Set(s); n.delete(key); return n; }));
   };
 
+  // Three export modes, all built on the same buildCalendarSheet — so a
+  // single view, every view, or a hand-picked selection all render exactly
+  // like the live grid (same colors, same status marks).
+  const handleExportCurrentView = async () => {
+    setExporting(true);
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'WEB-RAI';
+      wb.created = new Date();
+      buildCalendarSheet(wb, {
+        sheetName: selectedView.label,
+        title: selectedView.title,
+        subtitle: selectedView.subtitle,
+        reference: selectedView.reference,
+      }, filteredEquipements, cellStates, currentWeek);
+      await downloadWorkbook(wb, `Calendrier_${selectedView.label.replace(/\s+/g, '_')}_${currentYear}.xlsx`);
+      setExportModalOpen(false);
+    } catch (err) {
+      console.error('Erreur export Excel:', err);
+      setApiError("Erreur lors de l'export Excel.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportAllViews = async () => {
+    setExporting(true);
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'WEB-RAI';
+      wb.created = new Date();
+      CALENDAR_VIEWS.forEach((view) => {
+        const equipList = equipements
+          .filter((e) => view.matches(e))
+          .map(resolveEquipement)
+          .sort((a, b) => String(a.code_rai || a.code || '').localeCompare(String(b.code_rai || b.code || ''), 'fr', { numeric: true, sensitivity: 'base' }));
+        buildCalendarSheet(wb, {
+          sheetName: view.label,
+          title: view.title,
+          subtitle: view.subtitle,
+          reference: view.reference,
+        }, equipList, cellStates, currentWeek);
+      });
+      await downloadWorkbook(wb, `Calendrier_Toutes_vues_${currentYear}.xlsx`);
+      setExportModalOpen(false);
+    } catch (err) {
+      console.error('Erreur export Excel:', err);
+      setApiError("Erreur lors de l'export Excel.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportCustom = async (codes) => {
+    if (!codes.length) return;
+    setExporting(true);
+    try {
+      const ExcelJS = (await import('exceljs')).default;
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'WEB-RAI';
+      wb.created = new Date();
+      const codeSet = new Set(codes);
+      const equipList = allResolvedEquipements.filter((e) => codeSet.has(e.code));
+      buildCalendarSheet(wb, {
+        sheetName: 'Sélection',
+        title: 'Calendrier des préventives — Sélection personnalisée',
+        subtitle: `${equipList.length} équipement(s) sélectionné(s)`,
+        reference: '',
+      }, equipList, cellStates, currentWeek);
+      await downloadWorkbook(wb, `Calendrier_Selection_${currentYear}.xlsx`);
+      setExportModalOpen(false);
+    } catch (err) {
+      console.error('Erreur export Excel:', err);
+      setApiError("Erreur lors de l'export Excel.");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const handleSaveSchedule = async (equip, intervals) => {
     if (!equip.id) throw new Error('ID équipement manquant');
     await equipementService.update(equip.id, { maintenance_intervals: intervals.length ? intervals : null });
@@ -608,14 +957,7 @@ const CalendrierPreventif = () => {
     setHighlightedEquip(null);
   };
 
-  const activeIntervalTypes = useMemo(() => {
-    const seen = new Set();
-    filteredEquipements.forEach((eq) => eq.intervals.forEach((intv) => seen.add(intv.type)));
-    const order = ['1M', '3M', '6M'];
-    const result = order.filter((t) => seen.has(t));
-    seen.forEach((t) => { if (!order.includes(t)) result.push(t); });
-    return result.length > 0 ? result : ['1M', '6M'];
-  }, [filteredEquipements]);
+  const activeIntervalTypes = useMemo(() => computeActiveIntervalTypes(filteredEquipements), [filteredEquipements]);
 
   const getCellAppearance = (key, baseColor, isCurrentWeek, rowIdx, isHighlighted) => {
     const state  = cellStates[key];
@@ -669,6 +1011,7 @@ const CalendrierPreventif = () => {
               { label: 'Réf.',          value: selectedView.reference,                color: 'var(--text2)' },
               { label: 'Sem. courante', value: `${currentWeekDone}/${currentWeekTasks}`, color: 'var(--ok)' },
               { label: 'Total fait',    value: doneCount,                             color: 'var(--text2)' },
+              { label: 'Sans planning', value: unconfiguredEquipements.length,        color: unconfiguredEquipements.length > 0 ? 'var(--crit)' : 'var(--text2)' },
             ].map(({ label, value, color }) => (
               <div key={label} className="rounded-[9px] px-2.5 py-1 text-center" style={{ border: '1px solid var(--border)', background: 'var(--panel2)' }}>
                 <DataLabel className="!text-[8px] leading-none">{label}</DataLabel>
@@ -698,6 +1041,12 @@ const CalendrierPreventif = () => {
               </button>
             ))}
           </div>
+          <button onClick={() => setExportModalOpen(true)} disabled={exporting}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-xs font-semibold transition-colors disabled:opacity-50"
+            style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text2)' }}>
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            Exporter Excel
+          </button>
           <div className="ml-auto hidden sm:flex items-center gap-3 text-xs">
             {[
               { bg: 'var(--accent)', label: 'Mensuel' },
@@ -715,6 +1064,18 @@ const CalendrierPreventif = () => {
             </span>
           </div>
         </div>
+
+        {/* Unconfigured equipment alert */}
+        {unconfiguredEquipements.length > 0 && (
+          <div className="mt-2.5 flex items-start gap-2 rounded-[10px] px-3 py-2 text-xs"
+            style={{ background: 'var(--crit-soft)', border: '1px solid var(--crit)', color: 'var(--crit)' }}>
+            <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+            <span>
+              <strong>{unconfiguredEquipements.length} équipement(s) sans planning configuré</strong> — aucune maintenance ne sera jamais programmée tant qu'un planning n'est pas défini (clic sur la colonne) :{' '}
+              {unconfiguredEquipements.map((e) => e.code).join(', ')}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* GRID */}
@@ -724,19 +1085,32 @@ const CalendrierPreventif = () => {
             <tr>
               <th className="sticky left-0 z-30 text-white text-center font-mono" style={{ width:50, minWidth:50, background:'#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}>KW</th>
               <th className="sticky text-white text-center z-20 font-mono" style={{ left:50, width:38, minWidth:38, background:'#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}>Type</th>
-              {filteredEquipements.map((equip) => (
-                <th key={equip.code}
-                  className="text-white z-10 cursor-pointer select-none transition-colors"
-                  title={`${equip.code} — Cliquer pour configurer le planning`}
-                  style={{ width:34, minWidth:34, background: highlightedEquip === equip.code ? 'var(--accent2)' : '#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}
-                  onClick={(e) => { e.stopPropagation(); setHighlightedEquip(equip.code); setScheduleModal({ equip }); }}>
-                  <div style={{ height:130, width:34, display:'flex', alignItems:'flex-end', justifyContent:'center', overflow:'hidden' }}>
-                    <div style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', whiteSpace:'nowrap', fontSize:9, lineHeight:1, color: '#cbd5e1' }}>{equip.designation}</div>
-                  </div>
-                  <div className="font-bold flex items-center justify-center font-mono"
-                    style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', height:48, fontSize:8, borderTop:'1px solid rgba(255,255,255,0.1)', color: 'var(--accent3)' }}>{equip.code}</div>
-                </th>
-              ))}
+              {filteredEquipements.map((equip) => {
+                const unconfigured = unconfiguredCodes.has(equip.code);
+                return (
+                  <th key={equip.code}
+                    className="text-white z-10 cursor-pointer select-none transition-colors relative"
+                    title={unconfigured
+                      ? `${equip.code} — Aucun planning configuré. Cliquer pour en définir un.`
+                      : `${equip.code} — Cliquer pour configurer le planning`}
+                    style={{
+                      width:34, minWidth:34,
+                      background: highlightedEquip === equip.code ? 'var(--accent2)' : '#0d1828',
+                      border: unconfigured ? '1px solid var(--crit)' : '1px solid rgba(255,255,255,0.08)',
+                      boxShadow: unconfigured ? 'inset 0 0 0 1px var(--crit)' : undefined,
+                    }}
+                    onClick={(e) => { e.stopPropagation(); setHighlightedEquip(equip.code); setScheduleModal({ equip }); }}>
+                    {unconfigured && (
+                      <AlertTriangle className="w-2.5 h-2.5 absolute top-1 left-1/2 -translate-x-1/2" style={{ color: 'var(--crit)' }} />
+                    )}
+                    <div style={{ height:130, width:34, display:'flex', alignItems:'flex-end', justifyContent:'center', overflow:'hidden' }}>
+                      <div style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', whiteSpace:'nowrap', fontSize:9, lineHeight:1, color: '#cbd5e1' }}>{equip.designation}</div>
+                    </div>
+                    <div className="font-bold flex items-center justify-center font-mono"
+                      style={{ writingMode:'vertical-rl', transform:'rotate(180deg)', height:48, fontSize:8, borderTop:'1px solid rgba(255,255,255,0.1)', color: unconfigured ? 'var(--crit)' : 'var(--accent3)' }}>{equip.code}</div>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -806,6 +1180,16 @@ const CalendrierPreventif = () => {
         modal={scheduleModal}
         onSave={handleSaveSchedule}
         onClose={() => { setScheduleModal(null); setHighlightedEquip(null); }}
+      />
+      <ExportModal
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        currentViewLabel={selectedView.label}
+        allEquipements={allResolvedEquipements}
+        exporting={exporting}
+        onExportCurrent={handleExportCurrentView}
+        onExportAll={handleExportAllViews}
+        onExportCustom={handleExportCustom}
       />
     </div>
   );
