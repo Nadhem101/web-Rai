@@ -307,6 +307,7 @@ const EquipementForm = ({
               <option value="En service">En service</option>
               <option value="Hors service">Hors service</option>
               <option value="En maintenance">En maintenance</option>
+              <option value="Déclassé">Déclassé</option>
             </select>
           </label>
 

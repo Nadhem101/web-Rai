@@ -100,7 +100,7 @@ const SCHEDULE_PRESETS = [
     label: 'Trimestriel',
     badge: '3M',
     desc: 'Toutes les 13 semaines',
-    make: (start) => [{ type: '3M', freq: 13, start, color: 'green' }],
+    make: (start) => [{ type: '3M', freq: 13, start, color: 'violet' }],
   },
   {
     id: 'semiannual',
@@ -425,7 +425,7 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
   const cells = computeAllCells(scheduled, cellStates);
   const activeTypes = computeActiveIntervalTypes(equipList);
 
-  const FIRST_COL = 3; // A=KW, B=Type, C.. = equipment
+  const FIRST_COL = 2; // A=KW, B.. = equipment (type is conveyed by cell color, not a column)
   const lastCol = FIRST_COL + Math.max(equipList.length, 1) - 1;
 
   ws.mergeCells(1, 1, 1, Math.max(lastCol, FIRST_COL));
@@ -438,22 +438,20 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
 
   ws.mergeCells(2, 1, 2, Math.max(lastCol, FIRST_COL));
   const subCell = ws.getCell(2, 1);
-  subCell.value = `${meta.subtitle}  —  Exporté le ${new Date().toLocaleDateString('fr-FR')}${meta.reference ? `  —  ${meta.reference}` : ''}`;
+  subCell.value = `${meta.subtitle}  —  Exporté le ${new Date().toLocaleDateString('fr-FR')}${meta.reference ? `  —  ${meta.reference}` : ''}  —  Bleu=Mensuel, Violet=Trimestriel, Vert=Semestriel, Gris=Fait`;
   subCell.alignment = { horizontal: 'center' };
   subCell.font = { italic: true, size: 9, color: { argb: 'FF64748B' } };
 
   const HEADER_ROW_DESIG = 3;
   const HEADER_ROW_CODE = 4;
   ws.getCell(HEADER_ROW_DESIG, 1).value = 'KW';
-  ws.getCell(HEADER_ROW_DESIG, 2).value = 'Type';
   ws.mergeCells(HEADER_ROW_DESIG, 1, HEADER_ROW_CODE, 1);
-  ws.mergeCells(HEADER_ROW_DESIG, 2, HEADER_ROW_CODE, 2);
-  [1, 2].forEach((c) => {
-    const cell = ws.getCell(HEADER_ROW_DESIG, c);
+  {
+    const cell = ws.getCell(HEADER_ROW_DESIG, 1);
     cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0D1828' } };
     cell.alignment = { horizontal: 'center', vertical: 'middle' };
-  });
+  }
 
   if (equipList.length === 0) {
     ws.getCell(HEADER_ROW_CODE + 1, 1).value = 'Aucun équipement dans cette sélection';
@@ -477,12 +475,10 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
     ws.getColumn(col).width = 4.5;
   });
   ws.getColumn(1).width = 7;
-  ws.getColumn(2).width = 6;
   ws.getRow(HEADER_ROW_DESIG).height = 90;
 
   // Color map matching the live grid (see getCellAppearance)
-  const FILL_BLUE = 'FF0D9488'; // --accent (monthly)
-  const FILL_GREEN = 'FF0D9C6E'; // --ok (semi-annual)
+  const FILL_BY_TYPE = { blue: 'FF0D9488', violet: 'FF7C3AED', green: 'FF0D9C6E' }; // accent / violet / ok
   const FILL_DONE = 'FF94A3B8'; // done marker
 
   let row = HEADER_ROW_CODE + 1;
@@ -494,12 +490,8 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
         ws.getCell(row, 1).value = `kw${String(week).padStart(2, '0')}`;
         ws.getCell(row, 1).font = { bold: true, size: 9 };
       }
-      ws.getCell(row, 2).value = intType;
-      ws.getCell(row, 2).font = { size: 8, color: { argb: 'FF64748B' } };
-      [1, 2].forEach((c) => {
-        ws.getCell(row, c).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isCurrentWeek ? 'FFFEF3C7' : 'FFF1F5F9' } };
-        ws.getCell(row, c).alignment = { horizontal: 'center', vertical: 'middle' };
-      });
+      ws.getCell(row, 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isCurrentWeek ? 'FFFEF3C7' : 'FFF1F5F9' } };
+      ws.getCell(row, 1).alignment = { horizontal: 'center', vertical: 'middle' };
 
       equipList.forEach((equip, i) => {
         const col = FIRST_COL + i;
@@ -516,7 +508,7 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
           } else if (state?.status === 'rescheduled') {
             // original slot stays empty — shown at its rescheduled target instead
           } else {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: cellData.color === 'blue' ? FILL_BLUE : FILL_GREEN } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FILL_BY_TYPE[cellData.color] || FILL_BY_TYPE.blue } };
           }
         }
       });
@@ -673,7 +665,11 @@ const CalendrierPreventif = () => {
       .getAll()
       .then(({ data }) => {
         if (cancelled) return;
-        setEquipements(Array.isArray(data) ? data : []);
+        // Déclassé (decommissioned) equipment never belongs on the calendar —
+        // filtered out once here so every view and every export mode inherits
+        // the exclusion automatically, with nothing to remember downstream.
+        const active = (Array.isArray(data) ? data : []).filter((e) => e.statut !== 'Déclassé');
+        setEquipements(active);
       })
       .catch(() => {
         if (cancelled) return;
@@ -970,8 +966,9 @@ const CalendrierPreventif = () => {
       return { style: { background: emptyBg, cursor: 'default' }, icon: null };
     }
     // Target cell and normal scheduled cells: same appearance
-    if (baseColor === 'blue')  return { style: { background: 'var(--accent)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
-    if (baseColor === 'green') return { style: { background: 'var(--ok)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (baseColor === 'blue')   return { style: { background: 'var(--accent)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (baseColor === 'violet') return { style: { background: 'var(--violet)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (baseColor === 'green')  return { style: { background: 'var(--ok)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     return { style: {}, icon: null };
   };
 
@@ -1047,10 +1044,11 @@ const CalendrierPreventif = () => {
             <FileSpreadsheet className="w-3.5 h-3.5" />
             Exporter Excel
           </button>
-          <div className="ml-auto hidden sm:flex items-center gap-3 text-xs">
+          <div className="ml-auto hidden sm:flex flex-wrap items-center gap-3 text-xs">
             {[
               { bg: 'var(--accent)', label: 'Mensuel' },
-              { bg: 'var(--ok)',     label: 'Semi-annuel' },
+              { bg: 'var(--violet)', label: 'Trimestriel' },
+              { bg: 'var(--ok)',     label: 'Semestriel' },
               { bg: 'var(--text3)',  label: 'Fait' },
             ].map(({ bg, label }, i) => (
               <span key={`${label}-${i}`} className="flex items-center gap-1.5" style={{ color: 'var(--text3)' }}>
@@ -1084,7 +1082,6 @@ const CalendrierPreventif = () => {
           <thead>
             <tr>
               <th className="sticky left-0 z-30 text-white text-center font-mono" style={{ width:50, minWidth:50, background:'#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}>KW</th>
-              <th className="sticky text-white text-center z-20 font-mono" style={{ left:50, width:38, minWidth:38, background:'#0d1828', border:'1px solid rgba(255,255,255,0.08)' }}>Type</th>
               {filteredEquipements.map((equip) => {
                 const unconfigured = unconfiguredCodes.has(equip.code);
                 return (
@@ -1124,8 +1121,6 @@ const CalendrierPreventif = () => {
                       style={{ fontSize:10, width:50, border:'1px solid var(--border2)', background: isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel2)', color: isCurrentWeek ? 'var(--warn)' : 'var(--text2)' }}>
                       {isFirst ? `kw${String(week).padStart(2,'0')}` : ''}
                     </td>
-                    <td className="sticky text-center font-semibold select-none font-mono"
-                      style={{ left:50, fontSize:9, width:38, zIndex:19, border:'1px solid var(--border2)', background: isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel2)', color: 'var(--text3)' }}>{intType}</td>
                     {filteredEquipements.map((equip) => {
                       const key      = `${equip.code}__${intType}__${week}`;
                       const cellData = allCells[key];

@@ -36,7 +36,7 @@ const Equipement = sequelize.define(
       type: DataTypes.STRING(50),
       defaultValue: 'En service',
       validate: {
-        isIn: [['En service', 'Hors service', 'En maintenance']],
+        isIn: [['En service', 'Hors service', 'En maintenance', 'Déclassé']],
       },
     },
     categorie: {

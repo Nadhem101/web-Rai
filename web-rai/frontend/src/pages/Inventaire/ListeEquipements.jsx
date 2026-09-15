@@ -44,6 +44,7 @@ const StatusBadge = ({ statut }) => {
     'En service':     { bg: 'var(--ok-soft)',   color: 'var(--ok)',   dot: 'var(--ok)'   },
     'Hors service':   { bg: 'var(--crit-soft)', color: 'var(--crit)', dot: 'var(--crit)' },
     'En maintenance': { bg: 'var(--warn-soft)', color: 'var(--warn)', dot: 'var(--warn)' },
+    'Déclassé':       { bg: 'var(--panel2)',    color: 'var(--text3)', dot: 'var(--text3)' },
   }[statut] ?? { bg: 'var(--panel2)', color: 'var(--text3)', dot: 'var(--text3)' };
   return (
     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[20px] text-xs font-bold"
