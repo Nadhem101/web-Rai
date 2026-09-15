@@ -113,10 +113,14 @@ const SCHEDULE_PRESETS = [
     id: 'both',
     label: 'Mensuel + Semestriel',
     badge: '1M+6M',
-    desc: 'Planning mensuel (4 sem.) et semestriel (26 sem.)',
-    make: (start) => [
-      { type: '1M', freq: 4, start, color: 'blue' },
-      { type: '6M', freq: 26, start, color: 'green' },
+    desc: 'Planning mensuel (4 sem.) et semestriel (26 sem.) — semaines de départ indépendantes',
+    // Separate starts: which specific week kicks off the monthly cadence vs.
+    // which kicks off the semi-annual one — they don't have to (and usually
+    // shouldn't) coincide, since a coinciding week collapses to a single 6M
+    // cell and the 1M-that-week effectively never happens on its own.
+    make: (start1M, start6M) => [
+      { type: '1M', freq: 4, start: start1M, color: 'blue' },
+      { type: '6M', freq: 26, start: start6M, color: 'green' },
     ],
   },
   {
@@ -139,16 +143,20 @@ function detectPreset(intervals) {
 }
 
 function ScheduleModal({ modal, onSave, onClose }) {
-  const [preset,    setPreset]    = useState(null);
-  const [startWeek, setStartWeek] = useState(1);
-  const [saving,    setSaving]    = useState(false);
-  const [error,     setError]     = useState('');
+  const [preset,      setPreset]      = useState(null);
+  const [startWeek1M, setStartWeek1M] = useState(1); // also used as the single start for monthly/quarterly/semiannual
+  const [startWeek6M, setStartWeek6M] = useState(1); // only relevant when preset === 'both'
+  const [saving,      setSaving]      = useState(false);
+  const [error,       setError]       = useState('');
 
   useEffect(() => {
     if (!modal) return;
     const intervals = modal.equip?.intervals || [];
     setPreset(detectPreset(intervals));
-    setStartWeek(intervals[0]?.start ?? 1);
+    const oneM = intervals.find((i) => i.type === '1M');
+    const sixM = intervals.find((i) => i.type === '6M');
+    setStartWeek1M(oneM?.start ?? intervals[0]?.start ?? 1);
+    setStartWeek6M(sixM?.start ?? intervals[0]?.start ?? 1);
     setSaving(false);
     setError('');
   }, [modal]);
@@ -156,14 +164,16 @@ function ScheduleModal({ modal, onSave, onClose }) {
   if (!modal) return null;
 
   const selectedPreset = SCHEDULE_PRESETS.find((p) => p.id === preset);
+  const isBoth = preset === 'both';
 
   const handleSave = async () => {
     if (!selectedPreset) { setError('Veuillez choisir un planning.'); return; }
-    const start = parseInt(startWeek, 10) || 1;
+    const start1M = parseInt(startWeek1M, 10) || 1;
+    const start6M = parseInt(startWeek6M, 10) || 1;
     setSaving(true);
     setError('');
     try {
-      await onSave(modal.equip, selectedPreset.make(start));
+      await onSave(modal.equip, selectedPreset.make(start1M, start6M));
     } catch {
       setError('Erreur lors de la sauvegarde.');
       setSaving(false);
@@ -215,22 +225,67 @@ function ScheduleModal({ modal, onSave, onClose }) {
             })}
           </div>
 
-          {/* Start week — hide for 'none' */}
-          {preset !== 'none' && (
+          {/* Start week(s) — hide for 'none' */}
+          {preset !== 'none' && !isBoth && (
             <div className="pt-1">
               <label className="block mb-1.5 text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--text3)' }}>
                 Semaine de départ (1 – 53)
               </label>
               <div className="flex items-center gap-3">
-                <input type="number" min={1} max={53} value={startWeek}
-                  onChange={(e) => setStartWeek(e.target.value)}
+                <input type="number" min={1} max={53} value={startWeek1M}
+                  onChange={(e) => setStartWeek1M(e.target.value)}
                   className="w-20 rounded-[10px] px-3 py-2 text-sm outline-none"
                   style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
-                <input type="range" min={1} max={53} value={startWeek || 1}
+                <input type="range" min={1} max={53} value={startWeek1M || 1}
                   className="flex-1" style={{ accentColor: 'var(--accent)' }}
-                  onChange={(e) => setStartWeek(e.target.value)} />
-                <span className="text-xs font-mono font-bold w-8 text-right" style={{ color: 'var(--text3)' }}>KW{String(startWeek || 1).padStart(2, '0')}</span>
+                  onChange={(e) => setStartWeek1M(e.target.value)} />
+                <span className="text-xs font-mono font-bold w-8 text-right" style={{ color: 'var(--text3)' }}>KW{String(startWeek1M || 1).padStart(2, '0')}</span>
               </div>
+            </div>
+          )}
+
+          {/* Both selected: two independent starts, so the two cadences don't
+              collapse into each other by coinciding on the same week */}
+          {isBoth && (
+            <div className="pt-1 space-y-3">
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--info)' }}>
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--info)' }} />
+                  Départ Mensuel (1M)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input type="number" min={1} max={53} value={startWeek1M}
+                    onChange={(e) => setStartWeek1M(e.target.value)}
+                    className="w-20 rounded-[10px] px-3 py-2 text-sm outline-none"
+                    style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
+                  <input type="range" min={1} max={53} value={startWeek1M || 1}
+                    className="flex-1" style={{ accentColor: 'var(--info)' }}
+                    onChange={(e) => setStartWeek1M(e.target.value)} />
+                  <span className="text-xs font-mono font-bold w-8 text-right" style={{ color: 'var(--text3)' }}>KW{String(startWeek1M || 1).padStart(2, '0')}</span>
+                </div>
+              </div>
+              <div>
+                <label className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.12em]" style={{ color: 'var(--ok)' }}>
+                  <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--ok)' }} />
+                  Départ Semestriel (6M)
+                </label>
+                <div className="flex items-center gap-3">
+                  <input type="number" min={1} max={53} value={startWeek6M}
+                    onChange={(e) => setStartWeek6M(e.target.value)}
+                    className="w-20 rounded-[10px] px-3 py-2 text-sm outline-none"
+                    style={{ background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' }} />
+                  <input type="range" min={1} max={53} value={startWeek6M || 1}
+                    className="flex-1" style={{ accentColor: 'var(--ok)' }}
+                    onChange={(e) => setStartWeek6M(e.target.value)} />
+                  <span className="text-xs font-mono font-bold w-8 text-right" style={{ color: 'var(--text3)' }}>KW{String(startWeek6M || 1).padStart(2, '0')}</span>
+                </div>
+              </div>
+              {startWeek1M && startWeek6M && parseInt(startWeek1M, 10) === parseInt(startWeek6M, 10) && (
+                <p className="text-[11px] flex items-start gap-1.5" style={{ color: 'var(--warn)' }}>
+                  <AlertTriangle className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                  Mêmes semaines de départ : cette semaine-là s'affichera comme Semestriel (6M) uniquement — c'est normal, le 6M inclut déjà les étapes du 1M.
+                </p>
+              )}
             </div>
           )}
 
@@ -430,13 +485,26 @@ function computeAllCells(scheduledCells, cellStates) {
   const cells = { ...scheduledCells };
   Object.entries(cellStates).forEach(([key, state]) => {
     if (state.status === 'rescheduled' && state.newWeek) {
-      const [equipCode, , weekStr] = key.split('__');
+      const [equipCode, intType, weekStr] = key.split('__');
       const originalCellKey = `${equipCode}__${weekStr}`;
       const newCellKey = `${equipCode}__${state.newWeek}`;
       const original = scheduledCells[originalCellKey];
       // Only inject the target if that week isn't already its own scheduled maintenance
       if (original && !scheduledCells[newCellKey]) {
-        cells[newCellKey] = { ...original, week: state.newWeek, isRescheduledTarget: true, originalKey: key };
+        // Use the rescheduled event's OWN type/color (encoded in its key), not
+        // whichever type happened to win the priority-collapse at the original
+        // week — they can differ when two intervals coincide there (e.g. a 1M
+        // and a 6M both starting the same week), and the target must reflect
+        // what was actually rescheduled, not the bigger check that overshadowed it.
+        const ownInterval = (original.equip.intervals || []).find((iv) => iv.type === intType);
+        cells[newCellKey] = {
+          equip: original.equip,
+          week: state.newWeek,
+          intType,
+          color: ownInterval?.color ?? original.color,
+          isRescheduledTarget: true,
+          originalKey: key,
+        };
       }
     }
   });
@@ -526,7 +594,7 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
   ws.getRow(HEADER_ROW_DESIG).height = 90;
 
   // Color map matching the live grid (see getCellAppearance)
-  const FILL_BY_TYPE = { blue: 'FF0D9488', violet: 'FF7C3AED', green: 'FF0D9C6E' }; // accent / violet / ok
+  const FILL_BY_TYPE = { blue: 'FF0C8FD6', violet: 'FF7C3AED', green: 'FF0D9C6E' }; // info / violet / ok
   const FILL_DONE = 'FF94A3B8'; // done marker
   const FILL_PANNE = 'FFE0474B'; // --crit
 
@@ -715,10 +783,14 @@ const CalendrierPreventif = () => {
       .getAll()
       .then(({ data }) => {
         if (cancelled) return;
-        // Déclassé (decommissioned) equipment never belongs on the calendar —
-        // filtered out once here so every view and every export mode inherits
-        // the exclusion automatically, with nothing to remember downstream.
-        const active = (Array.isArray(data) ? data : []).filter((e) => e.statut !== 'Déclassé');
+        // Déclassé (decommissioned) and Hors service (out of service) equipment
+        // don't belong on the calendar while in that state — filtered out once
+        // here so every view and every export mode inherits the exclusion
+        // automatically. Their maintenance_intervals are untouched, so an
+        // equipment simply reappears with its original schedule intact once
+        // it's back "En service".
+        const HIDDEN_STATUSES = ['Déclassé', 'Hors service'];
+        const active = (Array.isArray(data) ? data : []).filter((e) => !HIDDEN_STATUSES.includes(e.statut));
         setEquipements(active);
       })
       .catch(() => {
@@ -1069,13 +1141,15 @@ const CalendrierPreventif = () => {
     const saving = savingKeys.has(eventKey);
     if (saving)                   return { style: { background: 'var(--text3)', cursor: 'wait', opacity: 0.6 }, icon: '…' };
     if (state?.status === 'done') return { style: { background: 'var(--text3)', cursor: 'pointer' }, icon: '✓' };
-    if (state?.status === 'rescheduled') {
-      // Original slot looks empty — maintenance moved to another week
+    // Only the ORIGINAL slot should look empty when rescheduled — the target
+    // cell shares the same event key (via originalKey) but must still show
+    // its own color, or a reschedule makes the maintenance vanish entirely.
+    if (state?.status === 'rescheduled' && !cellData.isRescheduledTarget) {
       const emptyBg = isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel)';
       return { style: { background: emptyBg, cursor: 'default' }, icon: null };
     }
     // Target cell and normal scheduled cells: same appearance
-    if (cellData.color === 'blue')   return { style: { background: 'var(--accent)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (cellData.color === 'blue')   return { style: { background: 'var(--info)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     if (cellData.color === 'violet') return { style: { background: 'var(--violet)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     if (cellData.color === 'green')  return { style: { background: 'var(--ok)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     return { style: {}, icon: null };
@@ -1155,7 +1229,7 @@ const CalendrierPreventif = () => {
           </button>
           <div className="ml-auto hidden sm:flex flex-wrap items-center gap-3 text-xs">
             {[
-              { bg: 'var(--accent)', label: 'Mensuel' },
+              { bg: 'var(--info)',   label: 'Mensuel' },
               { bg: 'var(--violet)', label: 'Trimestriel' },
               { bg: 'var(--ok)',     label: 'Semestriel' },
               { bg: 'var(--text3)',  label: 'Fait' },
