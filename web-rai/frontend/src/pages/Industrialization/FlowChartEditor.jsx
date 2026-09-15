@@ -792,7 +792,7 @@ const FlowChartEditor = () => {
     setExportingPdf(true);
     try {
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import('html2canvas'),
+        import('html2canvas-pro'),
         import('jspdf'),
       ]);
       const canvas = await html2canvas(canvasRef.current, { scale: 1.5, useCORS: true, backgroundColor: '#f1f5f9', logging: false });
@@ -966,7 +966,7 @@ const FlowChartEditor = () => {
 
       <textarea rows={2} value={subDraft?.description || ''}
         onChange={e => setSubDraft(d => ({ ...d, description: e.target.value }))}
-        className={fieldCls + ' resize-none text-xs'} placeholder="Description courte…" />
+        className={fieldCls + ' resize-none text-xs'} style={fieldClsStyle} placeholder="Description courte…" />
 
       {/* Tools */}
       <div>
@@ -1069,7 +1069,7 @@ const FlowChartEditor = () => {
 
       <label className="block">
         <span className={labelCls} style={{ color: 'var(--text3)' }}>Description</span>
-        <textarea rows={2} value={draft.description} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))} className={fieldCls + ' resize-none'} placeholder="Description courte…" />
+        <textarea rows={2} value={draft.description} onChange={e => setDraft(d => ({ ...d, description: e.target.value }))} className={fieldCls + ' resize-none'} style={fieldClsStyle} placeholder="Description courte…" />
       </label>
 
       {/* Tools */}
