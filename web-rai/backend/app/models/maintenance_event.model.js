@@ -28,9 +28,10 @@ const MaintenanceEvent = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    // 'done' | 'rescheduled'
+    // 'done' | 'rescheduled' | 'planned' (a manually one-off placed cell,
+    // not yet done — interval_type 'PONCTUEL' identifies these)
     status: {
-      type: DataTypes.ENUM('done', 'rescheduled'),
+      type: DataTypes.ENUM('done', 'rescheduled', 'planned'),
       allowNull: false,
     },
     // only filled when status = 'rescheduled'

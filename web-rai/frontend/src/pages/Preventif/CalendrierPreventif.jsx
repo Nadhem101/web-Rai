@@ -309,7 +309,9 @@ function ScheduleModal({ modal, onSave, onClose }) {
   );
 }
 
-function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, onOpenFerBain, onTogglePanne, onClose }) {
+const INTYPE_LABELS = { '1M': '1M', '3M': '3M', '6M': '6M', PONCTUEL: 'Planifié' };
+
+function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, onOpenFerBain, onTogglePanne, onPlanManual, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
@@ -318,8 +320,8 @@ function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, on
   }, [onClose]);
   if (!popup) return null;
   const { x, y, equip, week, intType, currentStatus, machineKey, machineLabel, isFerBain, mode } = popup;
-  const isPanneMode = mode === 'panne';
-  const hasPanne = isPanneMode && currentStatus === 'done';
+  const isEmptyMode = mode === 'empty';
+  const hasPanne = isEmptyMode && currentStatus === 'done';
   return (
     <div
       ref={ref}
@@ -331,12 +333,12 @@ function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, on
         <div className="text-xs truncate mt-0.5" style={{ color: 'var(--text2)' }}>{equip.designation}</div>
         <div className="flex items-center gap-2 mt-1">
           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>KW{String(week).padStart(2,'0')}</span>
-          {isPanneMode ? (
+          {isEmptyMode ? (
             hasPanne && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--crit-soft)', color: 'var(--crit)' }}>⚠ Panne</span>
             )
           ) : (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{intType}</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{INTYPE_LABELS[intType] || intType}</span>
           )}
         </div>
         {machineKey && !isFerBain && (
@@ -344,15 +346,20 @@ function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, on
         )}
       </div>
       <div className="py-1">
-        {isPanneMode ? (
+        {isEmptyMode ? (
           hasPanne ? (
             <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--panel3)]" style={{ color: 'var(--text3)' }} onClick={onTogglePanne}>
               ↺ Retirer la panne
             </button>
           ) : (
-            <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--crit-soft)]" style={{ color: 'var(--crit)' }} onClick={onTogglePanne}>
-              ⚠ Marquer une panne / urgence
-            </button>
+            <>
+              <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--warn-soft)]" style={{ color: 'var(--warn)' }} onClick={onPlanManual}>
+                📅 Planifier une maintenance ici
+              </button>
+              <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--crit-soft)]" style={{ color: 'var(--crit)' }} onClick={onTogglePanne}>
+                ⚠ Marquer une panne / urgence
+              </button>
+            </>
           )
         ) : (
           <>
@@ -478,19 +485,44 @@ function computeScheduledCells(equipList) {
   return index;
 }
 
-// scheduledCells is keyed `${code}__${week}`; cellStates (from the backend,
+// Folds manually-planned one-off cells (interval_type 'PONCTUEL') into the
+// recurring schedule map, so they flow through the exact same rendering and
+// interaction pipeline as a regular 1M/3M/6M cell — same click menu, same
+// done/reschedule/reset actions, no special-casing needed downstream. A
+// PONCTUEL entry is registered regardless of its status (planned/done/
+// rescheduled) — same as a recurring interval always "exists" geometrically
+// regardless of status — so the usual status-based appearance/reschedule
+// logic in computeAllCells applies to it unchanged. Never overrides a slot
+// that already has a real recurring interval.
+function computeBaseCells(equipList, cellStates) {
+  const cells = computeScheduledCells(equipList);
+  const equipByCode = {};
+  equipList.forEach((e) => { equipByCode[e.code] = e; });
+  Object.entries(cellStates).forEach(([key, state]) => {
+    const [equipCode, intType, weekStr] = key.split('__');
+    if (intType !== 'PONCTUEL') return;
+    const week = Number(weekStr);
+    const cellKey = `${equipCode}__${week}`;
+    if (cells[cellKey]) return; // a real recurring interval already claims this slot
+    const equip = equipByCode[equipCode];
+    if (equip) cells[cellKey] = { color: 'amber', equip, week, intType: 'PONCTUEL' };
+  });
+  return cells;
+}
+
+// baseCells is keyed `${code}__${week}`; cellStates (from the backend,
 // unchanged schema) is keyed `${code}__${interval_type}__${week}`. Rescheduled
 // targets get injected into the 2-part space using the original event's type.
-function computeAllCells(scheduledCells, cellStates) {
-  const cells = { ...scheduledCells };
+function computeAllCells(baseCells, cellStates) {
+  const cells = { ...baseCells };
   Object.entries(cellStates).forEach(([key, state]) => {
     if (state.status === 'rescheduled' && state.newWeek) {
       const [equipCode, intType, weekStr] = key.split('__');
       const originalCellKey = `${equipCode}__${weekStr}`;
       const newCellKey = `${equipCode}__${state.newWeek}`;
-      const original = scheduledCells[originalCellKey];
+      const original = baseCells[originalCellKey];
       // Only inject the target if that week isn't already its own scheduled maintenance
-      if (original && !scheduledCells[newCellKey]) {
+      if (original && !baseCells[newCellKey]) {
         // Use the rescheduled event's OWN type/color (encoded in its key), not
         // whichever type happened to win the priority-collapse at the original
         // week — they can differ when two intervals coincide there (e.g. a 1M
@@ -537,8 +569,8 @@ function computeUnconfigured(equipList) {
 function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
   const ws = wb.addWorksheet(meta.sheetName.slice(0, 31).replace(/[\\/*?:[\]]/g, ' '));
   const unconfiguredCodes = new Set(computeUnconfigured(equipList).map((e) => e.code));
-  const scheduled = computeScheduledCells(equipList);
-  const cells = computeAllCells(scheduled, cellStates);
+  const base = computeBaseCells(equipList, cellStates);
+  const cells = computeAllCells(base, cellStates);
   const panneCells = computePanneCells(cellStates);
 
   const FIRST_COL = 2; // A=KW, B.. = equipment (type is conveyed by cell color, not a column)
@@ -594,7 +626,7 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
   ws.getRow(HEADER_ROW_DESIG).height = 90;
 
   // Color map matching the live grid (see getCellAppearance)
-  const FILL_BY_TYPE = { blue: 'FF0C8FD6', violet: 'FF7C3AED', green: 'FF0D9C6E' }; // info / violet / ok
+  const FILL_BY_TYPE = { blue: 'FF0C8FD6', violet: 'FF7C3AED', green: 'FF0D9C6E', amber: 'FFD98207' }; // info / violet / ok / warn
   const FILL_DONE = 'FF94A3B8'; // done marker
   const FILL_PANNE = 'FFE0474B'; // --crit
 
@@ -875,8 +907,8 @@ const CalendrierPreventif = () => {
     [unconfiguredEquipements]
   );
 
-  const scheduledCells = useMemo(() => computeScheduledCells(filteredEquipements), [filteredEquipements]);
-  const allCells = useMemo(() => computeAllCells(scheduledCells, cellStates), [scheduledCells, cellStates]);
+  const baseCells = useMemo(() => computeBaseCells(filteredEquipements, cellStates), [filteredEquipements, cellStates]);
+  const allCells = useMemo(() => computeAllCells(baseCells, cellStates), [baseCells, cellStates]);
   const panneCells = useMemo(() => computePanneCells(cellStates), [cellStates]);
 
   const doneCount         = Object.values(cellStates).filter(s => s.status === 'done').length;
@@ -915,9 +947,9 @@ const CalendrierPreventif = () => {
     });
   }, [cellStates]);
 
-  // Any week can be flagged with an ad-hoc "panne" (breakdown) marker, not
-  // just the ones with a regular schedule — e.g. an emergency intervention
-  // between two planned checks.
+  // An empty week (no regular schedule) can either get a one-off manually
+  // planned maintenance, or be flagged as an ad-hoc "panne" (breakdown) —
+  // e.g. an emergency intervention between two planned checks.
   const handleEmptyCellClick = useCallback((e, equip, week) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
@@ -933,7 +965,7 @@ const CalendrierPreventif = () => {
       machineKey: null,
       machineLabel: null,
       isFerBain: false,
-      mode: 'panne',
+      mode: 'empty',
       x,
       y,
     });
@@ -1018,6 +1050,25 @@ const CalendrierPreventif = () => {
         })
         .finally(() => setSavingKeys(s => { const n = new Set(s); n.delete(key); return n; }));
     }
+  };
+
+  // A manually one-off planned cell — created as a plain 'planned' event,
+  // which then flows through computeBaseCells and renders/behaves exactly
+  // like a normal scheduled cell (Marquer fait / Reprogrammer / Réinitialiser
+  // all work on it unchanged, since those are generic key-based operations).
+  const handleMarkPlanned = () => {
+    const { equip, week } = popup;
+    setPopup(null);
+    const key = `${equip.code}__PONCTUEL__${week}`;
+    setCellStates(p => ({ ...p, [key]: { status: 'planned' } }));
+    setSavingKeys(s => new Set(s).add(key));
+    maintenanceEventService
+      .upsert({ equip_code: equip.code, interval_type: 'PONCTUEL', week, year: currentYear, status: 'planned', new_week: null })
+      .catch(() => {
+        setCellStates(p => { const n = { ...p }; delete n[key]; return n; });
+        setApiError(`Erreur planification pour ${equip.code} KW${week}`);
+      })
+      .finally(() => setSavingKeys(s => { const n = new Set(s); n.delete(key); return n; }));
   };
 
   const handleRescheduleConfirm = (newWeek) => {
@@ -1152,6 +1203,7 @@ const CalendrierPreventif = () => {
     if (cellData.color === 'blue')   return { style: { background: 'var(--info)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     if (cellData.color === 'violet') return { style: { background: 'var(--violet)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     if (cellData.color === 'green')  return { style: { background: 'var(--ok)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (cellData.color === 'amber')  return { style: { background: 'var(--warn)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     return { style: {}, icon: null };
   };
 
@@ -1232,6 +1284,7 @@ const CalendrierPreventif = () => {
               { bg: 'var(--info)',   label: 'Mensuel' },
               { bg: 'var(--violet)', label: 'Trimestriel' },
               { bg: 'var(--ok)',     label: 'Semestriel' },
+              { bg: 'var(--warn)',   label: 'Planifié' },
               { bg: 'var(--text3)',  label: 'Fait' },
               { bg: 'var(--crit)',   label: 'Panne' },
             ].map(({ bg, label }, i) => (
@@ -1372,6 +1425,7 @@ const CalendrierPreventif = () => {
           onOpenMachineSheet={handleOpenMachineSheet}
           onOpenFerBain={handleOpenFerBain}
           onTogglePanne={handleTogglePanne}
+          onPlanManual={handleMarkPlanned}
           onClose={() => setPopup(null)}
         />
       )}
