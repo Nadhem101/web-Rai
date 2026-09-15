@@ -4,7 +4,7 @@ import { flowchartService } from '../../services/api';
 import MediaLightbox from '../../components/ui/MediaLightbox.jsx';
 import {
   ChevronLeft, GitBranch, ZoomIn, ZoomOut,
-  X, Image, Video, ExternalLink, CheckSquare, Play,
+  X, Image, Video, ExternalLink, CheckSquare, Play, AlertTriangle,
 } from 'lucide-react';
 
 // ── Constants ──────────────────────────────────────────────
@@ -290,19 +290,33 @@ const FlowChartViewer = () => {
   const [title,       setTitle]       = useState('');
   const [steps,       setSteps]       = useState([]);
   const [loading,     setLoading]     = useState(true);
+  const [loadError,   setLoadError]   = useState(null);
   const [zoom,        setZoom]        = useState(1);
   const [activeStep,  setActiveStep]  = useState(null);
 
-  useEffect(() => {
+  const loadFlowchart = useCallback(() => {
     if (!id) return;
+    setLoading(true);
+    setLoadError(null);
     flowchartService.getById(id)
       .then(fc => {
         setTitle(fc.title || '');
         setSteps(Array.isArray(fc.steps) ? fc.steps.map(migrateStep) : []);
       })
-      .catch(console.error)
+      .catch(err => {
+        console.error(err);
+        // A silently-empty flowchart looks exactly like "my data disappeared" — surface
+        // the failure instead (session expired, backend cold-starting, network hiccup…).
+        setLoadError(
+          err?.response?.status === 401
+            ? 'Session expirée — reconnectez-vous puis réessayez.'
+            : 'Impossible de charger ce flow chart. Vérifiez votre connexion et réessayez.'
+        );
+      })
       .finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => { loadFlowchart(); }, [loadFlowchart]);
 
   // Allow panning / dragging in view mode too
   useEffect(() => {
@@ -326,6 +340,21 @@ const FlowChartViewer = () => {
       <div className="text-center">
         <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
         <p className="text-sm text-slate-400">Chargement du flow chart…</p>
+      </div>
+    </div>
+  );
+
+  if (loadError) return (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="text-center max-w-sm">
+        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-3" />
+        <p className="text-sm font-semibold text-slate-700 mb-1">Échec du chargement</p>
+        <p className="text-xs text-slate-400 mb-4">{loadError}</p>
+        <button onClick={loadFlowchart}
+          className="px-4 py-2 rounded-xl text-sm font-semibold text-white"
+          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
+          Réessayer
+        </button>
       </div>
     </div>
   );

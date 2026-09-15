@@ -270,6 +270,7 @@ const FlowChartEditor = () => {
   const [saving,       setSaving]       = useState(false);
   const [saved,        setSaved]        = useState(false);
   const [loading,      setLoading]      = useState(Boolean(id));
+  const [loadError,    setLoadError]    = useState(null);
   const [editTitle,    setEditTitle]    = useState(false);
   const [pendingTitle, setPendingTitle] = useState('');
   const [newParam,     setNewParam]     = useState('');
@@ -285,25 +286,33 @@ const FlowChartEditor = () => {
   const mediaFileRef = useRef(null);
 
   // ── Load from DB ─────────────────────────────────────────
-  useEffect(() => {
+  const loadFlowchart = useCallback(async () => {
     if (!id) return;
-    const load = async () => {
-      try {
-        const fc = await flowchartService.getById(id);
-        setTitle(fc.title || '');
-        setDescription(fc.description || '');
-        setStatus(fc.status || 'draft');
-        const loadedSteps = (Array.isArray(fc.steps) ? fc.steps : []).map(migrateStep);
-        setSteps(loadedSteps);
-        setSelectedId(loadedSteps[0]?.id || null);
-      } catch (err) {
-        console.error('Erreur chargement flowchart:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const fc = await flowchartService.getById(id);
+      setTitle(fc.title || '');
+      setDescription(fc.description || '');
+      setStatus(fc.status || 'draft');
+      const loadedSteps = (Array.isArray(fc.steps) ? fc.steps : []).map(migrateStep);
+      setSteps(loadedSteps);
+      setSelectedId(loadedSteps[0]?.id || null);
+    } catch (err) {
+      console.error('Erreur chargement flowchart:', err);
+      // A silently-empty flowchart looks exactly like "my data disappeared" — surface
+      // the failure instead (session expired, backend cold-starting, network hiccup…).
+      setLoadError(
+        err?.response?.status === 401
+          ? 'Session expirée — reconnectez-vous puis réessayez.'
+          : 'Impossible de charger ce flow chart. Vérifiez votre connexion et réessayez.'
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => { loadFlowchart(); }, [loadFlowchart]);
 
   // ── Save to DB ───────────────────────────────────────────
   const save = useCallback(async (nextSteps = steps, nextTitle = title, nextStatus = status) => {
@@ -581,7 +590,9 @@ const FlowChartEditor = () => {
       return null;
     }
     const safeFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-    const path = `flowchart-media/${id || 'draft'}/${safeFileName}`;
+    // Just the path *within* the bucket — .from('flowchart-media') already scopes to
+    // it, so prefixing the bucket name again here produced doubled-up public URLs.
+    const path = `${id || 'draft'}/${safeFileName}`;
     const { data, error } = await supabase.storage.from('flowchart-media').upload(path, file, { upsert: false });
     if (error) { alert('Erreur upload : ' + error.message); return null; }
     const { data: { publicUrl } } = supabase.storage.from('flowchart-media').getPublicUrl(data.path);
@@ -1063,6 +1074,21 @@ const FlowChartEditor = () => {
       <div className="text-center">
         <div className="w-8 h-8 border-4 border-sky-100 border-t-sky-500 rounded-full animate-spin mx-auto mb-3" />
         <p className="text-sm text-slate-400">Chargement de la gamme…</p>
+      </div>
+    </div>
+  );
+
+  if (loadError) return (
+    <div className="flex-1 flex items-center justify-center p-6">
+      <div className="text-center max-w-sm">
+        <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-3" />
+        <p className="text-sm font-semibold text-slate-700 mb-1">Échec du chargement</p>
+        <p className="text-xs text-slate-400 mb-4">{loadError}</p>
+        <button onClick={loadFlowchart}
+          className="px-4 py-2 rounded-xl text-sm font-semibold text-white"
+          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
+          Réessayer
+        </button>
       </div>
     </div>
   );
