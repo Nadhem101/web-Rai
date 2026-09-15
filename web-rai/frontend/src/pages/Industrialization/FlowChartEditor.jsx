@@ -26,6 +26,14 @@ const COLORS = {
   slate:  { border: 'border-slate-400',  bg: 'bg-slate-100', badge: 'bg-slate-200 text-slate-600', ring: 'ring-slate-200'  },
 };
 
+// RGB equivalents of COLORS, for the vector PDF diagram export (jsPDF can't read Tailwind classes)
+const PDF_COLORS = {
+  sky:    { border: [56, 189, 248],  badgeBg: [224, 242, 254], badgeText: [3, 105, 161]  },
+  indigo: { border: [129, 140, 248], badgeBg: [224, 231, 255], badgeText: [67, 56, 202]  },
+  amber:  { border: [251, 191, 36],  badgeBg: [254, 243, 199], badgeText: [180, 83, 9]   },
+  slate:  { border: [148, 163, 184], badgeBg: [226, 232, 240], badgeText: [71, 85, 105]  },
+};
+
 const createId = () => `s-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
 
 // Migrate legacy single parentId to parentIds array
@@ -242,7 +250,6 @@ const FlowChartEditor = () => {
   const [newSubTool,    setNewSubTool]    = useState('');
   const [newSubParam,   setNewSubParam]   = useState('');
   const mediaFileRef = useRef(null);
-  const canvasRef    = useRef(null);
 
   // ── Load from DB ─────────────────────────────────────────
   useEffect(() => {
@@ -786,29 +793,86 @@ const FlowChartEditor = () => {
     } finally { setExportingPdf(false); }
   };
 
-  // ── Canvas screenshot PDF (visual diagram) ────────────────
+  // ── Vector PDF diagram (drawn from step x/y + connectors, not a screenshot) ──
+  // A DOM screenshot (html2canvas) can't reliably reproduce the canvas's absolutely
+  // positioned boxes + raw SVG connectors, so we draw the same data straight onto
+  // the PDF with jsPDF's vector primitives — guaranteed to match the editor exactly.
   const exportDiagramPDF = async () => {
-    if (!canvasRef.current) return;
+    if (steps.length === 0) { alert('Aucune étape à exporter.'); return; }
     setExportingPdf(true);
     try {
-      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-        import('html2canvas-pro'),
-        import('jspdf'),
-      ]);
-      const canvas = await html2canvas(canvasRef.current, { scale: 1.5, useCORS: true, backgroundColor: '#f1f5f9', logging: false });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-      const W = pdf.internal.pageSize.getWidth();
-      const H = pdf.internal.pageSize.getHeight();
-      pdf.setFontSize(14); pdf.setTextColor(15, 29, 53);
-      pdf.text(title || 'Flow Chart', 10, 12);
-      pdf.setFontSize(8); pdf.setTextColor(100, 116, 139);
-      pdf.text(`Exporté le ${new Date().toLocaleDateString('fr-FR')}`, 10, 18);
-      const imgH = (canvas.height * (W - 20)) / canvas.width;
-      const maxH = H - 25;
-      const finalH = Math.min(imgH, maxH);
-      const finalW = imgH > maxH ? ((W - 20) * maxH) / imgH : W - 20;
-      pdf.addImage(imgData, 'PNG', 10, 22, finalW, finalH);
+      const { jsPDF } = await import('jspdf');
+      const PX_MM   = 0.28; // px → mm, ~near on-screen size when printed
+      const MARGIN  = 10;
+      const HEADER_H = 22;
+
+      const minX = Math.min(0, ...steps.map(s => s.x));
+      const minY = Math.min(0, ...steps.map(s => s.y));
+      const maxX = Math.max(...steps.map(s => s.x + STEP_W));
+      const maxY = Math.max(...steps.map(s => s.y + STEP_H));
+      const pageW = MARGIN * 2 + (maxX - minX) * PX_MM;
+      const pageH = HEADER_H + MARGIN + (maxY - minY) * PX_MM;
+
+      const pdf = new jsPDF({ unit: 'mm', format: [Math.max(pageW, 100), Math.max(pageH, 100)] });
+      const px = (x) => MARGIN + (x - minX) * PX_MM;
+      const py = (y) => HEADER_H + (y - minY) * PX_MM;
+
+      // Header
+      pdf.setFillColor(15, 29, 53);
+      pdf.rect(0, 0, pdf.internal.pageSize.getWidth(), HEADER_H, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(14); pdf.setFont('helvetica', 'bold');
+      pdf.text(title || 'Flow Chart', MARGIN, 10);
+      pdf.setFontSize(8); pdf.setFont('helvetica', 'normal'); pdf.setTextColor(180, 200, 220);
+      pdf.text(`Exporté le ${new Date().toLocaleDateString('fr-FR')} — ${steps.length} étape(s)`, MARGIN, 17);
+
+      // Connectors — same elbow routing as the on-screen SVG, drawn under the boxes
+      pdf.setDrawColor(148, 163, 184);
+      pdf.setLineWidth(0.35);
+      for (const c of connectors) {
+        const sx = px(c.sx), sy = py(c.sy);
+        const ex = px(c.ex), ey = py(c.ey);
+        const my = py(c.my);
+        pdf.lines([[0, my - sy], [ex - sx, 0], [0, ey - my]], sx, sy, [1, 1], 'S', false);
+        pdf.setFillColor(148, 163, 184);
+        pdf.triangle(ex - 1.2, ey - 2.2, ex + 1.2, ey - 2.2, ex, ey, 'F');
+      }
+
+      // Step boxes
+      for (const step of steps) {
+        const cfg = SHAPE_CONFIG[step.shape] || SHAPE_CONFIG.operation;
+        const col = PDF_COLORS[cfg.color] || PDF_COLORS.sky;
+        const bx = px(step.x), by = py(step.y);
+        const bw = STEP_W * PX_MM, bh = STEP_H * PX_MM;
+
+        pdf.setFillColor(255, 255, 255);
+        pdf.setDrawColor(...col.border);
+        pdf.setLineWidth(0.5);
+        pdf.roundedRect(bx, by, bw, bh, 1.5, 1.5, 'FD');
+
+        // Number badge
+        pdf.setFillColor(30, 41, 59);
+        pdf.circle(bx + 4.5, by + 4.5, 2.6, 'F');
+        pdf.setTextColor(255, 255, 255); pdf.setFontSize(7); pdf.setFont('helvetica', 'bold');
+        pdf.text(String(step.number), bx + 4.5, by + 5.3, { align: 'center' });
+
+        // Type abbreviation badge (top-right)
+        const abbrW = 8;
+        pdf.setFillColor(...col.badgeBg);
+        pdf.roundedRect(bx + bw - abbrW - 2, by + 2.2, abbrW, 4.4, 0.8, 0.8, 'F');
+        pdf.setTextColor(...col.badgeText); pdf.setFontSize(6.5); pdf.setFont('helvetica', 'bold');
+        pdf.text(cfg.abbr, bx + bw - abbrW / 2 - 2, by + 5.2, { align: 'center' });
+
+        // Label
+        pdf.setTextColor(30, 41, 59); pdf.setFontSize(9.5); pdf.setFont('helvetica', 'bold');
+        const labelLines = pdf.splitTextToSize(step.label, bw - 6);
+        pdf.text(labelLines.slice(0, 3), bx + 3, by + 11);
+
+        // Type name
+        pdf.setTextColor(100, 116, 139); pdf.setFontSize(6.5); pdf.setFont('helvetica', 'normal');
+        pdf.text(cfg.label, bx + 3, by + bh - 2.5);
+      }
+
       pdf.save(`${(title || 'flowchart').replace(/\s+/g, '_')}_diagramme.pdf`);
     } catch (err) {
       console.error('Erreur export PDF diagramme:', err);
@@ -1257,7 +1321,7 @@ const FlowChartEditor = () => {
         {/* Canvas */}
         <div className="flex-1 min-w-0 overflow-auto relative"
           style={{ backgroundImage: 'radial-gradient(circle, #cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}>
-          <div ref={canvasRef} style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', minWidth: 900, minHeight: 1100, position: 'relative' }}>
+          <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top left', minWidth: 900, minHeight: 1100, position: 'relative' }}>
             <svg className="pointer-events-none absolute inset-0 w-full h-full" aria-hidden>
               <defs>
                 <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
