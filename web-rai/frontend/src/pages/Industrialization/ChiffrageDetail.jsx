@@ -4,6 +4,7 @@ import {
   chiffrageService, chiffrageLigneService,
   connecteurCatalogueService, fournisseurCatalogueService,
 } from '../../services/api';
+import { supabase } from '../../lib/supabase';
 import {
   ChevronLeft, Plus, Trash2, Save, Download, Check,
   Factory, Pencil, X, Image, Search, BookOpen,
@@ -389,11 +390,7 @@ const ChiffrageDetail = () => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true);
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (!supabaseUrl || !supabaseKey) { alert('Supabase non configuré.'); return; }
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      if (!supabase) { alert('Supabase non configuré.'); return; }
       const fn = `chiffrage/${id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
       const { data, error } = await supabase.storage.from('flowchart-media').upload(fn, file, { upsert: false });
       if (error) { alert('Erreur upload : ' + error.message); return; }

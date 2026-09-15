@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { connecteurCatalogueService, fournisseurCatalogueService } from '../../services/api';
+import { supabase } from '../../lib/supabase';
 import {
   Plus, Pencil, Trash2, Search, XCircle, Link2,
   Check, X, AlertCircle, Image,
@@ -141,11 +142,7 @@ const CatalogueConnecteurs = () => {
     const file = e.target.files?.[0]; if (!file) return;
     setUploading(true);
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-      if (!supabaseUrl || !supabaseKey) { alert('Supabase non configuré.'); return; }
-      const { createClient } = await import('@supabase/supabase-js');
-      const supabase = createClient(supabaseUrl, supabaseKey);
+      if (!supabase) { alert('Supabase non configuré.'); return; }
       const fileName = `catalogue/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
       const { data, error } = await supabase.storage.from('flowchart-media').upload(fileName, file, { upsert: false });
       if (error) { alert('Erreur upload : ' + error.message); return; }

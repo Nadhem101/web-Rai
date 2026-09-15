@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { flowchartService, procedureService } from '../../services/api';
+import { supabase } from '../../lib/supabase';
 import {
   Plus, Trash2, Pencil, Check, X, Download, Upload,
   ZoomIn, ZoomOut, GitBranch, ChevronLeft, AlertTriangle,
@@ -540,15 +541,13 @@ const FlowChartEditor = () => {
     setSubDraft(d => ({ ...d, parameters: (d.parameters || []).filter((_, idx) => idx !== i) }));
 
   // ── File upload to Supabase Storage ───────────────────────
+  // Uses the app's shared, already-authenticated client (lib/supabase.js) — the
+  // flowchart-media bucket's RLS policies only allow writes from logged-in users.
   const uploadFile = async (file) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseKey) {
+    if (!supabase) {
       alert('Supabase non configuré. Ajoutez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY.');
       return null;
     }
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabase = createClient(supabaseUrl, supabaseKey);
     const safeFileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
     const path = `flowchart-media/${id || 'draft'}/${safeFileName}`;
     const { data, error } = await supabase.storage.from('flowchart-media').upload(path, file, { upsert: false });
