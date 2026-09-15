@@ -254,7 +254,7 @@ function ScheduleModal({ modal, onSave, onClose }) {
   );
 }
 
-function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, onOpenFerBain, onClose }) {
+function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, onOpenFerBain, onTogglePanne, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
@@ -262,7 +262,9 @@ function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, on
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
   if (!popup) return null;
-  const { x, y, equip, week, intType, currentStatus, machineKey, machineLabel, isFerBain } = popup;
+  const { x, y, equip, week, intType, currentStatus, machineKey, machineLabel, isFerBain, mode } = popup;
+  const isPanneMode = mode === 'panne';
+  const hasPanne = isPanneMode && currentStatus === 'done';
   return (
     <div
       ref={ref}
@@ -274,37 +276,57 @@ function CellMenu({ popup, onDone, onReschedule, onReset, onOpenMachineSheet, on
         <div className="text-xs truncate mt-0.5" style={{ color: 'var(--text2)' }}>{equip.designation}</div>
         <div className="flex items-center gap-2 mt-1">
           <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>KW{String(week).padStart(2,'0')}</span>
-          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{intType}</span>
+          {isPanneMode ? (
+            hasPanne && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--crit-soft)', color: 'var(--crit)' }}>⚠ Panne</span>
+            )
+          ) : (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--panel3)', color: 'var(--text2)' }}>{intType}</span>
+          )}
         </div>
         {machineKey && !isFerBain && (
           <div className="mt-1 text-[11px] font-medium" style={{ color: 'var(--accent)' }}>{machineLabel || machineKey}</div>
         )}
       </div>
       <div className="py-1">
-        {isFerBain && (
-          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }} onClick={onOpenFerBain}>
-            🌡 Enregistrer une valeur
-          </button>
-        )}
-        {machineKey && !isFerBain && (
-          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }} onClick={onOpenMachineSheet}>
-            📋 Démarrer la fiche machine
-          </button>
-        )}
-        {currentStatus !== 'done' && (
-          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--ok-soft)]" style={{ color: 'var(--ok)' }} onClick={onDone}>
-            ✓ Marquer comme fait
-          </button>
-        )}
-        {currentStatus !== 'rescheduled' && (
-          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--warn-soft)]" style={{ color: 'var(--warn)' }} onClick={onReschedule}>
-            → Reprogrammer
-          </button>
-        )}
-        {currentStatus && (
-          <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--panel3)]" style={{ color: 'var(--text3)' }} onClick={onReset}>
-            ↺ Réinitialiser
-          </button>
+        {isPanneMode ? (
+          hasPanne ? (
+            <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--panel3)]" style={{ color: 'var(--text3)' }} onClick={onTogglePanne}>
+              ↺ Retirer la panne
+            </button>
+          ) : (
+            <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--crit-soft)]" style={{ color: 'var(--crit)' }} onClick={onTogglePanne}>
+              ⚠ Marquer une panne / urgence
+            </button>
+          )
+        ) : (
+          <>
+            {isFerBain && (
+              <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }} onClick={onOpenFerBain}>
+                🌡 Enregistrer une valeur
+              </button>
+            )}
+            {machineKey && !isFerBain && (
+              <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--accent-soft)]" style={{ color: 'var(--accent)' }} onClick={onOpenMachineSheet}>
+                📋 Démarrer la fiche machine
+              </button>
+            )}
+            {currentStatus !== 'done' && (
+              <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--ok-soft)]" style={{ color: 'var(--ok)' }} onClick={onDone}>
+                ✓ Marquer comme fait
+              </button>
+            )}
+            {currentStatus !== 'rescheduled' && (
+              <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--warn-soft)]" style={{ color: 'var(--warn)' }} onClick={onReschedule}>
+                → Reprogrammer
+              </button>
+            )}
+            {currentStatus && (
+              <button className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 transition-colors hover:bg-[var(--panel3)]" style={{ color: 'var(--text3)' }} onClick={onReset}>
+                ↺ Réinitialiser
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -371,43 +393,69 @@ function RescheduleModal({ modal, onConfirm, onClose }) {
 // Shared by the live grid (bound to whatever's currently filtered/displayed)
 // and by the Excel export (which needs to run these same computations again
 // for view sets and custom selections that aren't currently on screen).
+
+// A "bigger" interval always includes the smaller one's steps (per the fiche
+// machine: a 6-month check does the monthly steps *plus* extra ones), so a
+// given equipment only ever needs ONE cell per week — whichever is the most
+// comprehensive check due that week wins.
+const TYPE_PRIORITY = { '6M': 3, '3M': 2, '1M': 1 };
+
+// Keyed `${code}__${week}` — one entry per equipment per week, never two.
 function computeScheduledCells(equipList) {
   const index = {};
   equipList.forEach((equip) => {
+    const bestByWeek = {};
     (equip.intervals || []).forEach((intv) => {
       WEEKS.forEach((w) => {
         if (isMaintenance(w, intv.freq, intv.start)) {
-          index[`${equip.code}__${intv.type}__${w}`] = { color: intv.color, equip, week: w, intType: intv.type };
+          const current = bestByWeek[w];
+          if (!current || (TYPE_PRIORITY[intv.type] || 0) > (TYPE_PRIORITY[current.type] || 0)) {
+            bestByWeek[w] = intv;
+          }
         }
       });
+    });
+    Object.entries(bestByWeek).forEach(([w, intv]) => {
+      const week = Number(w);
+      index[`${equip.code}__${week}`] = { color: intv.color, equip, week, intType: intv.type };
     });
   });
   return index;
 }
 
+// scheduledCells is keyed `${code}__${week}`; cellStates (from the backend,
+// unchanged schema) is keyed `${code}__${interval_type}__${week}`. Rescheduled
+// targets get injected into the 2-part space using the original event's type.
 function computeAllCells(scheduledCells, cellStates) {
   const cells = { ...scheduledCells };
   Object.entries(cellStates).forEach(([key, state]) => {
     if (state.status === 'rescheduled' && state.newWeek) {
-      const [equipCode, intType] = key.split('__');
-      const newKey = `${equipCode}__${intType}__${state.newWeek}`;
-      const original = scheduledCells[key];
+      const [equipCode, , weekStr] = key.split('__');
+      const originalCellKey = `${equipCode}__${weekStr}`;
+      const newCellKey = `${equipCode}__${state.newWeek}`;
+      const original = scheduledCells[originalCellKey];
       // Only inject the target if that week isn't already its own scheduled maintenance
-      if (original && !scheduledCells[newKey]) {
-        cells[newKey] = { ...original, week: state.newWeek, isRescheduledTarget: true, originalKey: key };
+      if (original && !scheduledCells[newCellKey]) {
+        cells[newCellKey] = { ...original, week: state.newWeek, isRescheduledTarget: true, originalKey: key };
       }
     }
   });
   return cells;
 }
 
-function computeActiveIntervalTypes(equipList) {
-  const seen = new Set();
-  equipList.forEach((eq) => (eq.intervals || []).forEach((intv) => seen.add(intv.type)));
-  const order = ['1M', '3M', '6M'];
-  const result = order.filter((t) => seen.has(t));
-  seen.forEach((t) => { if (!order.includes(t)) result.push(t); });
-  return result.length > 0 ? result : ['1M', '6M'];
+// Ad-hoc "panne" (breakdown) markers — a technician can flag any week, even
+// one with nothing regularly scheduled, as having had an emergency
+// intervention. Stored as ordinary maintenance_events rows with a special
+// interval_type so no schema change was needed. Keyed `${code}__${week}`.
+function computePanneCells(cellStates) {
+  const cells = {};
+  Object.entries(cellStates).forEach(([key, state]) => {
+    if (state.status !== 'done') return;
+    const [equipCode, intType, weekStr] = key.split('__');
+    if (intType !== 'PANNE') return;
+    cells[`${equipCode}__${weekStr}`] = { week: Number(weekStr), originalKey: key };
+  });
+  return cells;
 }
 
 function computeUnconfigured(equipList) {
@@ -423,7 +471,7 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
   const unconfiguredCodes = new Set(computeUnconfigured(equipList).map((e) => e.code));
   const scheduled = computeScheduledCells(equipList);
   const cells = computeAllCells(scheduled, cellStates);
-  const activeTypes = computeActiveIntervalTypes(equipList);
+  const panneCells = computePanneCells(cellStates);
 
   const FIRST_COL = 2; // A=KW, B.. = equipment (type is conveyed by cell color, not a column)
   const lastCol = FIRST_COL + Math.max(equipList.length, 1) - 1;
@@ -438,7 +486,7 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
 
   ws.mergeCells(2, 1, 2, Math.max(lastCol, FIRST_COL));
   const subCell = ws.getCell(2, 1);
-  subCell.value = `${meta.subtitle}  —  Exporté le ${new Date().toLocaleDateString('fr-FR')}${meta.reference ? `  —  ${meta.reference}` : ''}  —  Bleu=Mensuel, Violet=Trimestriel, Vert=Semestriel, Gris=Fait`;
+  subCell.value = `${meta.subtitle}  —  Exporté le ${new Date().toLocaleDateString('fr-FR')}${meta.reference ? `  —  ${meta.reference}` : ''}  —  Bleu=Mensuel, Violet=Trimestriel, Vert=Semestriel, Gris=Fait, Rouge=Panne`;
   subCell.alignment = { horizontal: 'center' };
   subCell.font = { italic: true, size: 9, color: { argb: 'FF64748B' } };
 
@@ -480,40 +528,42 @@ function buildCalendarSheet(wb, meta, equipList, cellStates, currentWeek) {
   // Color map matching the live grid (see getCellAppearance)
   const FILL_BY_TYPE = { blue: 'FF0D9488', violet: 'FF7C3AED', green: 'FF0D9C6E' }; // accent / violet / ok
   const FILL_DONE = 'FF94A3B8'; // done marker
+  const FILL_PANNE = 'FFE0474B'; // --crit
 
   let row = HEADER_ROW_CODE + 1;
   WEEKS.forEach((week) => {
     const isCurrentWeek = week === currentWeek;
-    activeTypes.forEach((intType, rowIdx) => {
-      const isFirst = rowIdx === 0;
-      if (isFirst) {
-        ws.getCell(row, 1).value = `kw${String(week).padStart(2, '0')}`;
-        ws.getCell(row, 1).font = { bold: true, size: 9 };
-      }
-      ws.getCell(row, 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isCurrentWeek ? 'FFFEF3C7' : 'FFF1F5F9' } };
-      ws.getCell(row, 1).alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getCell(row, 1).value = `kw${String(week).padStart(2, '0')}`;
+    ws.getCell(row, 1).font = { bold: true, size: 9 };
+    ws.getCell(row, 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: isCurrentWeek ? 'FFFEF3C7' : 'FFF1F5F9' } };
+    ws.getCell(row, 1).alignment = { horizontal: 'center', vertical: 'middle' };
 
-      equipList.forEach((equip, i) => {
-        const col = FIRST_COL + i;
-        const key = `${equip.code}__${intType}__${week}`;
-        const cellData = cells[key];
-        const cell = ws.getCell(row, col);
-        if (cellData) {
-          const state = cellStates[key];
-          if (state?.status === 'done') {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FILL_DONE } };
-            cell.value = '✓';
-            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 8 };
-            cell.alignment = { horizontal: 'center' };
-          } else if (state?.status === 'rescheduled') {
-            // original slot stays empty — shown at its rescheduled target instead
-          } else {
-            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FILL_BY_TYPE[cellData.color] || FILL_BY_TYPE.blue } };
-          }
+    equipList.forEach((equip, i) => {
+      const col = FIRST_COL + i;
+      const key = `${equip.code}__${week}`;
+      const cellData = cells[key];
+      const cell = ws.getCell(row, col);
+      if (cellData) {
+        const eventKey = cellData.isRescheduledTarget ? cellData.originalKey : `${equip.code}__${cellData.intType}__${week}`;
+        const state = cellStates[eventKey];
+        if (state?.status === 'done') {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FILL_DONE } };
+          cell.value = '✓';
+          cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 8 };
+          cell.alignment = { horizontal: 'center' };
+        } else if (state?.status === 'rescheduled') {
+          // original slot stays empty — shown at its rescheduled target instead
+        } else {
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FILL_BY_TYPE[cellData.color] || FILL_BY_TYPE.blue } };
         }
-      });
-      row++;
+      } else if (panneCells[key]) {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: FILL_PANNE } };
+        cell.value = '!';
+        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true, size: 8 };
+        cell.alignment = { horizontal: 'center' };
+      }
     });
+    row++;
   });
 
   return ws;
@@ -755,12 +805,13 @@ const CalendrierPreventif = () => {
 
   const scheduledCells = useMemo(() => computeScheduledCells(filteredEquipements), [filteredEquipements]);
   const allCells = useMemo(() => computeAllCells(scheduledCells, cellStates), [scheduledCells, cellStates]);
+  const panneCells = useMemo(() => computePanneCells(cellStates), [cellStates]);
 
   const doneCount         = Object.values(cellStates).filter(s => s.status === 'done').length;
   const currentWeekTasks  = Object.keys(allCells).filter(k => k.endsWith(`__${currentWeek}`)).length;
   const currentWeekDone   = Object.entries(cellStates).filter(([k, s]) => k.endsWith(`__${currentWeek}`) && s.status === 'done').length;
 
-  const handleCellClick = useCallback((e, key, cellData) => {
+  const handleCellClick = useCallback((e, cellData) => {
     e.stopPropagation();
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.min(rect.right + 4, window.innerWidth - 234);
@@ -770,9 +821,11 @@ const CalendrierPreventif = () => {
     const machineKey = dbTemplate?.machineKey ?? resolveMaintenanceMachineKeyFromEquipment(cellData.equip);
     const machineTemplate = dbTemplate ?? (machineKey ? getMaintenanceMachineTemplate(machineKey) : null);
 
-    // Rescheduled target cells must redirect to the original key so that
+    // Rescheduled target cells must redirect to the original event key so that
     // Done / Reset / Reschedule all operate on the correct DB record.
-    const activeKey = (cellData.isRescheduledTarget && cellData.originalKey) ? cellData.originalKey : key;
+    const activeKey = (cellData.isRescheduledTarget && cellData.originalKey)
+      ? cellData.originalKey
+      : `${cellData.equip.code}__${cellData.intType}__${cellData.week}`;
     const [, activeIntType, activeWeekStr] = activeKey.split('__');
 
     setPopup({
@@ -784,6 +837,31 @@ const CalendrierPreventif = () => {
       machineKey,
       machineLabel: machineTemplate?.machineLabel || null,
       isFerBain: isFerEtBainEquipment(cellData.equip),
+      mode: 'scheduled',
+      x,
+      y,
+    });
+  }, [cellStates]);
+
+  // Any week can be flagged with an ad-hoc "panne" (breakdown) marker, not
+  // just the ones with a regular schedule — e.g. an emergency intervention
+  // between two planned checks.
+  const handleEmptyCellClick = useCallback((e, equip, week) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = Math.min(rect.right + 4, window.innerWidth - 234);
+    const y = Math.min(rect.top, window.innerHeight - 210);
+    const panneKey = `${equip.code}__PANNE__${week}`;
+    setPopup({
+      key: panneKey,
+      equip,
+      week,
+      intType: 'PANNE',
+      currentStatus: cellStates[panneKey]?.status || null,
+      machineKey: null,
+      machineLabel: null,
+      isFerBain: false,
+      mode: 'panne',
       x,
       y,
     });
@@ -838,6 +916,36 @@ const CalendrierPreventif = () => {
         setApiError(`Erreur reinitialisation pour ${equip.code} KW${week}`);
       })
       .finally(() => setSavingKeys(s => { const n = new Set(s); n.delete(key); return n; }));
+  };
+
+  const handleTogglePanne = () => {
+    const { key, equip, week } = popup;
+    const isCurrentlyPanne = cellStates[key]?.status === 'done';
+    setPopup(null);
+    const prev = cellStates[key];
+    if (isCurrentlyPanne) {
+      // Remove — optimistic update
+      setCellStates(p => { const n = { ...p }; delete n[key]; return n; });
+      setSavingKeys(s => new Set(s).add(key));
+      maintenanceEventService
+        .remove(keyToFields(key))
+        .catch(() => {
+          if (prev) setCellStates(p => ({ ...p, [key]: prev }));
+          setApiError(`Erreur suppression panne pour ${equip.code} KW${week}`);
+        })
+        .finally(() => setSavingKeys(s => { const n = new Set(s); n.delete(key); return n; }));
+    } else {
+      // Add — optimistic update
+      setCellStates(p => ({ ...p, [key]: { status: 'done' } }));
+      setSavingKeys(s => new Set(s).add(key));
+      maintenanceEventService
+        .upsert({ ...keyToFields(key), status: 'done', new_week: null })
+        .catch(() => {
+          setCellStates(p => { const n = { ...p }; delete n[key]; return n; });
+          setApiError(`Erreur enregistrement panne pour ${equip.code} KW${week}`);
+        })
+        .finally(() => setSavingKeys(s => { const n = new Set(s); n.delete(key); return n; }));
+    }
   };
 
   const handleRescheduleConfirm = (newWeek) => {
@@ -953,22 +1061,23 @@ const CalendrierPreventif = () => {
     setHighlightedEquip(null);
   };
 
-  const activeIntervalTypes = useMemo(() => computeActiveIntervalTypes(filteredEquipements), [filteredEquipements]);
-
-  const getCellAppearance = (key, baseColor, isCurrentWeek, rowIdx, isHighlighted) => {
-    const state  = cellStates[key];
-    const saving = savingKeys.has(key);
+  const getCellAppearance = (cellData, isCurrentWeek, isHighlighted) => {
+    const eventKey = cellData.isRescheduledTarget && cellData.originalKey
+      ? cellData.originalKey
+      : `${cellData.equip.code}__${cellData.intType}__${cellData.week}`;
+    const state  = cellStates[eventKey];
+    const saving = savingKeys.has(eventKey);
     if (saving)                   return { style: { background: 'var(--text3)', cursor: 'wait', opacity: 0.6 }, icon: '…' };
     if (state?.status === 'done') return { style: { background: 'var(--text3)', cursor: 'pointer' }, icon: '✓' };
     if (state?.status === 'rescheduled') {
       // Original slot looks empty — maintenance moved to another week
-      const emptyBg = isCurrentWeek ? 'var(--warn-soft)' : rowIdx === 0 ? 'var(--panel)' : 'var(--panel2)';
+      const emptyBg = isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel)';
       return { style: { background: emptyBg, cursor: 'default' }, icon: null };
     }
     // Target cell and normal scheduled cells: same appearance
-    if (baseColor === 'blue')   return { style: { background: 'var(--accent)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
-    if (baseColor === 'violet') return { style: { background: 'var(--violet)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
-    if (baseColor === 'green')  return { style: { background: 'var(--ok)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (cellData.color === 'blue')   return { style: { background: 'var(--accent)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (cellData.color === 'violet') return { style: { background: 'var(--violet)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
+    if (cellData.color === 'green')  return { style: { background: 'var(--ok)', cursor: 'pointer', boxShadow: isHighlighted ? 'inset 0 0 0 2px #fff' : undefined }, icon: null };
     return { style: {}, icon: null };
   };
 
@@ -1050,6 +1159,7 @@ const CalendrierPreventif = () => {
               { bg: 'var(--violet)', label: 'Trimestriel' },
               { bg: 'var(--ok)',     label: 'Semestriel' },
               { bg: 'var(--text3)',  label: 'Fait' },
+              { bg: 'var(--crit)',   label: 'Panne' },
             ].map(({ bg, label }, i) => (
               <span key={`${label}-${i}`} className="flex items-center gap-1.5" style={{ color: 'var(--text3)' }}>
                 <span className="w-2.5 h-2.5 rounded flex-shrink-0" style={{ background: bg }} />
@@ -1113,38 +1223,58 @@ const CalendrierPreventif = () => {
           <tbody>
             {WEEKS.map((week) => {
               const isCurrentWeek = week === currentWeek;
-              return activeIntervalTypes.map((intType, rowIdx) => {
-                const isFirst = rowIdx === 0;
-                return (
-                  <tr key={`${week}-${intType}`} style={{ height:18, borderTop: isFirst ? '1px solid var(--border)' : undefined }}>
-                    <td className="sticky left-0 z-20 text-center font-bold select-none font-mono"
-                      style={{ fontSize:10, width:50, border:'1px solid var(--border2)', background: isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel2)', color: isCurrentWeek ? 'var(--warn)' : 'var(--text2)' }}>
-                      {isFirst ? `kw${String(week).padStart(2,'0')}` : ''}
-                    </td>
-                    {filteredEquipements.map((equip) => {
-                      const key      = `${equip.code}__${intType}__${week}`;
-                      const cellData = allCells[key];
-                      const isHighlighted = highlightedEquip === equip.code;
-                      if (!cellData) {
-                        const emptyBg = isCurrentWeek ? 'var(--warn-soft)' : isFirst ? 'var(--panel)' : 'var(--panel2)';
-                        return <td key={equip.code} style={{ width:34, minWidth:34, border:'1px solid var(--border2)', background: isHighlighted ? 'var(--accent-soft)' : emptyBg }} />;
-                      }
-                      const { style, icon } = getCellAppearance(key, cellData.color, isCurrentWeek, rowIdx, isHighlighted);
-                      const state  = cellStates[key];
+              return (
+                <tr key={week} style={{ height:18, borderTop: '1px solid var(--border)' }}>
+                  <td className="sticky left-0 z-20 text-center font-bold select-none font-mono"
+                    style={{ fontSize:10, width:50, border:'1px solid var(--border2)', background: isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel2)', color: isCurrentWeek ? 'var(--warn)' : 'var(--text2)' }}>
+                    {`kw${String(week).padStart(2,'0')}`}
+                  </td>
+                  {filteredEquipements.map((equip) => {
+                    const cellData = allCells[`${equip.code}__${week}`];
+                    const isHighlighted = highlightedEquip === equip.code;
+
+                    if (cellData) {
+                      const { style, icon } = getCellAppearance(cellData, isCurrentWeek, isHighlighted);
+                      const eventKey = cellData.isRescheduledTarget && cellData.originalKey
+                        ? cellData.originalKey
+                        : `${equip.code}__${cellData.intType}__${week}`;
+                      const state  = cellStates[eventKey];
                       const tipSuffix = state?.status === 'done' ? '  Fait' : '  Cliquer pour modifier';
                       return (
                         <td key={equip.code}
                           className="text-center text-white font-bold select-none transition-colors"
                           style={{ width:34, minWidth:34, height:18, fontSize:9, border:'1px solid var(--border2)', ...style }}
-                          title={`${equip.code}  ${equip.designation}  KW${week}  ${intType}${tipSuffix}`}
-                          onClick={(e) => handleCellClick(e, key, cellData)}>
+                          title={`${equip.code}  ${equip.designation}  KW${week}  ${cellData.intType}${tipSuffix}`}
+                          onClick={(e) => handleCellClick(e, cellData)}>
                           {icon && <span style={{ fontSize:9 }}>{icon}</span>}
                         </td>
                       );
-                    })}
-                  </tr>
-                );
-              });
+                    }
+
+                    const panne = panneCells[`${equip.code}__${week}`];
+                    if (panne) {
+                      return (
+                        <td key={equip.code}
+                          className="text-center text-white font-bold select-none transition-colors cursor-pointer"
+                          style={{ width:34, minWidth:34, height:18, fontSize:9, border:'1px solid var(--border2)', background: 'var(--crit)' }}
+                          title={`${equip.code}  ${equip.designation}  KW${week}  Panne / urgence  Cliquer pour modifier`}
+                          onClick={(e) => handleEmptyCellClick(e, equip, week)}>
+                          <span style={{ fontSize:9 }}>!</span>
+                        </td>
+                      );
+                    }
+
+                    const emptyBg = isCurrentWeek ? 'var(--warn-soft)' : 'var(--panel)';
+                    return (
+                      <td key={equip.code}
+                        className="cursor-pointer transition-colors"
+                        style={{ width:34, minWidth:34, border:'1px solid var(--border2)', background: isHighlighted ? 'var(--accent-soft)' : emptyBg }}
+                        title={`${equip.code}  ${equip.designation}  KW${week}  Rien de planifié — cliquer pour signaler une panne`}
+                        onClick={(e) => handleEmptyCellClick(e, equip, week)} />
+                    );
+                  })}
+                </tr>
+              );
             })}
           </tbody>
         </table>
@@ -1167,6 +1297,7 @@ const CalendrierPreventif = () => {
           onReset={handleReset}
           onOpenMachineSheet={handleOpenMachineSheet}
           onOpenFerBain={handleOpenFerBain}
+          onTogglePanne={handleTogglePanne}
           onClose={() => setPopup(null)}
         />
       )}
