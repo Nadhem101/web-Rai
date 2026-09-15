@@ -1569,10 +1569,10 @@ const FlowChartEditor = () => {
               </div>
               {renderFormBody()}
               <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
-                <button onClick={saveEdit}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white"
+                <button onClick={saveEdit} disabled={uploadingFile}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
                   style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
-                  <Check className="w-4 h-4 inline mr-1.5" />Enregistrer
+                  {uploadingFile ? '⏳ Upload en cours…' : <><Check className="w-4 h-4 inline mr-1.5" />Enregistrer</>}
                 </button>
                 <button onClick={() => setPanel('view')}
                   className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
@@ -1589,10 +1589,10 @@ const FlowChartEditor = () => {
               </div>
               {renderFormBody()}
               <div className="flex gap-2 p-4 border-t border-slate-100 flex-shrink-0">
-                <button onClick={confirmAdd} disabled={!draft.label.trim()}
+                <button onClick={confirmAdd} disabled={!draft.label.trim() || uploadingFile}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50"
                   style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))' }}>
-                  <Plus className="w-4 h-4 inline mr-1.5" />Ajouter
+                  {uploadingFile ? '⏳ Upload en cours…' : <><Plus className="w-4 h-4 inline mr-1.5" />Ajouter</>}
                 </button>
                 <button onClick={() => setPanel('view')}
                   className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Annuler</button>
