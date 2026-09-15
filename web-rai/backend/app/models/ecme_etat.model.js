@@ -31,7 +31,7 @@ const EcmeEtat = sequelize.define('EcmeEtat', {
     allowNull: true,
   },
   alerte: {
-    type: DataTypes.ENUM('VALABLE', 'VERIFICATION', 'EXEMPTE', 'DECLASSE', 'INCONNU'),
+    type: DataTypes.ENUM('VALABLE', 'VERIFICATION', 'EXEMPTE', 'DECLASSE', 'CHEZ_CLIENT', 'INCONNU'),
     defaultValue: 'INCONNU',
   },
   date_prochaine_verification: {

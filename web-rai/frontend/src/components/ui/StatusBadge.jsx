@@ -5,6 +5,7 @@ const VARIANTS = {
   warn: { bg: 'var(--warn-soft)', color: 'var(--warn)' },
   crit: { bg: 'var(--crit-soft)', color: 'var(--crit)' },
   info: { bg: 'var(--info-soft)', color: 'var(--info)' },
+  accent: { bg: 'var(--accent-soft)', color: 'var(--accent)' },
 };
 
 /**

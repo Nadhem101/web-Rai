@@ -5,13 +5,14 @@ import { Pencil, Save, X, Plus, Trash2, CheckCircle2 } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const ALERTE_CONFIG = {
-  VALABLE:      { label: 'Valable',                  bg: 'var(--ok-soft)',   color: 'var(--ok)',    dot: '🟢' },
-  VERIFICATION: { label: 'Vérification requise',     bg: 'var(--crit-soft)', color: 'var(--crit)',  dot: '🔴' },
-  EXEMPTE:      { label: 'Exempté de vérification',  bg: 'var(--info-soft)', color: 'var(--info)',  dot: '⚪' },
-  DECLASSE:     { label: 'Déclassé définitivement',  bg: 'var(--panel2)',    color: 'var(--text3)', dot: '⚫' },
-  INCONNU:      { label: 'Statut inconnu',            bg: 'var(--warn-soft)', color: 'var(--warn)',  dot: '🟡' },
+  VALABLE:      { label: 'Valable',                  bg: 'var(--ok-soft)',     color: 'var(--ok)',     dot: '🟢' },
+  VERIFICATION: { label: 'Vérification requise',     bg: 'var(--crit-soft)',   color: 'var(--crit)',   dot: '🔴' },
+  EXEMPTE:      { label: 'Exempté de vérification',  bg: 'var(--info-soft)',   color: 'var(--info)',   dot: '⚪' },
+  DECLASSE:     { label: 'Déclassé définitivement',  bg: 'var(--panel2)',      color: 'var(--text3)',  dot: '⚫' },
+  CHEZ_CLIENT:  { label: 'Chez client',               bg: 'var(--accent-soft)', color: 'var(--accent)', dot: '🚚' },
+  INCONNU:      { label: 'Statut inconnu',            bg: 'var(--warn-soft)',   color: 'var(--warn)',   dot: '🟡' },
 };
-const ALERTE_OPTIONS = ['VALABLE','VERIFICATION','EXEMPTE','DECLASSE'];
+const ALERTE_OPTIONS = ['VALABLE','VERIFICATION','EXEMPTE','DECLASSE','CHEZ_CLIENT'];
 const VERIF_TYPE_OPTIONS = ['', 'Interne', 'Externe', 'IP', 'Exempté'];
 
 function fmtDate(raw) {
@@ -294,7 +295,7 @@ export default function FicheDeVie() {
   const alerteCfg = ALERTE_CONFIG[data.alerte] || ALERTE_CONFIG.INCONNU;
   const today = new Date();
   const nextVerifDate = data.date_prochaine_verification ? new Date(data.date_prochaine_verification) : null;
-  const isOverdue = nextVerifDate && nextVerifDate < today && data.alerte !== 'EXEMPTE' && data.alerte !== 'DECLASSE';
+  const isOverdue = nextVerifDate && nextVerifDate < today && !['EXEMPTE', 'DECLASSE', 'CHEZ_CLIENT'].includes(data.alerte);
   const interventions = data.interventions || [];
 
   return (

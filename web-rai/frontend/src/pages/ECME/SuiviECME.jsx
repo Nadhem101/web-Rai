@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ecmeService } from '../../services/api';
-import { FlaskConical, AlertTriangle, CheckCircle2, Clock, ArrowRight, Pencil } from 'lucide-react';
+import { FlaskConical, AlertTriangle, CheckCircle2, Clock, ArrowRight, Pencil, Truck } from 'lucide-react';
 
 function fmtDate(raw) {
   if (!raw) return '—';
@@ -93,11 +93,12 @@ function EmtCell({ row }) {
 }
 
 const STATUT_CFG = {
-  VALABLE:      { label: 'Valable',      bg: 'var(--ok-soft)',   color: 'var(--ok)'   },
-  VERIFICATION: { label: 'À vérifier',   bg: 'var(--crit-soft)', color: 'var(--crit)' },
-  EXEMPTE:      { label: 'Exempté',      bg: 'var(--info-soft)', color: 'var(--info)' },
-  DECLASSE:     { label: 'Déclassé',     bg: 'var(--panel2)',    color: 'var(--text3)'},
-  INCONNU:      { label: 'Inconnu',      bg: 'var(--warn-soft)', color: 'var(--warn)' },
+  VALABLE:      { label: 'Valable',      bg: 'var(--ok-soft)',     color: 'var(--ok)'    },
+  VERIFICATION: { label: 'À vérifier',   bg: 'var(--crit-soft)',   color: 'var(--crit)'  },
+  EXEMPTE:      { label: 'Exempté',      bg: 'var(--info-soft)',   color: 'var(--info)'  },
+  DECLASSE:     { label: 'Déclassé',     bg: 'var(--panel2)',      color: 'var(--text3)' },
+  CHEZ_CLIENT:  { label: 'Chez client',  bg: 'var(--accent-soft)', color: 'var(--accent)'},
+  INCONNU:      { label: 'Inconnu',      bg: 'var(--warn-soft)',   color: 'var(--warn)'  },
 };
 
 function EcmeRow({ row, navigate }) {
@@ -215,6 +216,7 @@ export default function SuiviECME() {
     });
 
   const exempte = records.filter(r => r.alerte === 'EXEMPTE');
+  const chezClient = records.filter(r => r.alerte === 'CHEZ_CLIENT');
 
   return (
     <div className="px-[26px] pt-6 pb-10 flex-1 overflow-auto space-y-5" style={{ background: 'var(--bg)' }}>
@@ -228,7 +230,7 @@ export default function SuiviECME() {
           <div>
             <h1 className="font-display font-semibold text-[25px]" style={{ color: 'var(--text)', letterSpacing: '-0.4px' }}>Suivi des ECME</h1>
             <p className="text-[13px] mt-0.5" style={{ color: 'var(--text3)' }}>
-              Vue opérationnelle — {toVerify.length} à vérifier · {valable.length} valables
+              Vue opérationnelle — {toVerify.length} à vérifier · {valable.length} valables · {chezClient.length} chez client
             </p>
           </div>
         </div>
@@ -267,6 +269,17 @@ export default function SuiviECME() {
             rows={valable}
             navigate={navigate}
             emptyText="Aucun ECME valable"
+          />
+
+          {/* Chez client */}
+          <Section
+            title="Chez client"
+            icon={Truck}
+            color="var(--accent)"
+            colorSoft="var(--accent-soft)"
+            rows={chezClient}
+            navigate={navigate}
+            emptyText="Aucun ECME chez le client"
           />
 
           {/* Exemptés — collapsed summary */}

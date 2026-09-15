@@ -275,7 +275,7 @@ const TOOLS = [
       properties: {
         code: { type: 'string', description: 'One ECME code, e.g. ECME088. Omit for an aggregate summary.' },
         affectation: { type: 'string', description: 'Filter the aggregate summary to one affectation zone.' },
-        alerte: { type: 'string', description: 'Filter the aggregate summary to one status: VALABLE, VERIFICATION, EXEMPTE, DECLASSE, INCONNU.' },
+        alerte: { type: 'string', description: 'Filter the aggregate summary to one status: VALABLE, VERIFICATION, EXEMPTE, DECLASSE, CHEZ_CLIENT, INCONNU.' },
       },
       required: [],
     },
@@ -308,7 +308,7 @@ const TOOLS = [
       list.forEach((e) => { byAlerte[e.alerte] = (byAlerte[e.alerte] || 0) + 1; });
       const today = new Date();
       const overdue = list.filter(
-        (e) => e.date_prochaine_verification && new Date(e.date_prochaine_verification) < today && !['EXEMPTE', 'DECLASSE'].includes(e.alerte)
+        (e) => e.date_prochaine_verification && new Date(e.date_prochaine_verification) < today && !['EXEMPTE', 'DECLASSE', 'CHEZ_CLIENT'].includes(e.alerte)
       ).length;
 
       return { total: list.length, byAlerte, overdue };

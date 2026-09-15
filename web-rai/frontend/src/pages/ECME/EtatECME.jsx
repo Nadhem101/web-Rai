@@ -3,18 +3,19 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ecmeService } from '../../services/api';
 import EcmeFormModal from '../../components/EcmeFormModal';
-import { Plus, Pencil, Trash2, Search, FlaskConical, CheckCircle2, AlertCircle, PackageOpen } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, FlaskConical, CheckCircle2, AlertCircle, PackageOpen, Truck } from 'lucide-react';
 import DataLabel from '../../components/ui/DataLabel.jsx';
 import KpiCard from '../../components/ui/KpiCard.jsx';
 import StatusBadge from '../../components/ui/StatusBadge.jsx';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 const ALERTE_CONFIG = {
-  VALABLE:      { label: 'Valable',      variant: 'ok'   },
-  VERIFICATION: { label: 'Vérification', variant: 'crit' },
-  EXEMPTE:      { label: 'Exempté',      variant: 'info' },
-  DECLASSE:     { label: 'Déclassé',     variant: 'info' },
-  INCONNU:      { label: 'Inconnu',      variant: 'warn' },
+  VALABLE:      { label: 'Valable',      variant: 'ok'     },
+  VERIFICATION: { label: 'Vérification', variant: 'crit'   },
+  EXEMPTE:      { label: 'Exempté',      variant: 'info'   },
+  DECLASSE:     { label: 'Déclassé',     variant: 'info'   },
+  CHEZ_CLIENT:  { label: 'Chez client',  variant: 'accent' },
+  INCONNU:      { label: 'Inconnu',      variant: 'warn'   },
 };
 
 function AlerteBadge({ alerte }) {
@@ -90,10 +91,11 @@ export default function EtatECME() {
     }
   };
 
-  const total   = records.length;
-  const valable = records.filter(r => r.alerte === 'VALABLE').length;
-  const verif   = records.filter(r => r.alerte === 'VERIFICATION').length;
-  const exempte = records.filter(r => r.alerte === 'EXEMPTE').length;
+  const total      = records.length;
+  const valable    = records.filter(r => r.alerte === 'VALABLE').length;
+  const verif      = records.filter(r => r.alerte === 'VERIFICATION').length;
+  const exempte    = records.filter(r => r.alerte === 'EXEMPTE').length;
+  const chezClient = records.filter(r => r.alerte === 'CHEZ_CLIENT').length;
   const totalPages = Math.ceil(records.length / PAGE_SIZE);
   const pageSlice  = records.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
@@ -119,11 +121,12 @@ export default function EtatECME() {
       </motion.div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
-        <KpiCard label="Total ECME"  value={total}   icon={FlaskConical}  accentVariant="accent" loading={loading} />
-        <KpiCard label="Valables"    value={valable}  icon={CheckCircle2} accentVariant="ok"     loading={loading} />
-        <KpiCard label="À vérifier"  value={verif}    icon={AlertCircle}  accentVariant="crit"   loading={loading} />
-        <KpiCard label="Exemptés"    value={exempte}  icon={PackageOpen}  accentVariant="warn"   loading={loading} />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
+        <KpiCard label="Total ECME"   value={total}      icon={FlaskConical}  accentVariant="accent" loading={loading} />
+        <KpiCard label="Valables"     value={valable}    icon={CheckCircle2} accentVariant="ok"     loading={loading} />
+        <KpiCard label="À vérifier"   value={verif}      icon={AlertCircle}  accentVariant="crit"   loading={loading} />
+        <KpiCard label="Exemptés"     value={exempte}    icon={PackageOpen}  accentVariant="warn"   loading={loading} />
+        <KpiCard label="Chez client"  value={chezClient} icon={Truck}        accentVariant="accent" loading={loading} />
       </div>
 
       {/* Filters */}
@@ -156,6 +159,7 @@ export default function EtatECME() {
             <option value="VERIFICATION">🔴 À vérifier</option>
             <option value="EXEMPTE">⚪ Exempté</option>
             <option value="DECLASSE">⚫ Déclassé</option>
+            <option value="CHEZ_CLIENT">🚚 Chez client</option>
           </select>
         </div>
         <button onClick={() => { setSearch(''); setFilterAff(''); setFilterAlerte(''); }}

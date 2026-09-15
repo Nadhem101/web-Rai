@@ -7,6 +7,7 @@ const ALERTE_OPTIONS = [
   { value: 'VERIFICATION', label: '🔴 À vérifier' },
   { value: 'EXEMPTE',      label: '⚪ Exempté' },
   { value: 'DECLASSE',     label: '⚫ Déclassé' },
+  { value: 'CHEZ_CLIENT',  label: '🚚 Chez client' },
 ];
 
 const VERIF_TYPE_OPTIONS = ['Interne', 'Externe', 'IP', 'Exempté'];
