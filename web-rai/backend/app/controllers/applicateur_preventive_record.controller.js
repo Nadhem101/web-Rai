@@ -35,13 +35,26 @@ exports.findHistorique = async (req, res) => {
   }
 };
 
-// Historical records for a single outil (used by inventory tab)
+// Normalizes "A2" / "A02" / "a2" / "2" to the same canonical form, so a
+// formatting difference between the tool's own record and a maintenance
+// row's numero_outil never hides a match.
+const normalizeOutilNumber = (value) => {
+  if (!value) return value;
+  const s = String(value).trim();
+  return /^\d+$/.test(s) ? `A${s}` : s;
+};
+const normOutil = (v) => String(v ?? '').trim().toUpperCase().replace(/^A0*/, 'A').replace(/^0*(\d)/, '$1');
+
+// Full history for a single outil — both archived AND the current
+// (not-yet-archived) cycle, so a just-completed maintenance never goes
+// missing here. Used by both the inventory dropdown and the detail modal.
 exports.findHistoriqueByOutil = async (req, res) => {
   try {
-    const records = await ApplicateurPreventiveRecord.findAll({
-      where: { numero_outil: req.params.numero_outil, is_historique: true },
+    const target = normOutil(normalizeOutilNumber(req.params.numero_outil));
+    const all = await ApplicateurPreventiveRecord.findAll({
       order: [['date_controle', 'DESC'], ['section_mm2', 'ASC']],
     });
+    const records = all.filter((r) => normOutil(normalizeOutilNumber(r.numero_outil)) === target);
     res.json(records);
   } catch (error) {
     res.status(500).json({ message: error.message });

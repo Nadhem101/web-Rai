@@ -36,13 +36,26 @@ exports.findHistorique = async (req, res) => {
   }
 };
 
-// Historical records for a single pince (used by inventory tab)
+// Normalizes "P2" / "P02" / "p2" / "2" to the same canonical form, so a
+// formatting difference between the tool's own record and a maintenance
+// row's numero_pince never hides a match.
+const normalizePinceNumber = (value) => {
+  if (!value) return value;
+  const s = String(value).trim();
+  return /^\d+$/.test(s) ? `P${s}` : s;
+};
+const normPince = (v) => String(v ?? '').trim().toUpperCase().replace(/^P0*/, 'P').replace(/^0*(\d)/, '$1');
+
+// Full history for a single pince — both archived AND the current
+// (not-yet-archived) cycle, so a just-completed maintenance never goes
+// missing here. Used by both the inventory dropdown and the detail modal.
 exports.findHistoriqueByPince = async (req, res) => {
   try {
-    const records = await PincePreventiveRecord.findAll({
-      where: { numero_pince: req.params.numero_pince, is_historique: true },
+    const target = normPince(normalizePinceNumber(req.params.numero_pince));
+    const all = await PincePreventiveRecord.findAll({
       order: [['date_controle', 'DESC'], ['position', 'ASC']],
     });
+    const records = all.filter((r) => normPince(normalizePinceNumber(r.numero_pince)) === target);
     res.json(records);
   } catch (error) {
     res.status(500).json({ message: error.message });

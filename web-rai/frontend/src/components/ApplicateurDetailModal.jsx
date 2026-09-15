@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { applicateurPreventiveService } from '../services/api';
 
-const normalizeOutilNumber = (value) => {
-  if (!value) return value;
-  const s = String(value).trim();
-  return /^\d+$/.test(s) ? `A${s}` : s;
-};
-
 const formatDate = (value) => {
   if (!value) return '-';
   const date = new Date(value);
@@ -24,12 +18,11 @@ const ApplicateurDetailModal = ({ applicateur, isOpen, onClose }) => {
     const load = async () => {
       setHistoryLoading(true);
       try {
-        const all = await applicateurPreventiveService.getAll();
-        const norm = (v) => String(v ?? '').trim().toUpperCase().replace(/^A0*/, 'A').replace(/^0*(\d)/, '$1');
-        const toolNum = normalizeOutilNumber(applicateur.numero_outil);
-        const toolNorm = norm(toolNum);
-        const filtered = all.filter((r) => norm(normalizeOutilNumber(r.numero_outil)) === toolNorm);
-        setPreventiveHistory(filtered);
+        // Same endpoint the inventory dropdown uses — includes the current
+        // (not-yet-archived) cycle too, so a just-completed maintenance is
+        // never missing here vs. there.
+        const data = await applicateurPreventiveService.getHistoriqueByOutil(applicateur.numero_outil);
+        setPreventiveHistory(Array.isArray(data) ? data : []);
       } catch {
         setPreventiveHistory([]);
       } finally {

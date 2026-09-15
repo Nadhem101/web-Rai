@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { pincePreventiveService } from '../services/api';
 
-const normalizePinceNumber = (value) => {
-  if (!value) return value;
-  const s = String(value).trim();
-  return /^\d+$/.test(s) ? `P${s}` : s;
-};
-
 const formatDate = (value) => {
   if (!value) return '-';
   const date = new Date(value);
@@ -24,12 +18,11 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
     const load = async () => {
       setHistoryLoading(true);
       try {
-        const all = await pincePreventiveService.getAll();
-        const norm = (v) => String(v ?? '').trim().toUpperCase().replace(/^P0*/, 'P').replace(/^0*(\d)/, '$1');
-        const pinceNum = normalizePinceNumber(pince.numero_pince);
-        const pinceNorm = norm(pinceNum);
-        const filtered = all.filter((r) => norm(normalizePinceNumber(r.numero_pince)) === pinceNorm);
-        setPreventiveHistory(filtered);
+        // Same endpoint the inventory dropdown uses — includes the current
+        // (not-yet-archived) cycle too, so a just-completed maintenance is
+        // never missing here vs. there.
+        const data = await pincePreventiveService.getHistoriqueByPince(pince.numero_pince);
+        setPreventiveHistory(Array.isArray(data) ? data : []);
       } catch {
         setPreventiveHistory([]);
       } finally {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { pinceService, pincePreventiveService } from '../services/api';
 import PinceForm from './PinceForm';
-import { Plus, Pencil, Trash2, Wrench, PackageOpen, History, ChevronDown, ChevronUp } from 'lucide-react';
+import PinceDetailModal from './PinceDetailModal';
+import { Plus, Pencil, Trash2, Wrench, PackageOpen, History, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 
 const StatusBadge = ({ statut }) => {
   const cfg = {
@@ -157,6 +158,8 @@ const PincesList = ({ searchQuery = '' }) => {
   const [loading, setLoading] = useState(true);
   const [editingPince, setEditingPince] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedPince, setSelectedPince] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => { loadPinces(); }, []);
 
@@ -191,6 +194,7 @@ const PincesList = ({ searchQuery = '' }) => {
     return (a.numero_pince || '').localeCompare(b.numero_pince || '', 'fr', { numeric: true });
   });
 
+  const handleDetailClick = (pince) => { setSelectedPince(pince); setShowModal(true); };
   const handleEditClick = (pince) => { setEditingPince(pince); setIsFormOpen(true); };
   const handleFormClose = () => { setIsFormOpen(false); setEditingPince(null); };
   const handleFormSuccess = () => { loadPinces(); };
@@ -269,6 +273,10 @@ const PincesList = ({ searchQuery = '' }) => {
                     <td className="px-4 py-3 text-slate-500 max-w-[200px] truncate" title={pince.remarque}>{pince.remarque || '—'}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => handleDetailClick(pince)} title="Voir les détails"
+                          className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
                         <button onClick={() => handleEditClick(pince)} title="Modifier"
                           className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition-colors">
                           <Pencil className="w-3.5 h-3.5" />
@@ -289,6 +297,11 @@ const PincesList = ({ searchQuery = '' }) => {
         </div>
       </div>
 
+      <PinceDetailModal
+        pince={selectedPince}
+        isOpen={showModal}
+        onClose={() => { setShowModal(false); setSelectedPince(null); }}
+      />
       <PinceForm pince={editingPince} isOpen={isFormOpen} onClose={handleFormClose} onSuccess={handleFormSuccess} />
     </>
   );
