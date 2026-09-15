@@ -27,7 +27,6 @@ const buildInitialFormState = (record = null) => ({
   started_time:               record?.started_time               ?? '',
   finished_time:              record?.finished_time              ?? '',
   description_panne:          record?.description_panne          ?? '',
-  bon_fonctionnement_minutes: record?.bon_fonctionnement_minutes != null ? String(record.bon_fonctionnement_minutes) : '',
 });
 
 const formatDateOnly = (value) => {
@@ -200,7 +199,6 @@ const SuiviCuratif = () => {
       description_panne: formData.description_panne.trim() || null,
       response_minutes:           formDurations.responseMinutes,
       downtime_minutes:           formDurations.downtimeMinutes,
-      bon_fonctionnement_minutes: formData.bon_fonctionnement_minutes !== '' ? Number(formData.bon_fonctionnement_minutes) : null,
     };
     try {
       if (editingRecord?.id) await curativeMaintenanceService.update(editingRecord.id, payload);
@@ -438,12 +436,6 @@ const SuiviCuratif = () => {
                     <span className={labelClass} style={{ color: 'var(--text3)' }}>Description de la panne</span>
                     <textarea name="description_panne" value={formData.description_panne} onChange={handleChange} rows={3}
                       className={fieldClass + ' resize-none'} style={fieldStyle} placeholder="Décrivez le problème rencontré" />
-                  </label>
-                  <label className="block sm:col-span-2">
-                    <span className={labelClass} style={{ color: 'var(--text3)' }}>Bon fonctionnement <span className="font-normal normal-case tracking-normal" style={{ color: 'var(--text3)' }}>(min) — pour calcul MTBF</span></span>
-                    <input type="number" name="bon_fonctionnement_minutes" value={formData.bon_fonctionnement_minutes}
-                      onChange={handleChange} min="0" step="1"
-                      className={fieldClass} style={fieldStyle} placeholder="Durée de bon fonctionnement avant la panne (min)" />
                   </label>
                 </div>
 
