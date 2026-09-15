@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { flowchartService } from '../../services/api';
+import MediaLightbox from '../../components/ui/MediaLightbox.jsx';
 import {
   ChevronLeft, GitBranch, ZoomIn, ZoomOut,
-  X, Image, Video, ExternalLink, CheckSquare,
+  X, Image, Video, ExternalLink, CheckSquare, Play,
 } from 'lucide-react';
 
 // ── Constants ──────────────────────────────────────────────
@@ -74,12 +75,14 @@ const StepNode = ({ step, selected, onClick }) => {
 
 // ── Step detail modal ──────────────────────────────────────
 const StepModal = ({ step, steps, onClose }) => {
+  const [lightboxItem, setLightboxItem] = useState(null);
   if (!step) return null;
   const cfg     = SHAPE_CONFIG[step.shape] || SHAPE_CONFIG.operation;
   const color   = COLORS[cfg.color];
   const parents = (step.parentIds || []).map(pid => steps.find(s => s.id === pid)).filter(Boolean);
 
   return (
+    <>
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose}>
       <div className="flex max-h-[90vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
         onClick={e => e.stopPropagation()}>
@@ -157,9 +160,21 @@ const StepModal = ({ step, steps, onClose }) => {
                   const ytId = m.type === 'video' ? getYouTubeId(m.url) : null;
                   return (
                     <div key={i} className="rounded-xl border border-slate-200 overflow-hidden">
-                      {/* Image display */}
+                      {/* Image display — click to enlarge */}
                       {m.type === 'image' && m.url && isImageUrl(m.url) && (
-                        <img src={m.url} alt={m.title || ''} className="w-full max-h-64 object-contain bg-slate-50" />
+                        <img src={m.url} alt={m.title || ''} onClick={() => setLightboxItem(m)}
+                          className="w-full max-h-64 object-contain bg-slate-50 cursor-pointer hover:opacity-90 transition-opacity" />
+                      )}
+                      {/* Uploaded video preview — click to enlarge/play */}
+                      {m.type === 'video' && m.url && !ytId && (
+                        <div className="relative w-full bg-black cursor-pointer group" onClick={() => setLightboxItem(m)}>
+                          <video src={m.url} muted preload="metadata" className="w-full max-h-64 object-contain" />
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                              <Play className="w-5 h-5 text-slate-800 ml-0.5" fill="currentColor" />
+                            </div>
+                          </div>
+                        </div>
                       )}
                       {/* YouTube embed */}
                       {ytId && (
@@ -261,6 +276,8 @@ const StepModal = ({ step, steps, onClose }) => {
         </div>
       </div>
     </div>
+    <MediaLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />
+    </>
   );
 };
 

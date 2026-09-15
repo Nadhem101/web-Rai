@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom';
 import { flowchartService, procedureService } from '../../services/api';
 import { supabase } from '../../lib/supabase';
+import MediaLightbox from '../../components/ui/MediaLightbox.jsx';
 import {
   Plus, Trash2, Pencil, Check, X, Download, Upload,
   ZoomIn, ZoomOut, GitBranch, ChevronLeft, AlertTriangle,
   Save, Image, Video, BookOpen, Search, ExternalLink, Printer,
-  FileText,
+  FileText, Play,
 } from 'lucide-react';
 
 // ── Constants ──────────────────────────────────────────────
@@ -36,6 +37,20 @@ const PDF_COLORS = {
 };
 
 const createId = () => `s-${Date.now()}-${Math.floor(Math.random() * 9999)}`;
+
+// Fetch a media URL and convert it to a data URL, for embedding into jsPDF (which
+// can't add an image straight from a remote URL — it needs the bytes in hand).
+const urlToDataURL = async (url) => {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`fetch failed (${res.status})`);
+  const blob = await res.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('FileReader failed'));
+    reader.readAsDataURL(blob);
+  });
+};
 
 // Migrate legacy single parentId to parentIds array
 const migrateStep = (s) => ({
@@ -147,50 +162,66 @@ const ProcedureSearch = ({ value, onChange, onSelect }) => {
 };
 
 // ── Media item ─────────────────────────────────────────────
-const MediaItem = ({ item, index, onRemove, onTitleChange, readOnly }) => (
-  <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
-    <div className="flex items-center gap-2.5 p-2.5">
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-        item.type === 'video' ? 'bg-red-50' : item.type === 'document' ? 'bg-orange-50' : 'bg-blue-50'}`}>
-        {item.type === 'video'    ? <Video  className="w-4 h-4 text-red-500" />
-        : item.type === 'document'? <span className="text-[9px] font-bold text-orange-600">DOC</span>
-        :                           <Image  className="w-4 h-4 text-blue-500" />}
+const MediaItem = ({ item, index, onRemove, onTitleChange, onOpen, readOnly }) => {
+  const previewable = Boolean(item.url) && (item.type === 'image' || item.type === 'video');
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white overflow-hidden">
+      <div className="flex items-center gap-2.5 p-2.5">
+        <button type="button" disabled={!previewable} onClick={() => previewable && onOpen?.(item)}
+          className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+            item.type === 'video' ? 'bg-red-50' : item.type === 'document' ? 'bg-orange-50' : 'bg-blue-50'
+          } ${previewable ? 'cursor-pointer hover:ring-2 hover:ring-sky-300 transition-shadow' : 'cursor-default'}`}>
+          {item.type === 'video'    ? <Video  className="w-4 h-4 text-red-500" />
+          : item.type === 'document'? <span className="text-[9px] font-bold text-orange-600">DOC</span>
+          :                           <Image  className="w-4 h-4 text-blue-500" />}
+        </button>
+        <div className="min-w-0 flex-1">
+          {readOnly ? (
+            <p className="text-xs font-semibold text-slate-700 truncate">{item.title || 'Sans titre'}</p>
+          ) : (
+            <input
+              type="text"
+              value={item.title || ''}
+              onChange={e => onTitleChange?.(index, e.target.value)}
+              placeholder="Titre de la photo / vidéo…"
+              className="w-full text-xs font-semibold text-slate-700 bg-transparent border-b border-slate-200 focus:border-sky-400 outline-none pb-0.5 placeholder-slate-300"
+            />
+          )}
+          {item.duration && <p className="text-[10px] text-slate-400 mt-0.5">Durée : {item.duration}</p>}
+        </div>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {item.url && (
+            <a href={item.url} target="_blank" rel="noopener noreferrer"
+              className="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-sky-600 transition-colors">
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
+          {!readOnly && (
+            <button type="button" onClick={onRemove}
+              className="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-red-600 transition-colors">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
-      <div className="min-w-0 flex-1">
-        {readOnly ? (
-          <p className="text-xs font-semibold text-slate-700 truncate">{item.title || 'Sans titre'}</p>
-        ) : (
-          <input
-            type="text"
-            value={item.title || ''}
-            onChange={e => onTitleChange?.(index, e.target.value)}
-            placeholder="Titre de la photo / vidéo…"
-            className="w-full text-xs font-semibold text-slate-700 bg-transparent border-b border-slate-200 focus:border-sky-400 outline-none pb-0.5 placeholder-slate-300"
-          />
-        )}
-        {item.duration && <p className="text-[10px] text-slate-400 mt-0.5">Durée : {item.duration}</p>}
-      </div>
-      <div className="flex items-center gap-1 flex-shrink-0">
-        {item.url && (
-          <a href={item.url} target="_blank" rel="noopener noreferrer"
-            className="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-sky-600 transition-colors">
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        )}
-        {!readOnly && (
-          <button type="button" onClick={onRemove}
-            className="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-red-600 transition-colors">
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
+      {/* Preview thumbnail — click to enlarge */}
+      {item.type === 'image' && item.url && (
+        <img src={item.url} alt={item.title || ''} onClick={() => onOpen?.(item)}
+          className="w-full max-h-48 object-contain border-t border-slate-100 cursor-pointer hover:opacity-90 transition-opacity" />
+      )}
+      {item.type === 'video' && item.url && (
+        <div className="relative w-full bg-black cursor-pointer group border-t border-slate-100" onClick={() => onOpen?.(item)}>
+          <video src={item.url} muted preload="metadata" className="w-full max-h-48 object-contain" />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+            <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+              <Play className="w-4 h-4 text-slate-800 ml-0.5" fill="currentColor" />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-    {/* Image preview (read-only) */}
-    {readOnly && item.type === 'image' && item.url && (
-      <img src={item.url} alt={item.title || ''} className="w-full max-h-48 object-contain border-t border-slate-100" />
-    )}
-  </div>
-);
+  );
+};
 
 // ── Multi-parent selector (checkboxes) ─────────────────────
 const ParentSelector = ({ stepOptions, selectedIds, onChange }) => (
@@ -245,6 +276,7 @@ const FlowChartEditor = () => {
   const [newTool,      setNewTool]      = useState('');
   const [uploadingFile,setUploadingFile]= useState(false);
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [lightboxItem, setLightboxItem] = useState(null);
   const [editingSubIdx, setEditingSubIdx] = useState(null);
   const [subDraft,      setSubDraft]      = useState(null);
   const [addingSubStep, setAddingSubStep] = useState(false);
@@ -702,13 +734,33 @@ const FlowChartEditor = () => {
           for (const m of step.media) {
             checkPage(5);
             const icon = m.type === 'video' ? '[Vidéo]' : m.type === 'document' ? '[Doc]' : '[Image]';
+            pdf.setFontSize(8);
             pdf.setFont('helvetica', 'normal');
             pdf.setTextColor(51, 65, 85);
             const mLine = `${icon} ${m.title || 'Sans titre'}`;
             const lines = pdf.splitTextToSize(mLine, COL - 8);
             pdf.text(lines, MARGIN + 5, y);
             y += lines.length * 4 + 1;
-            if (m.url) {
+
+            // Photos are embedded directly; videos/documents can't render in a PDF,
+            // so they stay a clickable link.
+            let embedded = false;
+            if (m.type === 'image' && m.url) {
+              try {
+                const dataUrl = await urlToDataURL(m.url);
+                const props = pdf.getImageProperties(dataUrl);
+                const maxW = 80, maxH = 60;
+                let w = maxW, h = (props.height * maxW) / props.width;
+                if (h > maxH) { h = maxH; w = (props.width * maxH) / props.height; }
+                checkPage(h + 4);
+                pdf.addImage(dataUrl, props.fileType, MARGIN + 5, y, w, h);
+                y += h + 3;
+                embedded = true;
+              } catch (imgErr) {
+                console.warn('Image embed failed, falling back to link:', m.title, imgErr.message);
+              }
+            }
+            if (!embedded && m.url) {
               pdf.setFontSize(7);
               pdf.setTextColor(148, 163, 184);
               pdf.textWithLink(m.url.slice(0, 70) + (m.url.length > 70 ? '…' : ''), MARGIN + 8, y, { url: m.url });
@@ -1187,7 +1239,8 @@ const FlowChartEditor = () => {
           {(draft.media || []).map((m, i) => (
             <MediaItem key={i} item={m} index={i}
               onRemove={() => removeMedia(i)}
-              onTitleChange={updateMediaTitle} />
+              onTitleChange={updateMediaTitle}
+              onOpen={setLightboxItem} />
           ))}
         </div>
         <button type="button" onClick={() => mediaFileRef.current?.click()}
@@ -1217,6 +1270,7 @@ const FlowChartEditor = () => {
 
   // ── Render ────────────────────────────────────────────────
   return (
+    <>
     <div className="flex flex-1 min-h-0 flex-col overflow-hidden" style={{ background: 'var(--content-bg)' }}>
 
       {/* Top bar */}
@@ -1417,7 +1471,7 @@ const FlowChartEditor = () => {
                       <div>
                         <p className={labelCls} style={{ color: 'var(--text3)' }}>Photos / Vidéos</p>
                         <div className="space-y-2">
-                          {selectedStep.media.map((m, i) => <MediaItem key={i} item={m} index={i} readOnly />)}
+                          {selectedStep.media.map((m, i) => <MediaItem key={i} item={m} index={i} readOnly onOpen={setLightboxItem} />)}
                         </div>
                       </div>
                     )}
@@ -1570,6 +1624,8 @@ const FlowChartEditor = () => {
         </div>
       </div>
     </div>
+    <MediaLightbox item={lightboxItem} onClose={() => setLightboxItem(null)} />
+    </>
   );
 };
 
