@@ -277,10 +277,10 @@ export default function GammeFabricationDetail() {
           </div>
 
           <div className="rounded-[14px] overflow-hidden border"
-            style={{ borderColor: 'var(--border)', background: 'var(--bg2)' }}>
+            style={{ borderColor: 'var(--border)', background: 'var(--panel)' }}>
             <table className="w-full border-collapse text-[13px]">
               <thead>
-                <tr style={{ background: 'var(--bg3)', borderBottom: '2px solid var(--border)' }}>
+                <tr style={{ background: 'var(--panel2)', borderBottom: '2px solid var(--border)' }}>
                   <th className={th} style={{ color: 'var(--text3)', width: '18%' }}>Processus de fabrication</th>
                   <th className={th} style={{ color: 'var(--text3)', width: '18%' }}>Étape</th>
                   <th className={th} style={{ color: 'var(--text3)' }}>Désignation</th>
@@ -302,13 +302,13 @@ export default function GammeFabricationDetail() {
 
                 {rows.map((row) => (
                   <tr key={row.key}
-                    className={row.type === 'data' ? 'group/row hover:bg-[var(--bg3)] transition-colors' : ''}
+                    className={row.type === 'data' ? 'group/row hover:bg-[var(--panel3)] transition-colors' : ''}
                     style={{ borderBottom: '1px solid var(--border)' }}>
 
                     {/* ── Col 1: Processus (rowspan) ── */}
                     {row._procStart && (
                       <td rowSpan={row._procSpan} className="px-4 py-3 align-middle group/proc"
-                        style={{ borderRight: '2px solid var(--border)', background: 'var(--bg3)', verticalAlign: 'top', paddingTop: '14px' }}>
+                        style={{ borderRight: '2px solid var(--border)', background: 'var(--panel2)', verticalAlign: 'top', paddingTop: '14px' }}>
                         {editProcId === row.proc.id ? (
                           <div className="flex flex-col gap-1.5">
                             <input autoFocus className={`w-full ${inp}`} style={inpSt}
@@ -367,7 +367,7 @@ export default function GammeFabricationDetail() {
 
                     {/* ── Col 2: Étape (rowspan) ── */}
                     {row.type === 'add-etape' ? (
-                      <td colSpan={6} className="px-4 py-2 no-print" style={{ background: 'var(--bg2)' }}>
+                      <td colSpan={6} className="px-4 py-2 no-print" style={{ background: 'var(--panel2)' }}>
                         {addingEtapeFor === row.proc.id ? (
                           <div className="flex items-center gap-2">
                             <input autoFocus className={`flex-1 ${inp}`} style={inpSt}
@@ -388,7 +388,7 @@ export default function GammeFabricationDetail() {
                           </div>
                         ) : (
                           <button onClick={() => { setAddingEtapeFor(row.proc.id); setNewEtapeNom(''); }}
-                            className="inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-[7px] border border-dashed transition-colors hover:bg-[var(--bg3)]"
+                            className="inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-[7px] border border-dashed transition-colors hover:bg-[var(--panel3)]"
                             style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
                             <Plus className="w-3 h-3" /> Ajouter une étape
                           </button>
@@ -481,7 +481,7 @@ export default function GammeFabricationDetail() {
                               {row.g.outillage.photos.length > 2 && (
                                 <button onClick={() => openLightbox(row.g.outillage.photos, 2)}
                                   className="w-8 h-8 rounded-[5px] flex items-center justify-center text-[9px] font-bold hover:brightness-95 transition-all flex-shrink-0"
-                                  style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>
+                                  style={{ background: 'var(--panel3)', color: 'var(--text3)' }}>
                                   +{row.g.outillage.photos.length - 2}
                                 </button>
                               )}
@@ -507,7 +507,7 @@ export default function GammeFabricationDetail() {
                     {row.type === 'add-out' && (
                       <td colSpan={5} className="px-4 py-2 no-print">
                         {pickerEtapeId === row.etape.id ? (
-                          <div className="rounded-[10px] border overflow-hidden" style={{ borderColor: 'var(--accent)', background: 'var(--bg2)' }}>
+                          <div className="rounded-[10px] border overflow-hidden" style={{ borderColor: 'var(--accent)', background: 'var(--panel)' }}>
                             <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ borderColor: 'var(--border)' }}>
                               <Search className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--text3)' }} />
                               <input autoFocus className="flex-1 text-[13px] bg-transparent outline-none" style={{ color: 'var(--text)' }}
@@ -524,7 +524,7 @@ export default function GammeFabricationDetail() {
                               ) : filteredOut.map((o) => (
                                 <button key={o.id}
                                   onClick={() => addOutillage(row.etape.id, o.id)}
-                                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[var(--bg3)] text-left border-b last:border-0 transition-colors"
+                                  className="w-full flex items-center gap-3 px-3 py-2 hover:bg-[var(--panel3)] text-left border-b last:border-0 transition-colors"
                                   style={{ borderColor: 'var(--border)' }}>
                                   <Package className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--accent)' }} />
                                   <span className="flex-1 text-[13px] font-medium" style={{ color: 'var(--text)' }}>{o.designation}</span>
@@ -552,7 +552,7 @@ export default function GammeFabricationDetail() {
 
                 {/* ── Add processus row ── */}
                 <tr className="no-print" style={{ borderTop: '2px solid var(--border)' }}>
-                  <td colSpan={7} className="px-4 py-3" style={{ background: 'var(--bg3)' }}>
+                  <td colSpan={7} className="px-4 py-3" style={{ background: 'var(--panel2)' }}>
                     {addingProc ? (
                       <div className="flex items-center gap-2">
                         <input autoFocus className={`flex-1 max-w-xs ${inp}`} style={inpSt}
@@ -572,7 +572,7 @@ export default function GammeFabricationDetail() {
                       </div>
                     ) : (
                       <button onClick={() => setAddingProc(true)}
-                        className="inline-flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-[8px] border border-dashed transition-colors hover:bg-[var(--bg2)]"
+                        className="inline-flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-[8px] border border-dashed transition-colors hover:bg-[var(--panel3)]"
                         style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
                         <Plus className="w-3.5 h-3.5" /> Nouveau processus de fabrication
                       </button>

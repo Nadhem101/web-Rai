@@ -126,7 +126,7 @@ const OutillagesInventaire = () => {
   const removePhoto = (i) => setForm(f => ({ ...f, photos: f.photos.filter((_, idx) => idx !== i) }));
 
   const fieldClass = 'w-full rounded-[8px] border text-[13px] px-3 py-2 outline-none focus:ring-2 focus:ring-[var(--accent)] transition';
-  const fieldStyle = { background: 'var(--bg2)', borderColor: 'var(--border)', color: 'var(--text)' };
+  const fieldStyle = { background: 'var(--panel2)', borderColor: 'var(--border)', color: 'var(--text)' };
   const labelClass = 'block text-[12px] font-semibold mb-1';
 
   return (
@@ -186,10 +186,10 @@ const OutillagesInventaire = () => {
         </div>
       ) : (
         <motion.div variants={staggerItemVariants}
-          className="rounded-[14px] overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--bg2)' }}>
+          className="rounded-[14px] overflow-hidden border" style={{ borderColor: 'var(--border)', background: 'var(--panel)' }}>
           <table className="w-full text-[13px]">
             <thead>
-              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg3)' }}>
+              <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--panel2)' }}>
                 {['Désignation', 'Références', 'Qté', 'Emplacement', 'Photos', ''].map(h => (
                   <th key={h} className="px-4 py-3 text-left font-semibold text-[12px] uppercase tracking-wide"
                     style={{ color: 'var(--text3)' }}>{h}</th>
@@ -200,7 +200,7 @@ const OutillagesInventaire = () => {
               {items.map((item, idx) => (
                 <tr key={item.id}
                   style={{ borderBottom: idx < items.length - 1 ? '1px solid var(--border)' : 'none' }}
-                  className="group hover:bg-[var(--bg3)] transition-colors">
+                  className="group hover:bg-[var(--panel3)] transition-colors">
                   <td className="px-4 py-3 font-medium" style={{ color: 'var(--text)' }}>{item.designation}</td>
                   <td className="px-4 py-3" style={{ color: 'var(--text2)' }}>
                     {item.references?.length ? (
@@ -234,7 +234,7 @@ const OutillagesInventaire = () => {
                         {item.photos.length > 3 && (
                           <button onClick={() => openLightbox(item.photos, 3)}
                             className="w-9 h-9 rounded-[6px] flex items-center justify-center text-[11px] font-bold hover:brightness-95 transition-all flex-shrink-0"
-                            style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>+{item.photos.length - 3}</button>
+                            style={{ background: 'var(--panel3)', color: 'var(--text3)' }}>+{item.photos.length - 3}</button>
                         )}
                       </div>
                     ) : (
@@ -273,13 +273,13 @@ const OutillagesInventaire = () => {
             onClick={(e) => { if (e.target === e.currentTarget) setModal(null); }}>
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
               className="w-full max-w-lg rounded-[16px] shadow-2xl overflow-hidden"
-              style={{ background: 'var(--bg2)', border: '1px solid var(--border)' }}>
+              style={{ background: 'var(--panel)', border: '1px solid var(--border)' }}>
               {/* Modal header */}
               <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
                 <h2 className="font-semibold text-[16px]" style={{ color: 'var(--text)' }}>
                   {modal.mode === 'create' ? 'Nouvel outillage' : 'Modifier l\'outillage'}
                 </h2>
-                <button onClick={() => setModal(null)} className="p-1 rounded-[6px] hover:bg-[var(--bg3)]" style={{ color: 'var(--text3)' }}>
+                <button onClick={() => setModal(null)} className="p-1 rounded-[6px] hover:bg-[var(--panel3)]" style={{ color: 'var(--text3)' }}>
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -374,7 +374,7 @@ const OutillagesInventaire = () => {
               {/* Modal footer */}
               <div className="flex justify-end gap-3 px-5 py-4 border-t" style={{ borderColor: 'var(--border)' }}>
                 <button onClick={() => setModal(null)}
-                  className="px-4 py-2 rounded-[9px] text-[13px] font-medium border transition-colors hover:bg-[var(--bg3)]"
+                  className="px-4 py-2 rounded-[9px] text-[13px] font-medium border transition-colors hover:bg-[var(--panel3)]"
                   style={{ borderColor: 'var(--border)', color: 'var(--text2)' }}>
                   Annuler
                 </button>
