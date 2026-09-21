@@ -13,6 +13,16 @@ export const subZones = [
   // Individual zones
   { group: 'Electronique', id: 'zone:Electronique', label: 'Electronique', standalone: true },
   { group: 'Maintenance', id: 'zone:Maintenance', label: 'Maintenance', standalone: true },
+  // These four exist in the zones table but had no sidebar entry at all —
+  // equipment assigned to them saved fine but was unreachable via nav
+  // (see conversation: "if i change an existing equipment for chevain
+  // arnoux ... it disappears"). Listed standalone rather than folded into
+  // Assemblage Meca / Faisceau Cable above since their floor-layout
+  // grouping isn't confirmed.
+  { group: 'Assemblage Électro-Mécanique', id: 'zone:Assemblage Electro-Mecanique', label: 'Assemblage Électro-Mécanique', standalone: true },
+  { group: 'Électro-aimant', id: 'zone:Electro-aimant', label: 'Électro-aimant', standalone: true },
+  { group: 'Kuhn', id: 'zone:Kuhn', label: 'Kuhn', standalone: true },
+  { group: 'Chauvin Arnoux', id: 'zone:Chauvin Arnoux', label: 'Chauvin Arnoux', standalone: true },
 ];
 
 export const zoneGroups = ['Assemblage Meca', 'Faisceau Cable'];
