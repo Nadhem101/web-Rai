@@ -564,6 +564,8 @@ const TestCables = () => {
             sheetName="Test câbles détaillé"
             columns={testCablesDetailExportColumns}
             rows={filtered.flatMap(buildArticleDetailRows)}
+            mergeGroupKey={(r) => `${r.numero}__${r.indice}`}
+            mergeColumns={['numero', 'indice', 'designation', 'testeur', 'programme']}
           />
           <ExportPickerButton
             label="PDF résumé"

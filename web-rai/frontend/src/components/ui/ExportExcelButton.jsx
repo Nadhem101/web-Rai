@@ -10,6 +10,8 @@ const ExportExcelButton = ({
   sheetName,
   columns,
   rows,
+  mergeGroupKey,
+  mergeColumns,
   label = 'Exporter Excel',
   className = '',
 }) => {
@@ -20,7 +22,7 @@ const ExportExcelButton = ({
     if (!hasRows || exporting) return;
     setExporting(true);
     try {
-      await exportRowsToExcel({ filename, sheetName, columns, rows });
+      await exportRowsToExcel({ filename, sheetName, columns, rows, mergeGroupKey, mergeColumns });
     } catch (err) {
       console.error('Erreur export Excel:', err);
       alert("Erreur lors de l'export Excel.");
