@@ -24,8 +24,8 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
   try {
-    const { designation, quantity = 1, references = [], photos = [] } = req.body;
-    const o = await Outillage.create({ designation, quantity });
+    const { designation, quantity = 1, emplacement = null, references = [], photos = [] } = req.body;
+    const o = await Outillage.create({ designation, quantity, emplacement });
     if (references.length)
       await OutillageReference.bulkCreate(
         references.map((r, i) => ({ outillage_id: o.id, reference: r.reference, label: r.label || null, ordre: i }))
@@ -42,9 +42,9 @@ exports.update = async (req, res) => {
   try {
     const o = await Outillage.findByPk(req.params.id);
     if (!o) return res.status(404).json({ error: 'Non trouvé' });
-    const { designation, quantity, references, photos } = req.body;
-    if (designation !== undefined || quantity !== undefined)
-      await o.update({ designation, quantity });
+    const { designation, quantity, emplacement, references, photos } = req.body;
+    if (designation !== undefined || quantity !== undefined || emplacement !== undefined)
+      await o.update({ designation, quantity, emplacement });
     if (references !== undefined) {
       await OutillageReference.destroy({ where: { outillage_id: o.id } });
       if (references.length)

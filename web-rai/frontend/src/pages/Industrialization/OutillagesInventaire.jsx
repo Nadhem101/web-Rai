@@ -7,7 +7,7 @@ import PhotoLightbox from '../../components/ui/PhotoLightbox.jsx';
 import ExportExcelButton from '../../components/ui/ExportExcelButton.jsx';
 import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 
-const EMPTY_FORM = { designation: '', quantity: 1, references: [{ reference: '', label: '' }], photos: [] };
+const EMPTY_FORM = { designation: '', quantity: 1, emplacement: '', references: [{ reference: '', label: '' }], photos: [] };
 
 // ── Quantity pill — same low-stock color coding as the PDR stock view ──
 const OUTILLAGE_LOW_STOCK_THRESHOLD = 1;
@@ -40,12 +40,13 @@ const OutillagesInventaire = () => {
 
   const outillagesExportColumns = [
     { header: 'Désignation', key: 'designation', width: 28 }, { header: 'Références', key: 'references', width: 34 },
-    { header: 'Quantité', key: 'quantity' },
+    { header: 'Quantité', key: 'quantity' }, { header: 'Emplacement', key: 'emplacement', width: 26 },
   ];
   const buildOutillageRow = (item) => ({
     designation: item.designation || '',
     references: (item.references || []).map((r) => r.label ? `${r.reference} (${r.label})` : r.reference).join(', '),
     quantity: item.quantity ?? '',
+    emplacement: item.emplacement || '',
   });
 
   const load = async () => {
@@ -68,6 +69,7 @@ const OutillagesInventaire = () => {
     setForm({
       designation: item.designation,
       quantity: item.quantity,
+      emplacement: item.emplacement || '',
       references: item.references?.length
         ? item.references.map(r => ({ reference: r.reference, label: r.label || '' }))
         : [{ reference: '', label: '' }],
@@ -83,6 +85,7 @@ const OutillagesInventaire = () => {
       const payload = {
         designation: form.designation.trim(),
         quantity: Number(form.quantity) || 1,
+        emplacement: form.emplacement.trim() || null,
         references: form.references.filter(r => r.reference.trim()).map(r => ({ reference: r.reference.trim(), label: r.label.trim() || null })),
         photos: form.photos,
       };
@@ -187,7 +190,7 @@ const OutillagesInventaire = () => {
           <table className="w-full text-[13px]">
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg3)' }}>
-                {['Désignation', 'Références', 'Qté', 'Photos', ''].map(h => (
+                {['Désignation', 'Références', 'Qté', 'Emplacement', 'Photos', ''].map(h => (
                   <th key={h} className="px-4 py-3 text-left font-semibold text-[12px] uppercase tracking-wide"
                     style={{ color: 'var(--text3)' }}>{h}</th>
                 ))}
@@ -212,6 +215,9 @@ const OutillagesInventaire = () => {
                     ) : <span style={{ color: 'var(--text3)' }}>—</span>}
                   </td>
                   <td className="px-4 py-3"><OutillageQtyPill value={item.quantity} /></td>
+                  <td className="px-4 py-3 max-w-[200px] truncate" style={{ color: item.emplacement ? 'var(--text2)' : 'var(--text3)' }} title={item.emplacement || ''}>
+                    {item.emplacement || '—'}
+                  </td>
                   <td className="px-4 py-3">
                     {item.photos?.length ? (
                       <div className="flex gap-1">
@@ -293,6 +299,14 @@ const OutillagesInventaire = () => {
                   <label className={labelClass} style={{ color: 'var(--text2)' }}>Quantité</label>
                   <input type="number" min="0" className={fieldClass} style={fieldStyle} value={form.quantity}
                     onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))} />
+                </div>
+
+                {/* Emplacement */}
+                <div>
+                  <label className={labelClass} style={{ color: 'var(--text2)' }}>Emplacement</label>
+                  <input className={fieldClass} style={fieldStyle} value={form.emplacement}
+                    onChange={e => setForm(f => ({ ...f, emplacement: e.target.value }))}
+                    placeholder="ex. Armoire 3, étagère B / Dans le gabarit XY" />
                 </div>
 
                 {/* Références */}
