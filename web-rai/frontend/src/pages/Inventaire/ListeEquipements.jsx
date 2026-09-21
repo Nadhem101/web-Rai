@@ -7,6 +7,8 @@ import CossesList from '../../components/CossesList';
 import PinceForm from '../../components/PinceForm';
 import ApplicateurForm from '../../components/ApplicateurForm';
 import EquipementForm from '../../components/EquipementForm';
+import ExportExcelButton from '../../components/ui/ExportExcelButton';
+import ExportPickerButton from '../../components/ui/ExportPickerButton';
 import {
   Search, Plus, Pencil, Trash2, Package, Wrench, Zap,
   Link2, Flame, Box, MapPin, CheckCircle2, XCircle,
@@ -202,6 +204,40 @@ const ListeEquipements = () => {
 
   const isPdr = categorie === 'pdr';
 
+  const equipementExportColumns = isPdr
+    ? [
+        { header: 'Code RAI', key: 'code' }, { header: 'Désignation', key: 'designation', width: 30 },
+        { header: 'N° Série', key: 'serie' },
+        { header: 'Lame cuivre réf.', key: 'lc_ref' }, { header: 'Lame cuivre qté', key: 'lc_qty' },
+        { header: 'Lame isolant réf.', key: 'li_ref' }, { header: 'Lame isolant qté', key: 'li_qty' },
+        { header: 'Enclume cuivre réf.', key: 'ec_ref' }, { header: 'Enclume cuivre qté', key: 'ec_qty' },
+        { header: 'Enclume isolant réf.', key: 'ei_ref' }, { header: 'Enclume isolant qté', key: 'ei_qty' },
+        { header: 'Lame dénudage qté', key: 'ld_qty' },
+        { header: 'Zone', key: 'zone' }, { header: 'Fabricant', key: 'fabricant' }, { header: 'Statut', key: 'statut' },
+      ]
+    : [
+        { header: 'Code RAI', key: 'code' }, { header: 'Désignation', key: 'designation', width: 30 },
+        { header: 'N° Série', key: 'serie' },
+        { header: 'Zone', key: 'zone' }, { header: 'Fabricant', key: 'fabricant' }, { header: 'Statut', key: 'statut' },
+      ];
+
+  const buildEquipementRow = (eq) => isPdr
+    ? {
+        code: eq.code_rai, designation: eq.designation, serie: eq.numero_serie || '',
+        lc_ref: eq.pdr_details?.lame_cuivre?.reference || '', lc_qty: eq.pdr_details?.lame_cuivre?.quantity ?? '',
+        li_ref: eq.pdr_details?.lame_isolant?.reference || '', li_qty: eq.pdr_details?.lame_isolant?.quantity ?? '',
+        ec_ref: eq.pdr_details?.enclume_cuivre?.reference || '', ec_qty: eq.pdr_details?.enclume_cuivre?.quantity ?? '',
+        ei_ref: eq.pdr_details?.enclume_isolant?.reference || '', ei_qty: eq.pdr_details?.enclume_isolant?.quantity ?? '',
+        ld_qty: eq.pdr_details?.lame_denudage?.quantity ?? '',
+        zone: eq.Zone?.nom_zone || '', fabricant: eq.Fabricant?.nom || '', statut: eq.statut || '',
+      }
+    : {
+        code: eq.code_rai, designation: eq.designation, serie: eq.numero_serie || '',
+        zone: eq.Zone?.nom_zone || '', fabricant: eq.Fabricant?.nom || '', statut: eq.statut || '',
+      };
+
+  const equipementExportRows = filteredEquipements.map(buildEquipementRow);
+
   return (
     <div className="px-[26px] pt-6 pb-10 flex-1 overflow-auto flex flex-col gap-[18px]" style={{ background: 'var(--bg)' }}>
 
@@ -224,13 +260,36 @@ const ListeEquipements = () => {
           </div>
         </div>
 
-        {canUseGenericCrud && (
-          <button type="button" onClick={handleCreateClick}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5 flex-shrink-0"
-            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
-            <Plus className="w-4 h-4" /> Nouvel équipement
-          </button>
-        )}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {canUseGenericCrud && (
+            <ExportExcelButton
+              filename={`${categorie || 'equipements'}_${new Date().toISOString().slice(0, 10)}.xlsx`}
+              sheetName="Équipements"
+              columns={equipementExportColumns}
+              rows={equipementExportRows}
+            />
+          )}
+          {canUseGenericCrud && (
+            <ExportPickerButton
+              items={filteredEquipements}
+              getKey={(eq) => eq.id}
+              getSearchText={(eq) => `${eq.code_rai || ''} ${eq.designation || ''}`}
+              getPrimaryLabel={(eq) => eq.code_rai || '—'}
+              getSecondaryLabel={(eq) => eq.designation || ''}
+              columns={equipementExportColumns}
+              buildRow={buildEquipementRow}
+              filename={() => `${categorie || 'equipements'}_${new Date().toISOString().slice(0, 10)}.pdf`}
+              title={categoryTitle}
+            />
+          )}
+          {canUseGenericCrud && (
+            <button type="button" onClick={handleCreateClick}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5 flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+              <Plus className="w-4 h-4" /> Nouvel équipement
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Search ──────────────────────────────────────── */}

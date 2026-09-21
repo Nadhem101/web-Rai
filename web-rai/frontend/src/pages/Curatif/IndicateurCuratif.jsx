@@ -5,6 +5,7 @@ import { formatMinutes } from '../../utils/curativeMaintenance';
 import { BarChart2, Clock, Timer, TrendingUp, AlertCircle, CalendarDays, Activity } from 'lucide-react';
 import KpiCard from '../../components/ui/KpiCard.jsx';
 import DataLabel from '../../components/ui/DataLabel.jsx';
+import ExportPdfButton from '../../components/ui/ExportPdfButton.jsx';
 import GrowBar from '../../components/motion/GrowBar.jsx';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
@@ -38,6 +39,14 @@ const IndicateurCuratif = () => {
   const MTTR_SEUIL = summary?.mttrSeuil ?? 15;
 
   const chartData = useMemo(() => buildChartData(summary || {}), [summary]);
+  const indicateurExportColumns = [
+    { header: 'Mois', key: 'mois' }, { header: 'Incidents', key: 'incidents' },
+    { header: 'Total arrêt (min)', key: 'total' }, { header: 'MTTR (min)', key: 'mttr' }, { header: 'MTBF (min)', key: 'mtbf' },
+  ];
+  const indicateurExportRows = useMemo(() => chartData.map((m) => ({
+    mois: m.label, incidents: m.count || 0, total: m.count > 0 ? m.totalMinutes : '',
+    mttr: m.averageMinutes ?? '', mtbf: m.mtbf ?? '',
+  })), [chartData]);
   const hasData   = useMemo(() => chartData.some((m) => m.count > 0), [chartData]);
   const maxAverage = useMemo(() => Math.max(MTTR_SEUIL + 1, ...chartData.map((m) => m.averageMinutesValue)), [chartData, MTTR_SEUIL]);
 
@@ -183,9 +192,17 @@ const IndicateurCuratif = () => {
             className="rounded-[14px] overflow-hidden flex flex-col"
             style={{ background: 'var(--panel)', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}
           >
-            <div className="px-[18px] py-[14px]" style={{ borderBottom: '1px solid var(--border2)' }}>
-              <p className="font-semibold text-[13.5px]" style={{ color: 'var(--text)' }}>Détail par mois</p>
-              <DataLabel className="mt-0.5">Agrégation des incidents</DataLabel>
+            <div className="flex flex-wrap items-center justify-between gap-3 px-[18px] py-[14px]" style={{ borderBottom: '1px solid var(--border2)' }}>
+              <div>
+                <p className="font-semibold text-[13.5px]" style={{ color: 'var(--text)' }}>Détail par mois</p>
+                <DataLabel className="mt-0.5">Agrégation des incidents</DataLabel>
+              </div>
+              <ExportPdfButton
+                filename={`Indicateur_curatif_${summary?.selectedYear || new Date().getFullYear()}.pdf`}
+                title={`Indicateur curatif — ${summary?.selectedYear || ''}`}
+                columns={indicateurExportColumns}
+                rows={indicateurExportRows}
+              />
             </div>
             <div className="overflow-auto flex-1 max-h-[430px]">
               <table className="min-w-full text-sm">

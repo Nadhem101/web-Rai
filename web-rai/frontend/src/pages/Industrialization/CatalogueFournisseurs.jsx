@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { fournisseurCatalogueService } from '../../services/api';
 import { Plus, Pencil, Trash2, Search, XCircle, Truck, Check, AlertCircle } from 'lucide-react';
 import DataLabel from '../../components/ui/DataLabel.jsx';
+import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 const fieldCls  = 'w-full rounded-[10px] px-3 py-2 text-sm outline-none transition-colors';
@@ -33,6 +34,12 @@ const CatalogueFournisseurs = () => {
     f.nom?.toLowerCase().includes(search.toLowerCase()) ||
     f.site_web?.toLowerCase().includes(search.toLowerCase())
   );
+
+  const fournisseursExportColumns = [
+    { header: 'Nom', key: 'nom', width: 24 }, { header: 'Site web', key: 'site_web', width: 30 },
+    { header: 'Notes', key: 'notes', width: 30 },
+  ];
+  const buildFournisseurRow = (f) => ({ nom: f.nom || '', site_web: f.site_web || '', notes: f.notes || '' });
 
   const openEdit = (f = null) => {
     setError('');
@@ -73,11 +80,24 @@ const CatalogueFournisseurs = () => {
             <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>{fournisseurs.length} fournisseur(s) enregistré(s)</p>
           </div>
         </div>
-        <button onClick={() => openEdit()}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
-          <Plus className="w-4 h-4" /> Nouveau fournisseur
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <ExportPickerButton
+            items={filtered}
+            getKey={(f) => f.id}
+            getSearchText={(f) => `${f.nom || ''} ${f.site_web || ''}`}
+            getPrimaryLabel={(f) => f.nom || '—'}
+            getSecondaryLabel={(f) => f.site_web || ''}
+            columns={fournisseursExportColumns}
+            buildRow={buildFournisseurRow}
+            filename={() => `Catalogue_fournisseurs_${new Date().toISOString().slice(0, 10)}.pdf`}
+            title="Catalogue fournisseurs"
+          />
+          <button onClick={() => openEdit()}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+            <Plus className="w-4 h-4" /> Nouveau fournisseur
+          </button>
+        </div>
       </motion.div>
 
       {/* Edit form */}

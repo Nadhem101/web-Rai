@@ -4,6 +4,8 @@ import { outillageService } from '../../services/api';
 import { Plus, Trash2, Pencil, X, Check, Package, Image, ZoomIn } from 'lucide-react';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 import PhotoLightbox from '../../components/ui/PhotoLightbox.jsx';
+import ExportExcelButton from '../../components/ui/ExportExcelButton.jsx';
+import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 
 const EMPTY_FORM = { designation: '', quantity: 1, references: [{ reference: '', label: '' }], photos: [] };
 
@@ -35,6 +37,16 @@ const OutillagesInventaire = () => {
   const fileRef = useRef();
 
   const openLightbox = (photos, index) => setLightbox({ photos, index });
+
+  const outillagesExportColumns = [
+    { header: 'Désignation', key: 'designation', width: 28 }, { header: 'Références', key: 'references', width: 34 },
+    { header: 'Quantité', key: 'quantity' },
+  ];
+  const buildOutillageRow = (item) => ({
+    designation: item.designation || '',
+    references: (item.references || []).map((r) => r.label ? `${r.reference} (${r.label})` : r.reference).join(', '),
+    quantity: item.quantity ?? '',
+  });
 
   const load = async () => {
     try {
@@ -132,12 +144,31 @@ const OutillagesInventaire = () => {
             </p>
           </div>
         </div>
-        <button onClick={openCreate}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
-          <Plus className="w-4 h-4" />
-          Nouvel outillage
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <ExportExcelButton
+            filename={`Outillages_${new Date().toISOString().slice(0, 10)}.xlsx`}
+            sheetName="Outillages"
+            columns={outillagesExportColumns}
+            rows={items.map(buildOutillageRow)}
+          />
+          <ExportPickerButton
+            items={items}
+            getKey={(item) => item.id}
+            getSearchText={(item) => `${item.designation || ''} ${(item.references || []).map((r) => r.reference).join(' ')}`}
+            getPrimaryLabel={(item) => item.designation || '—'}
+            getSecondaryLabel={(item) => (item.references || []).map((r) => r.reference).join(', ')}
+            columns={outillagesExportColumns}
+            buildRow={buildOutillageRow}
+            filename={() => `Outillages_${new Date().toISOString().slice(0, 10)}.pdf`}
+            title="Inventaire des outillages"
+          />
+          <button onClick={openCreate}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+            <Plus className="w-4 h-4" />
+            Nouvel outillage
+          </button>
+        </div>
       </motion.div>
 
       {loading ? (

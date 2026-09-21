@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { pincePreventiveService, pinceService } from '../services/api';
 import { Pencil, Trash2, Plus, X, AlertCircle, Wrench, ClipboardList } from 'lucide-react';
+import ExportExcelButton from './ui/ExportExcelButton.jsx';
+import ExportPickerButton from './ui/ExportPickerButton.jsx';
 
 const normalizeText = (value = '') =>
   String(value ?? '')
@@ -523,6 +525,27 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
     [filteredRecords]
   );
 
+  const pincePreventifExportColumns = [
+    { header: 'N° Pince', key: 'numero' }, { header: 'Date contrôle', key: 'date' },
+    { header: 'Référence', key: 'reference' }, { header: 'Position', key: 'position' },
+    { header: 'Cosse', key: 'cosse' }, { header: 'Fil', key: 'fil' },
+    { header: 'Traction min.', key: 'traction' }, { header: 'Valeurs', key: 'valeurs', width: 26 },
+    { header: 'Statut', key: 'statut' }, { header: 'Prochaine', key: 'prochaine' },
+    { header: 'Remarque', key: 'remarque', width: 26 },
+  ];
+  const buildPincePreventifRows = (group) => {
+    const schedule = getGroupScheduleInfo(group);
+    if (group.rows.length === 0) {
+      return [{ numero: group.numeroPince || '', date: '', reference: '', position: '', cosse: '', fil: '', traction: '', valeurs: '', statut: schedule.label, prochaine: '', remarque: '' }];
+    }
+    return group.rows.map((r) => ({
+      numero: group.numeroPince || '', date: formatDate(r.date_controle), reference: r.reference_more || '',
+      position: r.position || '', cosse: r.cosse || '', fil: r.fil || '', traction: r.traction_minimale_n || '',
+      valeurs: getMeasurementValues(r).join(', '), statut: r.statut_verification || '', prochaine: formatDate(r.date_prochaine),
+      remarque: r.remarque || '',
+    }));
+  };
+
   const isEditingRow = rowForm.mode === 'edit';
 
   const renderMergedCell = (group, field, row, rowIndex, className, renderContent) => {
@@ -673,6 +696,23 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
             {overdueCount > 0 && (
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--crit-soft)', color: 'var(--crit)', border: '1px solid var(--crit)' }}>{overdueCount} en retard</span>
             )}
+            <ExportExcelButton
+              filename={`Preventif_pinces_${new Date().toISOString().slice(0, 10)}.xlsx`}
+              sheetName="Préventif pinces"
+              columns={pincePreventifExportColumns}
+              rows={groupedRecords.flatMap(buildPincePreventifRows)}
+            />
+            <ExportPickerButton
+              items={groupedRecords}
+              getKey={(g) => g.key}
+              getSearchText={(g) => `${g.numeroPince || ''}`}
+              getPrimaryLabel={(g) => g.numeroPince || '—'}
+              getSecondaryLabel={() => ''}
+              columns={pincePreventifExportColumns}
+              buildRows={buildPincePreventifRows}
+              filename={() => `Preventif_pinces_${new Date().toISOString().slice(0, 10)}.pdf`}
+              title="Suivi préventif des pinces"
+            />
           </div>
         </div>
 

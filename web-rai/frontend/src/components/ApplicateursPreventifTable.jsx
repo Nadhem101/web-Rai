@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { applicateurThresholdService, applicateurPreventiveService, applicateurService } from '../services/api';
 import { Search, Zap, PackageOpen, AlertCircle, XCircle, ClipboardList, X } from 'lucide-react';
+import ExportExcelButton from './ui/ExportExcelButton.jsx';
+import ExportPickerButton from './ui/ExportPickerButton.jsx';
 
 const normalizeText = (value = '') =>
   String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -356,6 +358,24 @@ const ApplicateursPreventifTable = () => {
     }
   };
 
+  const applicateursPreventifExportColumns = [
+    { header: 'N° Outil', key: 'outil' }, { header: 'Réf. TEC', key: 'ref_tec' },
+    { header: 'Désignation', key: 'designation', width: 26 }, { header: 'Section mm²', key: 'section' },
+    { header: 'Seuil (N)', key: 'seuil' }, { header: 'Dénudage', key: 'denudage' },
+    { header: 'Statut', key: 'statut' }, { header: 'Prochaine', key: 'prochaine' },
+  ];
+  const buildApplicateurPreventifRows = (group) => {
+    const outilKey = String(group.numeroOutil ?? '').trim();
+    const activeRecs = preventiveByOutil[outilKey] || [];
+    const datePro = activeRecs[0]?.date_prochaine ?? null;
+    const schedule = getScheduleInfo(datePro);
+    const base = { outil: group.numeroOutil || '', designation: group.designation || '', statut: schedule.label, prochaine: formatDate(datePro) };
+    if (group.rows.length === 0) return [{ ...base, ref_tec: '', section: '', seuil: '', denudage: '' }];
+    return group.rows.map((r) => ({
+      ...base, ref_tec: r.reference_tec || '', section: r.section_mm2 || '', seuil: r.seuil_n || '', denudage: r.longueur_denudage || '',
+    }));
+  };
+
   const renderMergedCell = (group, field, row, rowIndex, className, renderContent) => {
     const sharedValue = group[field === 'numero_outil' ? 'numeroOutil' : field === 'reference_tec' ? 'referenceTec' : 'designation'] ?? null;
     if (rowIndex !== 0) return null;
@@ -392,6 +412,23 @@ const ApplicateursPreventifTable = () => {
             {overdueCount > 0 && (
               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold" style={{ background: 'var(--crit-soft)', color: 'var(--crit)', border: '1px solid var(--crit)' }}>{overdueCount} en retard</span>
             )}
+            <ExportExcelButton
+              filename={`Preventif_applicateurs_${new Date().toISOString().slice(0, 10)}.xlsx`}
+              sheetName="Préventif applicateurs"
+              columns={applicateursPreventifExportColumns}
+              rows={mergedGroups.flatMap(buildApplicateurPreventifRows)}
+            />
+            <ExportPickerButton
+              items={mergedGroups}
+              getKey={(g) => g.key}
+              getSearchText={(g) => `${g.numeroOutil || ''} ${g.designation || ''} ${g.referenceTec || ''}`}
+              getPrimaryLabel={(g) => g.numeroOutil || '—'}
+              getSecondaryLabel={(g) => g.designation || ''}
+              columns={applicateursPreventifExportColumns}
+              buildRows={buildApplicateurPreventifRows}
+              filename={() => `Preventif_applicateurs_${new Date().toISOString().slice(0, 10)}.pdf`}
+              title="Suivi préventif des applicateurs"
+            />
           </div>
         </div>
 

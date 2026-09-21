@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { equipementService, ferBainRecordService } from '../../services/api';
 import { Pencil, Trash2, Plus, X, ChevronDown, ChevronRight, Thermometer, Save } from 'lucide-react';
+import ExportExcelButton from '../../components/ui/ExportExcelButton.jsx';
+import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -337,6 +339,21 @@ export default function SuiviFerBain() {
     );
   }, [equipements, normalizedSearch]);
 
+  const ferBainExportColumns = [
+    { header: 'Code RAI', key: 'code' }, { header: 'Désignation', key: 'designation', width: 26 },
+    { header: 'Zone', key: 'zone' }, { header: 'Seuil (°C)', key: 'seuil' },
+    { header: 'Date contrôle', key: 'date' }, { header: 'Valeur mesurée (°C)', key: 'valeur' },
+    { header: 'Statut', key: 'statut' }, { header: 'Remarque', key: 'remarque', width: 26 },
+  ];
+  const buildFerBainRows = (equip) => {
+    const eqRecords = recordsByEquip[equip.id] ?? [];
+    const base = { code: equip.code_rai || equip.code || '', designation: equip.designation || '', zone: equip.Zone?.nom_zone || '', seuil: equip.fer_bain_seuil ?? '' };
+    if (eqRecords.length === 0) return [{ ...base, date: '', valeur: '', statut: '', remarque: '' }];
+    return eqRecords.map((r) => ({
+      ...base, date: fmtDate(r.date_controle), valeur: r.valeur_mesuree ?? '', statut: r.statut || '', remarque: r.remarque || '',
+    }));
+  };
+
   const toggleExpand = (id) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
@@ -372,13 +389,34 @@ export default function SuiviFerBain() {
   return (
     <div className="px-[26px] pt-6 pb-10 flex-1 min-h-0 overflow-auto flex flex-col" style={{ background: 'var(--bg)' }}>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="font-display font-semibold text-[25px]" style={{ color: 'var(--text)', letterSpacing: '-0.4px' }}>
-          Suivi des Fer et Bain
-        </h1>
-        <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>
-          Historique des mesures thermiques pour les fers à souder et bains créuset.
-        </p>
+      <div className="mb-6 flex flex-wrap items-end justify-between gap-3.5">
+        <div>
+          <h1 className="font-display font-semibold text-[25px]" style={{ color: 'var(--text)', letterSpacing: '-0.4px' }}>
+            Suivi des Fer et Bain
+          </h1>
+          <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>
+            Historique des mesures thermiques pour les fers à souder et bains créuset.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <ExportExcelButton
+            filename={`Fer_et_bain_${new Date().toISOString().slice(0, 10)}.xlsx`}
+            sheetName="Fer et bain"
+            columns={ferBainExportColumns}
+            rows={filtered.flatMap(buildFerBainRows)}
+          />
+          <ExportPickerButton
+            items={filtered}
+            getKey={(eq) => eq.id}
+            getSearchText={(eq) => `${eq.code_rai || eq.code || ''} ${eq.designation || ''}`}
+            getPrimaryLabel={(eq) => eq.code_rai || eq.code || '—'}
+            getSecondaryLabel={(eq) => eq.designation || ''}
+            columns={ferBainExportColumns}
+            buildRows={buildFerBainRows}
+            filename={() => `Fer_et_bain_${new Date().toISOString().slice(0, 10)}.pdf`}
+            title="Suivi des Fer et Bain"
+          />
+        </div>
       </div>
 
       {/* Stats bar */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ecmeService } from '../../services/api';
 import { FlaskConical, AlertTriangle, CheckCircle2, Clock, ArrowRight, Pencil, Truck } from 'lucide-react';
+import EcmeExportButton from '../../components/ECME/EcmeExportButton.jsx';
 
 function fmtDate(raw) {
   if (!raw) return '—';
@@ -234,11 +235,14 @@ export default function SuiviECME() {
             </p>
           </div>
         </div>
-        <button onClick={() => navigate('/ecme')}
-          className="px-4 py-2 rounded-[10px] text-[13px] font-medium transition-colors hover:bg-[var(--panel3)]"
-          style={{ border: '1px solid var(--border)', color: 'var(--text2)' }}>
-          Vue complète →
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <EcmeExportButton records={records} />
+          <button onClick={() => navigate('/ecme')}
+            className="px-4 py-2 rounded-[10px] text-[13px] font-medium transition-colors hover:bg-[var(--panel3)]"
+            style={{ border: '1px solid var(--border)', color: 'var(--text2)' }}>
+            Vue complète →
+          </button>
+        </div>
       </div>
 
       {error && (

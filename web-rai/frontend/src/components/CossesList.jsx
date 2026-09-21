@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { cosseService } from '../services/api';
 import CosseForm from './CosseForm';
 import { Plus, Pencil, Trash2, Link2, PackageOpen } from 'lucide-react';
+import ExportExcelButton from './ui/ExportExcelButton.jsx';
+import ExportPickerButton from './ui/ExportPickerButton.jsx';
 
 const normalizeText = (value = '') =>
   String(value ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -105,6 +107,21 @@ const CossesList = ({ searchQuery = '' }) => {
 
   const groupedCosses = useMemo(() => buildGroupedCosses(filteredCosses), [filteredCosses]);
 
+  const cossesExportColumns = [
+    { header: 'Constructeur', key: 'constructeur' }, { header: 'Réf. TEC', key: 'ref_tec' },
+    { header: 'Désignation', key: 'designation', width: 26 }, { header: 'Outillage', key: 'outillage' },
+    { header: 'AWG', key: 'awg' }, { header: 'mm²', key: 'mm2' },
+    { header: 'Traction (N)', key: 'traction' }, { header: 'Dénudage (mm)', key: 'denudage' },
+    { header: 'Observation', key: 'observation', width: 26 },
+  ];
+  const buildCosseRow = (c) => ({
+    constructeur: c.reference_constructeur || '', ref_tec: c.reference_tec || '',
+    designation: c.designation_tec || '', outillage: c.outillage || '',
+    awg: c.section_awg || '', mm2: c.section_mm2 || '',
+    traction: c.tenue_traction_n || '', denudage: c.longueur_denudage_mm || '',
+    observation: c.observation || '',
+  });
+
   const handleCreateClick = () => { setEditingCosse(null); setIsFormOpen(true); };
   const handleEditClick   = (c) => { setEditingCosse(c); setIsFormOpen(true); };
   const handleFormClose   = () => { setIsFormOpen(false); setEditingCosse(null); };
@@ -158,14 +175,33 @@ const CossesList = ({ searchQuery = '' }) => {
               </p>
             </div>
           </div>
-          <button
-            onClick={handleCreateClick}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
-            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nouvelle cosse
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <ExportExcelButton
+              filename={`Cosses_${new Date().toISOString().slice(0, 10)}.xlsx`}
+              sheetName="Cosses"
+              columns={cossesExportColumns}
+              rows={filteredCosses.map(buildCosseRow)}
+            />
+            <ExportPickerButton
+              items={filteredCosses}
+              getKey={(c) => c.id}
+              getSearchText={(c) => `${c.reference_constructeur || ''} ${c.reference_tec || ''} ${c.designation_tec || ''} ${c.outillage || ''}`}
+              getPrimaryLabel={(c) => c.reference_tec || c.reference_constructeur || '—'}
+              getSecondaryLabel={(c) => c.designation_tec || ''}
+              columns={cossesExportColumns}
+              buildRow={buildCosseRow}
+              filename={() => `Cosses_${new Date().toISOString().slice(0, 10)}.pdf`}
+              title="Cosses de sertissage"
+            />
+            <button
+              onClick={handleCreateClick}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+              style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nouvelle cosse
+            </button>
+          </div>
         </div>
 
         {groupedCosses.length === 0 ? (

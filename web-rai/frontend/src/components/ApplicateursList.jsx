@@ -3,6 +3,8 @@ import { applicateurService, applicateurPreventiveService } from '../services/ap
 import ApplicateurDetailModal from './ApplicateurDetailModal';
 import ApplicateurForm from './ApplicateurForm';
 import { Plus, Pencil, Trash2, Zap, PackageOpen, Eye, History, ChevronDown, ChevronUp } from 'lucide-react';
+import ExportExcelButton from './ui/ExportExcelButton.jsx';
+import ExportPickerButton from './ui/ExportPickerButton.jsx';
 
 const formatDate = (value) => {
   if (!value) return '—';
@@ -179,6 +181,16 @@ const ApplicateursList = ({ searchQuery = '' }) => {
     (a.numero_outil || '').localeCompare(b.numero_outil || '', 'fr', { numeric: true })
   );
 
+  const applicateursExportColumns = [
+    { header: 'N° Outil', key: 'numero' }, { header: 'Désignation', key: 'designation', width: 26 },
+    { header: 'Constructeur', key: 'constructeur' }, { header: 'N° Série', key: 'serie' },
+    { header: 'Cosses', key: 'cosses' }, { header: 'Statut', key: 'statut' },
+  ];
+  const buildApplicateurRow = (a) => ({
+    numero: a.numero_outil || '', designation: a.designation || '', constructeur: a.constructeur_outil || '',
+    serie: a.numero_serie || '', cosses: a.variants?.length || 0, statut: a.statut || '',
+  });
+
   const handleDetailClick  = (a) => { setSelectedApplicateur(a); setShowModal(true); };
   const handleEditClick    = (a) => { setEditingApplicateur(a); setIsFormOpen(true); };
   const handleFormClose    = () => { setIsFormOpen(false); setEditingApplicateur(null); };
@@ -219,14 +231,33 @@ const ApplicateursList = ({ searchQuery = '' }) => {
               <p className="text-xs text-slate-400">{sorted.length} applicateur(s)</p>
             </div>
           </div>
-          <button
-            onClick={() => { setEditingApplicateur(null); setIsFormOpen(true); }}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
-            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nouvel applicateur
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <ExportExcelButton
+              filename={`Applicateurs_${new Date().toISOString().slice(0, 10)}.xlsx`}
+              sheetName="Applicateurs"
+              columns={applicateursExportColumns}
+              rows={sorted.map(buildApplicateurRow)}
+            />
+            <ExportPickerButton
+              items={sorted}
+              getKey={(a) => a.id}
+              getSearchText={(a) => `${a.numero_outil || ''} ${a.designation || ''} ${a.constructeur_outil || ''}`}
+              getPrimaryLabel={(a) => a.numero_outil || '—'}
+              getSecondaryLabel={(a) => a.designation || ''}
+              columns={applicateursExportColumns}
+              buildRow={buildApplicateurRow}
+              filename={() => `Applicateurs_${new Date().toISOString().slice(0, 10)}.pdf`}
+              title="Applicateurs faisceaux"
+            />
+            <button
+              onClick={() => { setEditingApplicateur(null); setIsFormOpen(true); }}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+              style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nouvel applicateur
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto flex-1">

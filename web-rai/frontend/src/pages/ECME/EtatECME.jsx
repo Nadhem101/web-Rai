@@ -7,6 +7,7 @@ import { Plus, Pencil, Trash2, Search, FlaskConical, CheckCircle2, AlertCircle, 
 import DataLabel from '../../components/ui/DataLabel.jsx';
 import KpiCard from '../../components/ui/KpiCard.jsx';
 import StatusBadge from '../../components/ui/StatusBadge.jsx';
+import EcmeExportButton from '../../components/ECME/EcmeExportButton.jsx';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 const ALERTE_CONFIG = {
@@ -113,11 +114,14 @@ export default function EtatECME() {
             <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>Équipements de Contrôle, de Mesure et d'Essai — Réf. FQ0009/01</p>
           </div>
         </div>
-        <button onClick={() => setFormModal({ open: true, ecme: null })}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
-          <Plus className="w-4 h-4" /> Nouvel ECME
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <EcmeExportButton records={records} />
+          <button onClick={() => setFormModal({ open: true, ecme: null })}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+            <Plus className="w-4 h-4" /> Nouvel ECME
+          </button>
+        </div>
       </motion.div>
 
       {/* KPIs */}

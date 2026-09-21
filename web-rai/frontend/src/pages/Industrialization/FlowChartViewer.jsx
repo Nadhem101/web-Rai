@@ -232,7 +232,7 @@ const StepModal = ({ step, steps, onClose }) => {
                       </span>
                       <p className="text-sm font-bold text-emerald-900 leading-tight">{ss.label}</p>
                     </div>
-                    {(ss.description || (ss.tools||[]).length > 0 || (ss.parameters||[]).length > 0) && (
+                    {(ss.description || (ss.tools||[]).length > 0 || (ss.parameters||[]).length > 0 || (ss.media||[]).length > 0) && (
                       <div className="px-4 py-3 space-y-2">
                         {ss.description && (
                           <p className="text-sm text-slate-600 italic">{ss.description}</p>
@@ -256,6 +256,59 @@ const StepModal = ({ step, steps, onClose }) => {
                                 {t}
                               </span>
                             ))}
+                          </div>
+                        )}
+                        {(ss.media || []).length > 0 && (
+                          <div className="space-y-3 pt-1">
+                            {ss.media.map((m, i) => {
+                              const ytId = m.type === 'video' ? getYouTubeId(m.url) : null;
+                              return (
+                                <div key={i} className="rounded-lg border border-slate-200 overflow-hidden bg-white">
+                                  {m.type === 'image' && m.url && isImageUrl(m.url) && (
+                                    <img src={m.url} alt={m.title || ''} onClick={() => setLightboxItem(m)}
+                                      className="w-full max-h-48 object-contain bg-slate-50 cursor-pointer hover:opacity-90 transition-opacity" />
+                                  )}
+                                  {m.type === 'video' && m.url && !ytId && (
+                                    <div className="relative w-full bg-black cursor-pointer group" onClick={() => setLightboxItem(m)}>
+                                      <video src={m.url} muted preload="metadata" className="w-full max-h-48 object-contain" />
+                                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
+                                        <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+                                          <Play className="w-4 h-4 text-slate-800 ml-0.5" fill="currentColor" />
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {ytId && (
+                                    <div className="relative w-full" style={{ paddingTop: '56.25%' }}>
+                                      <iframe
+                                        className="absolute inset-0 w-full h-full"
+                                        src={`https://www.youtube.com/embed/${ytId}`}
+                                        title={m.title || 'Video'}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex items-center justify-between gap-2.5 px-3 py-2">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${m.type === 'video' ? 'bg-red-50' : 'bg-blue-50'}`}>
+                                        {m.type === 'video'
+                                          ? <Video className="w-3 h-3 text-red-500" />
+                                          : <Image className="w-3 h-3 text-blue-500" />}
+                                      </div>
+                                      <p className="text-xs font-semibold text-slate-700 truncate">{m.title || (m.type === 'video' ? 'Vidéo' : 'Photo')}</p>
+                                    </div>
+                                    {m.url && (
+                                      <a href={m.url} target="_blank" rel="noopener noreferrer"
+                                        className="flex-shrink-0 flex items-center gap-1 text-[10px] font-semibold text-sky-600 hover:text-sky-700">
+                                        Ouvrir <ExternalLink className="w-3 h-3" />
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>

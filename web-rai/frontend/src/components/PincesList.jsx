@@ -3,6 +3,8 @@ import { pinceService, pincePreventiveService } from '../services/api';
 import PinceForm from './PinceForm';
 import PinceDetailModal from './PinceDetailModal';
 import { Plus, Pencil, Trash2, Wrench, PackageOpen, History, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import ExportExcelButton from './ui/ExportExcelButton.jsx';
+import ExportPickerButton from './ui/ExportPickerButton.jsx';
 
 const StatusBadge = ({ statut }) => {
   const cfg = {
@@ -194,6 +196,16 @@ const PincesList = ({ searchQuery = '' }) => {
     return (a.numero_pince || '').localeCompare(b.numero_pince || '', 'fr', { numeric: true });
   });
 
+  const pincesExportColumns = [
+    { header: 'N° Pince', key: 'numero' }, { header: 'Constructeur', key: 'constructeur' },
+    { header: 'Référence', key: 'reference' }, { header: 'Statut', key: 'statut' },
+    { header: 'Remarque', key: 'remarque', width: 30 },
+  ];
+  const buildPinceRow = (p) => ({
+    numero: p.numero_pince || '', constructeur: p.Fabricant?.nom || '',
+    reference: p.reference_pince || '', statut: p.statut || '', remarque: p.remarque || '',
+  });
+
   const handleDetailClick = (pince) => { setSelectedPince(pince); setShowModal(true); };
   const handleEditClick = (pince) => { setEditingPince(pince); setIsFormOpen(true); };
   const handleFormClose = () => { setIsFormOpen(false); setEditingPince(null); };
@@ -233,14 +245,33 @@ const PincesList = ({ searchQuery = '' }) => {
               <p className="text-xs text-slate-400">{sorted.length} pince(s)</p>
             </div>
           </div>
-          <button
-            onClick={() => { setEditingPince(null); setIsFormOpen(true); }}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
-            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}
-          >
-            <Plus className="w-3.5 h-3.5" />
-            Nouvelle pince
-          </button>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <ExportExcelButton
+              filename={`Pinces_${new Date().toISOString().slice(0, 10)}.xlsx`}
+              sheetName="Pinces"
+              columns={pincesExportColumns}
+              rows={sorted.map(buildPinceRow)}
+            />
+            <ExportPickerButton
+              items={sorted}
+              getKey={(p) => p.id}
+              getSearchText={(p) => `${p.numero_pince || ''} ${p.Fabricant?.nom || ''} ${p.reference_pince || ''}`}
+              getPrimaryLabel={(p) => p.numero_pince || '—'}
+              getSecondaryLabel={(p) => p.Fabricant?.nom || p.reference_pince || ''}
+              columns={pincesExportColumns}
+              buildRow={buildPinceRow}
+              filename={() => `Pinces_${new Date().toISOString().slice(0, 10)}.pdf`}
+              title="Pinces de sertissage"
+            />
+            <button
+              onClick={() => { setEditingPince(null); setIsFormOpen(true); }}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-white transition-colors"
+              style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Nouvelle pince
+            </button>
+          </div>
         </div>
 
         <div className="overflow-auto flex-1">

@@ -15,6 +15,7 @@ import {
 import KpiCard from '../../components/ui/KpiCard.jsx';
 import StatusBadge from '../../components/ui/StatusBadge.jsx';
 import DataLabel from '../../components/ui/DataLabel.jsx';
+import ExportPdfButton from '../../components/ui/ExportPdfButton.jsx';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 // ── Helpers ────────────────────────────────────────────────
@@ -142,6 +143,24 @@ const SuiviCuratif = () => {
   const totalDowntime   = useMemo(() => records.reduce((sum, r) => sum + (Number(r.downtime_minutes) || 0), 0), [records]);
   const averageDowntime = records.length > 0 ? totalDowntime / records.length : null;
 
+  const curatifExportColumns = [
+    { header: 'Date', key: 'date' }, { header: 'Semaine', key: 'semaine' },
+    { header: 'Équipement', key: 'code' }, { header: 'Désignation', key: 'designation', width: 28 },
+    { header: 'Zone', key: 'zone' }, { header: 'Intervenant', key: 'intervenant' },
+    { header: 'Demande', key: 'demande' }, { header: 'Début', key: 'debut' }, { header: 'Fin', key: 'fin' },
+    { header: 'Délai (min)', key: 'delai' }, { header: "Arrêt (min)", key: 'arret' },
+    { header: 'Description panne', key: 'description', width: 40 },
+  ];
+  const curatifExportRows = useMemo(() => filteredRecords.map((r) => ({
+    date: formatDateOnly(r.incident_date), semaine: r.week_label || '',
+    code: r.Equipement?.code_rai || r.equipement_code || '', designation: r.Equipement?.designation || r.equipement_label || '',
+    zone: r.zone_production || '', intervenant: r.intervenant || '',
+    demande: r.request_time || '', debut: r.started_time || '', fin: r.finished_time || '',
+    delai: r.response_minutes ?? '', arret: r.downtime_minutes ?? '',
+    description: r.description_panne || '',
+  })), [filteredRecords]);
+
+
   const formDurations = useMemo(() => computeCurativeDurations({
     requestTime: formData.request_time, startedTime: formData.started_time, finishedTime: formData.finished_time,
   }), [formData.finished_time, formData.request_time, formData.started_time]);
@@ -263,13 +282,21 @@ const SuiviCuratif = () => {
               <p className="font-semibold text-[13.5px]" style={{ color: 'var(--text)' }}>Historique curatif</p>
               <DataLabel className="mt-0.5">{filteredRecords.length} incident(s)</DataLabel>
             </div>
-            <div className="relative w-full max-w-xs">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text3)' }} />
-              <input
-                type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-[9px] text-[12.5px] outline-none"
-                style={fieldStyle}
-                placeholder="Rechercher une panne, un code, une zone…"
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="relative w-full max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: 'var(--text3)' }} />
+                <input
+                  type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 rounded-[9px] text-[12.5px] outline-none"
+                  style={fieldStyle}
+                  placeholder="Rechercher une panne, un code, une zone…"
+                />
+              </div>
+              <ExportPdfButton
+                filename={`Curatif_${new Date().toISOString().slice(0, 10)}.pdf`}
+                title="Suivi curatif"
+                columns={curatifExportColumns}
+                rows={curatifExportRows}
               />
             </div>
           </div>

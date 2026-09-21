@@ -7,6 +7,7 @@ import {
   Check, X, AlertCircle, Image,
 } from 'lucide-react';
 import DataLabel from '../../components/ui/DataLabel.jsx';
+import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 import { staggerItemVariants } from '../../components/motion/ScreenTransition.jsx';
 
 const fieldCls  = 'w-full rounded-[10px] px-3 py-2 text-sm outline-none transition-colors';
@@ -105,6 +106,23 @@ const CatalogueConnecteurs = () => {
            (c.ref_contrepartie||'').toLowerCase().includes(q);
   });
 
+  const connecteursExportColumns = [
+    { header: 'Réf. Connecteur', key: 'ref' }, { header: 'Désignation', key: 'designation', width: 26 },
+    { header: 'Contre-partie', key: 'contrepartie' }, { header: 'Fourn. Connecteur', key: 'fourn_conn', width: 26 },
+    { header: 'Fourn. Contre-partie', key: 'fourn_cp', width: 26 },
+    { header: 'Solution interne', key: 'solution', width: 22 }, { header: 'Notes', key: 'notes', width: 26 },
+  ];
+  const buildConnecteurRow = (c) => {
+    const mainConn = c.approvisionnements_conn?.find((a) => a.prioritaire) || c.approvisionnements_conn?.[0];
+    const mainCp   = c.approvisionnements_cp?.find((a) => a.prioritaire)   || c.approvisionnements_cp?.[0];
+    return {
+      ref: c.ref_connecteur || '', designation: c.designation || '', contrepartie: c.ref_contrepartie || '',
+      fourn_conn: mainConn ? `${mainConn.fournisseur || ''} (${mainConn.ref_fournisseur || ''})` : '',
+      fourn_cp: mainCp ? `${mainCp.fournisseur || ''} (${mainCp.ref_fournisseur || ''})` : '',
+      solution: c.solution_interne || '', notes: c.notes || '',
+    };
+  };
+
   const openEdit = (c = null) => {
     setError('');
     setEditingId(c ? c.id : 'new');
@@ -165,11 +183,24 @@ const CatalogueConnecteurs = () => {
             <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>{connecteurs.length} connecteur(s) — avec fournisseurs et contre-parties</p>
           </div>
         </div>
-        <button onClick={() => openEdit()}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
-          <Plus className="w-4 h-4" /> Nouveau connecteur
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <ExportPickerButton
+            items={filtered}
+            getKey={(c) => c.id}
+            getSearchText={(c) => `${c.ref_connecteur || ''} ${c.designation || ''} ${c.ref_contrepartie || ''}`}
+            getPrimaryLabel={(c) => c.ref_connecteur || '—'}
+            getSecondaryLabel={(c) => c.designation || ''}
+            columns={connecteursExportColumns}
+            buildRow={buildConnecteurRow}
+            filename={() => `Catalogue_connecteurs_${new Date().toISOString().slice(0, 10)}.pdf`}
+            title="Catalogue connecteurs"
+          />
+          <button onClick={() => openEdit()}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+            <Plus className="w-4 h-4" /> Nouveau connecteur
+          </button>
+        </div>
       </motion.div>
 
       {/* Edit form */}

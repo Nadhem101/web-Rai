@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { articleTestService } from '../../services/api';
+import ExportExcelButton from '../../components/ui/ExportExcelButton.jsx';
+import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 import {
   Search, Plus, X, Pencil, Trash2, Cable, AlertCircle,
   ChevronRight, Cpu, BookOpen, XCircle,
@@ -398,6 +400,16 @@ const TestCables = () => {
 
   const progOptions = ['Auto-apprentissage', 'Programmé'];
 
+  const testCablesExportColumns = [
+    { header: 'N° Article', key: 'numero' }, { header: 'Indice', key: 'indice' },
+    { header: 'Désignation', key: 'designation', width: 28 }, { header: 'Testeur', key: 'testeur' },
+    { header: 'Programme', key: 'programme' }, { header: 'Nappes', key: 'nappes' },
+  ];
+  const buildArticleRow = (a) => ({
+    numero: a.numero_article || '', indice: a.indice || '', designation: a.designation || '',
+    testeur: a.numero_testeur || '', programme: a.programme_test || '', nappes: a.details?.length ?? 0,
+  });
+
   return (
     <div className="px-[26px] pt-6 pb-10 flex-1 overflow-auto space-y-[18px]" style={{ background: 'var(--bg)' }}>
 
@@ -412,11 +424,30 @@ const TestCables = () => {
             <p className="text-[13px] mt-1" style={{ color: 'var(--text3)' }}>Référentiel de test — nappes, emplacements et interfaces</p>
           </div>
         </div>
-        <button onClick={() => openForm()}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
-          <Plus className="w-4 h-4" /> Nouvel article
-        </button>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <ExportExcelButton
+            filename={`Test_cables_${new Date().toISOString().slice(0, 10)}.xlsx`}
+            sheetName="Test câbles"
+            columns={testCablesExportColumns}
+            rows={filtered.map(buildArticleRow)}
+          />
+          <ExportPickerButton
+            items={filtered}
+            getKey={(a) => a.id}
+            getSearchText={(a) => `${a.numero_article || ''} ${a.designation || ''} ${a.indice || ''}`}
+            getPrimaryLabel={(a) => a.numero_article || '—'}
+            getSecondaryLabel={(a) => a.designation || ''}
+            columns={testCablesExportColumns}
+            buildRow={buildArticleRow}
+            filename={() => `Test_cables_${new Date().toISOString().slice(0, 10)}.pdf`}
+            title="Test des câbles faisceaux"
+          />
+          <button onClick={() => openForm()}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
+            style={{ background: 'linear-gradient(135deg, var(--accent3), var(--accent2))', boxShadow: '0 6px 18px var(--accent-soft)' }}>
+            <Plus className="w-4 h-4" /> Nouvel article
+          </button>
+        </div>
       </div>
 
       {/* ── Search bar ── */}

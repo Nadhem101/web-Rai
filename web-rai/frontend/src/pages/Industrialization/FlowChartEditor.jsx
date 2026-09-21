@@ -284,6 +284,7 @@ const FlowChartEditor = () => {
   const [newSubTool,    setNewSubTool]    = useState('');
   const [newSubParam,   setNewSubParam]   = useState('');
   const mediaFileRef = useRef(null);
+  const subMediaFileRef = useRef(null);
 
   // ── Load from DB ─────────────────────────────────────────
   const loadFlowchart = useCallback(async () => {
@@ -513,14 +514,14 @@ const FlowChartEditor = () => {
   // ── Sub-step helpers ───────────────────────────────────────
   const openAddSubStep = () => {
     setAddingSubStep(true); setEditingSubIdx(null);
-    setSubDraft({ label: '', description: '', tools: [], parameters: [] });
+    setSubDraft({ label: '', description: '', tools: [], parameters: [], media: [] });
     setNewSubTool(''); setNewSubParam('');
   };
 
   const openEditSubStep = (idx) => {
     const ss = (selectedStep?.subSteps || [])[idx]; if (!ss) return;
     setEditingSubIdx(idx); setAddingSubStep(false);
-    setSubDraft({ ...ss, tools: [...(ss.tools || [])], parameters: [...(ss.parameters || [])] });
+    setSubDraft({ ...ss, tools: [...(ss.tools || [])], parameters: [...(ss.parameters || [])], media: [...(ss.media || [])] });
     setNewSubTool(''); setNewSubParam('');
   };
 
@@ -539,6 +540,7 @@ const FlowChartEditor = () => {
         description: subDraft.description || '',
         tools: subDraft.tools || [],
         parameters: subDraft.parameters || [],
+        media: subDraft.media || [],
       });
     } else if (editingSubIdx !== null) {
       subs[editingSubIdx] = {
@@ -547,6 +549,7 @@ const FlowChartEditor = () => {
         description: subDraft.description || '',
         tools: subDraft.tools || [],
         parameters: subDraft.parameters || [],
+        media: subDraft.media || [],
       };
     }
     const nextSteps = steps.map(s => s.id === selectedId ? { ...s, subSteps: subs } : s);
@@ -581,6 +584,12 @@ const FlowChartEditor = () => {
   const removeSubParamFromDraft = (i) =>
     setSubDraft(d => ({ ...d, parameters: (d.parameters || []).filter((_, idx) => idx !== i) }));
 
+  const removeSubMedia = (i) => setSubDraft(d => ({ ...d, media: d.media.filter((_, idx) => idx !== i) }));
+  const updateSubMediaTitle = (i, title) => setSubDraft(d => ({
+    ...d,
+    media: d.media.map((m, idx) => idx === i ? { ...m, title } : m),
+  }));
+
   // ── File upload to Supabase Storage ───────────────────────
   // Uses the app's shared, already-authenticated client (lib/supabase.js) — the
   // flowchart-media bucket's RLS policies only allow writes from logged-in users.
@@ -612,6 +621,26 @@ const FlowChartEditor = () => {
           // Default title = filename without extension; user can edit inline
           const defaultTitle = file.name.replace(/\.[^/.]+$/, '');
           setDraft(d => ({
+            ...d,
+            media: [...(d.media || []), { type, title: defaultTitle, url, duration: '' }],
+          }));
+        }
+      }
+    } finally { setUploadingFile(false); e.target.value = ''; }
+  };
+
+  const handleSubFileUpload = async (e) => {
+    const files = Array.from(e.target.files || []); if (!files.length) return;
+    setUploadingFile(true);
+    try {
+      for (const file of files) {
+        const url = await uploadFile(file);
+        if (url) {
+          const type = file.type.startsWith('image/') ? 'image'
+            : file.type.startsWith('video/') ? 'video'
+            : 'document';
+          const defaultTitle = file.name.replace(/\.[^/.]+$/, '');
+          setSubDraft(d => ({
             ...d,
             media: [...(d.media || []), { type, title: defaultTitle, url, duration: '' }],
           }));
@@ -835,6 +864,48 @@ const FlowChartEditor = () => {
               pdf.text(tLines, MARGIN + 7, y);
               y += tLines.length * 4 + 1;
             }
+
+            if ((ss.media || []).length > 0) {
+              checkPage(6);
+              pdf.setFontSize(7.5);
+              pdf.setFont('helvetica', 'bold');
+              pdf.setTextColor(99, 102, 241); // indigo-600
+              pdf.text('Photos / Vidéos / Documents :', MARGIN + 7, y); y += 4;
+              for (const m of ss.media) {
+                checkPage(5);
+                const icon = m.type === 'video' ? '[Vidéo]' : m.type === 'document' ? '[Doc]' : '[Image]';
+                pdf.setFontSize(7.5);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(51, 65, 85);
+                const mLines = pdf.splitTextToSize(`${icon} ${m.title || 'Sans titre'}`, COL - 18);
+                pdf.text(mLines, MARGIN + 9, y);
+                y += mLines.length * 4 + 1;
+
+                let embedded = false;
+                if (m.type === 'image' && m.url) {
+                  try {
+                    const dataUrl = await urlToDataURL(m.url);
+                    const props = pdf.getImageProperties(dataUrl);
+                    const maxW = 65, maxH = 48;
+                    let w = maxW, h = (props.height * maxW) / props.width;
+                    if (h > maxH) { h = maxH; w = (props.width * maxH) / props.height; }
+                    checkPage(h + 4);
+                    pdf.addImage(dataUrl, props.fileType, MARGIN + 9, y, w, h);
+                    y += h + 3;
+                    embedded = true;
+                  } catch (imgErr) {
+                    console.warn('Image embed failed, falling back to link:', m.title, imgErr.message);
+                  }
+                }
+                if (!embedded && m.url) {
+                  pdf.setFontSize(6.5);
+                  pdf.setTextColor(148, 163, 184);
+                  pdf.textWithLink(m.url.slice(0, 65) + (m.url.length > 65 ? '…' : ''), MARGIN + 11, y, { url: m.url });
+                  y += 4;
+                }
+              }
+              y += 1;
+            }
             y += 2;
           }
           y += 1;
@@ -983,6 +1054,15 @@ const FlowChartEditor = () => {
                 ${ss.description ? `<p style="font-size:9pt;color:#334155;margin:2px 0;font-style:italic;">${escape(ss.description)}</p>` : ''}
                 ${(ss.parameters||[]).length > 0 ? `<p style="font-size:9pt;color:#0ea5e9;margin:4px 0 2px;font-weight:bold;">Paramètres :</p><ul style="margin:0;padding-left:16px;">${ss.parameters.map(p=>`<li style="font-size:9pt;">${escape(p)}</li>`).join('')}</ul>` : ''}
                 ${(ss.tools||[]).length > 0 ? `<p style="font-size:9pt;color:#d97706;margin:4px 0 0;"><strong>Outils :</strong> ${ss.tools.map(escape).join(' · ')}</p>` : ''}
+                ${(ss.media||[]).length > 0 ? `<p style="font-weight:bold;color:#6366f1;font-size:9pt;margin:6px 0 3px;">Photos / Vidéos / Documents :</p>${
+                  ss.media.map(m => {
+                    const icon = m.type === 'video' ? '🎬' : m.type === 'document' ? '📄' : '📷';
+                    const imgTag = m.type === 'image' && m.url
+                      ? `<br/><img src="${m.url}" style="max-width:320px;max-height:200px;display:block;margin:3px 0;border:1px solid #e2e8f0;" />`
+                      : '';
+                    return `<p style="font-size:9pt;margin:2px 0;">${icon} <strong>${escape(m.title || 'Sans titre')}</strong>${imgTag}</p>`;
+                  }).join('')
+                }` : ''}
               </div>`).join('')}
           </div>` : '';
 
@@ -1150,6 +1230,25 @@ const FlowChartEditor = () => {
           <button type="button" onClick={addSubParamToDraft} disabled={!newSubParam.trim()}
             className="flex-shrink-0 w-8 rounded-lg bg-sky-500 text-white text-sm font-bold hover:bg-sky-600 disabled:opacity-40">+</button>
         </div>
+      </div>
+
+      {/* Media */}
+      <div>
+        <p className={labelCls} style={{ color: 'var(--text3)' }}>Photos / Vidéos ({(subDraft?.media || []).length})</p>
+        <div className="space-y-1.5 mb-1.5">
+          {(subDraft?.media || []).map((m, i) => (
+            <MediaItem key={i} item={m} index={i}
+              onRemove={() => removeSubMedia(i)}
+              onTitleChange={updateSubMediaTitle}
+              onOpen={setLightboxItem} />
+          ))}
+        </div>
+        <button type="button" onClick={() => subMediaFileRef.current?.click()}
+          disabled={uploadingFile}
+          className="w-full py-2 rounded-xl text-[11px] font-semibold border-2 border-dashed border-slate-300 text-slate-500 hover:border-sky-400 hover:text-sky-600 transition-colors disabled:opacity-50">
+          {uploadingFile ? '⏳ Upload en cours…' : '📎 Ajouter fichier — image · vidéo · PDF · Word'}
+        </button>
+        <input ref={subMediaFileRef} type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx" className="hidden" onChange={handleSubFileUpload} />
       </div>
 
       <div className="flex gap-2 pt-1">
@@ -1554,6 +1653,11 @@ const FlowChartEditor = () => {
                               )}
                               {(ss.parameters || []).length > 0 && (
                                 <p className="text-[10px] text-sky-600 mt-0.5">{ss.parameters.length} paramètre(s)</p>
+                              )}
+                              {(ss.media || []).length > 0 && (
+                                <p className="text-[10px] text-indigo-600 mt-0.5 flex items-center gap-1">
+                                  <Image className="w-2.5 h-2.5" />{ss.media.length} fichier(s)
+                                </p>
                               )}
                             </div>
                             <div className="flex gap-0.5 flex-shrink-0">
