@@ -519,6 +519,23 @@ const TestCables = () => {
     testeur: a.numero_testeur || '', programme: a.programme_test || '', nappes: a.details?.length ?? 0,
   });
 
+  const testCablesDetailExportColumns = [
+    { header: 'N° Article', key: 'numero' }, { header: 'Indice', key: 'indice' },
+    { header: 'Désignation', key: 'designation', width: 26 }, { header: 'Testeur', key: 'testeur' },
+    { header: 'Programme', key: 'programme' }, { header: 'Nappe utilisée', key: 'nappe' },
+    { header: 'Emplacement', key: 'emplacement' }, { header: 'Interface', key: 'interface' },
+  ];
+  const buildArticleDetailRows = (a) => {
+    const base = {
+      numero: a.numero_article || '', indice: a.indice || '', designation: a.designation || '',
+      testeur: a.numero_testeur || '', programme: a.programme_test || '',
+    };
+    if (!a.details?.length) return [{ ...base, nappe: '', emplacement: '', interface: '' }];
+    return a.details.map((d) => ({
+      ...base, nappe: d.nappe_utilisee || '', emplacement: d.emplacement || '', interface: d.interface || '',
+    }));
+  };
+
   return (
     <div className="px-[26px] pt-6 pb-10 flex-1 overflow-auto space-y-[18px]" style={{ background: 'var(--bg)' }}>
 
@@ -535,10 +552,18 @@ const TestCables = () => {
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
           <ExportExcelButton
+            label="Excel résumé"
             filename={`Test_cables_${new Date().toISOString().slice(0, 10)}.xlsx`}
             sheetName="Test câbles"
             columns={testCablesExportColumns}
             rows={filtered.map(buildArticleRow)}
+          />
+          <ExportExcelButton
+            label="Excel détaillé"
+            filename={`Test_cables_detaille_${new Date().toISOString().slice(0, 10)}.xlsx`}
+            sheetName="Test câbles détaillé"
+            columns={testCablesDetailExportColumns}
+            rows={filtered.flatMap(buildArticleDetailRows)}
           />
           <ExportPickerButton
             label="PDF résumé"
