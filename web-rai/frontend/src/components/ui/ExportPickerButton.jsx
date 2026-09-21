@@ -7,7 +7,7 @@ import { exportRowsToPDF } from '../../utils/pdfExport';
 // generalized so any list page can drop it in with its own item shape.
 function ExportPickerModal({
   isOpen, onClose, items, getKey, getSearchText, getPrimaryLabel, getSecondaryLabel,
-  columns, buildRow, buildRows, filename, title,
+  columns, buildRow, buildRows, onExport, filename, title,
 }) {
   const [mode,      setMode]      = useState('view'); // 'view' | 'custom'
   const [search,    setSearch]    = useState('');
@@ -35,19 +35,25 @@ function ExportPickerModal({
   const handleExport = async () => {
     const targetItems = mode === 'view' ? items : items.filter((it) => selected.has(getKey(it)));
     if (targetItems.length === 0) { alert('Aucun élément à exporter.'); return; }
-    // buildRows lets one item expand into several output rows (e.g. one piece
-    // of equipment → its whole measurement history); buildRow stays the
-    // simple 1-row-per-item path most pages use.
-    const rows = buildRows ? targetItems.flatMap(buildRows) : targetItems.map(buildRow);
     setExporting(true);
     try {
-      await exportRowsToPDF({
-        filename: typeof filename === 'function' ? filename() : filename,
-        title,
-        subtitle: `Exporté le ${new Date().toLocaleDateString('fr-FR')} — ${rows.length} ligne(s)`,
-        columns,
-        rows,
-      });
+      if (onExport) {
+        // Fully custom export (e.g. a detailed multi-page fiche per item)
+        // instead of the generic flat-table builder below.
+        await onExport(targetItems);
+      } else {
+        // buildRows lets one item expand into several output rows (e.g. one
+        // piece of equipment → its whole measurement history); buildRow
+        // stays the simple 1-row-per-item path most pages use.
+        const rows = buildRows ? targetItems.flatMap(buildRows) : targetItems.map(buildRow);
+        await exportRowsToPDF({
+          filename: typeof filename === 'function' ? filename() : filename,
+          title,
+          subtitle: `Exporté le ${new Date().toLocaleDateString('fr-FR')} — ${rows.length} ligne(s)`,
+          columns,
+          rows,
+        });
+      }
       onClose();
     } catch (err) {
       console.error('Erreur export PDF:', err);
@@ -135,7 +141,7 @@ function ExportPickerModal({
   );
 }
 
-const ExportPickerButton = (props) => {
+const ExportPickerButton = ({ label = 'Exporter PDF', ...props }) => {
   const [open, setOpen] = useState(false);
   const items = props.items || [];
   const hasItems = items.length > 0;
@@ -146,7 +152,7 @@ const ExportPickerButton = (props) => {
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-xs font-semibold transition-colors disabled:opacity-50"
         style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text2)' }}>
         <FileText className="w-3.5 h-3.5" />
-        Exporter PDF
+        {label}
       </button>
       <ExportPickerModal {...props} items={items} isOpen={open} onClose={() => setOpen(false)} />
     </>

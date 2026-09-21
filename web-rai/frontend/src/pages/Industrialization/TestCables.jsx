@@ -4,7 +4,7 @@ import ExportExcelButton from '../../components/ui/ExportExcelButton.jsx';
 import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 import {
   Search, Plus, X, Pencil, Trash2, Cable, AlertCircle,
-  ChevronRight, Cpu, BookOpen, XCircle,
+  ChevronRight, Cpu, BookOpen, XCircle, FileDown,
 } from 'lucide-react';
 
 // ── Helpers ────────────────────────────────────────────────
@@ -23,6 +23,101 @@ const programmeBadge = (p) => {
 
 const testeurBadge = () => ({ background: 'var(--warn-soft)', color: 'var(--warn)' });
 
+// ── Detailed PDF — one fiche per article (header + testeur/programme +
+// full nappe table), matching the on-screen detail modal. Used both for a
+// single article (from the detail modal) and for several at once (from the
+// list's "whole view / custom selection" picker) — one fiche per page.
+const exportArticlesDetailPDF = async (articles) => {
+  if (!articles?.length) { alert('Aucun article à exporter.'); return; }
+  const { jsPDF } = await import('jspdf');
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const PW = pdf.internal.pageSize.getWidth();
+  const PH = pdf.internal.pageSize.getHeight();
+  const MARGIN = 15;
+  const COL = PW - MARGIN * 2;
+  let y = MARGIN;
+
+  const checkPage = (needed = 10) => {
+    if (y + needed > PH - MARGIN) { pdf.addPage(); y = MARGIN; }
+  };
+
+  articles.forEach((article, idx) => {
+    if (idx > 0) { pdf.addPage(); y = MARGIN; }
+
+    pdf.setFillColor(15, 29, 53);
+    pdf.rect(0, 0, PW, 26, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFontSize(14);
+    pdf.setFont('helvetica', 'bold');
+    const titleLine = `${article.numero_article || ''}${article.indice ? `  Ind.${article.indice}` : ''}`;
+    pdf.text(titleLine, MARGIN, 13);
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(180, 200, 220);
+    pdf.text(article.designation || '—', MARGIN, 20);
+    y = 34;
+
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(51, 65, 85);
+    pdf.text(`Testeur : ${article.numero_testeur || '—'}      Programme : ${article.programme_test || '—'}`, MARGIN, y);
+    y += 8;
+
+    const details = article.details || [];
+    if (details.length === 0) {
+      pdf.setFont('helvetica', 'italic');
+      pdf.setFontSize(9);
+      pdf.setTextColor(148, 163, 184);
+      pdf.text('Aucune nappe renseignée.', MARGIN, y);
+      y += 8;
+    } else {
+      const colW = [COL * 0.34, COL * 0.3, COL * 0.36];
+      const rowH = 8;
+      const drawHeader = () => {
+        checkPage(rowH * 2);
+        pdf.setFillColor(226, 232, 240);
+        pdf.rect(MARGIN, y, COL, rowH, 'F');
+        pdf.setTextColor(30, 41, 59);
+        pdf.setFontSize(8);
+        pdf.setFont('helvetica', 'bold');
+        let x = MARGIN;
+        ['Nappe utilisée', 'Emplacement', 'Interface'].forEach((h, i) => { pdf.text(h, x + 2, y + 5.5); x += colW[i]; });
+        y += rowH;
+      };
+      drawHeader();
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
+      details.forEach((d, i) => {
+        if (y + rowH > PH - MARGIN) { pdf.addPage(); y = MARGIN; drawHeader(); pdf.setFont('helvetica', 'normal'); pdf.setFontSize(8); }
+        if (i % 2 === 1) { pdf.setFillColor(248, 250, 252); pdf.rect(MARGIN, y, COL, rowH, 'F'); }
+        pdf.setDrawColor(226, 232, 240);
+        pdf.rect(MARGIN, y, COL, rowH, 'S');
+        pdf.setTextColor(51, 65, 85);
+        let x = MARGIN;
+        [d.nappe_utilisee, d.emplacement, d.interface].forEach((val, i2) => {
+          pdf.text(val || '—', x + 2, y + 5.5);
+          x += colW[i2];
+        });
+        y += rowH;
+      });
+      y += 4;
+    }
+  });
+
+  const pageCount = pdf.internal.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p += 1) {
+    pdf.setPage(p);
+    pdf.setFontSize(7);
+    pdf.setTextColor(148, 163, 184);
+    pdf.text(`WEB-RAI — Test des câbles — Page ${p}/${pageCount}`, MARGIN, PH - 8);
+  }
+
+  const filename = articles.length === 1
+    ? `${(articles[0].numero_article || 'article').replace(/\s+/g, '_')}_fiche.pdf`
+    : `Test_cables_fiches_${new Date().toISOString().slice(0, 10)}.pdf`;
+  pdf.save(filename);
+};
+
 // ── Shared styles ──────────────────────────────────────────
 const fieldClass = 'w-full rounded-[10px] px-4 py-2.5 text-sm outline-none transition-colors';
 const fieldStyle = { background: 'var(--panel2)', border: '1px solid var(--border)', color: 'var(--text)' };
@@ -34,11 +129,20 @@ const cellStyle  = { background: 'var(--panel2)', border: '1px solid var(--borde
 // Detail modal — shows the test card for one article
 // ─────────────────────────────────────────────────────────────
 const DetailModal = ({ article, onClose, onEdit }) => {
+  const [exportingPdf, setExportingPdf] = useState(false);
   if (!article) return null;
+
+  const handleExportPdf = async () => {
+    setExportingPdf(true);
+    try { await exportArticlesDetailPDF([article]); }
+    finally { setExportingPdf(false); }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl"
+        style={{ background: 'var(--panel)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -57,6 +161,11 @@ const DetailModal = ({ article, onClose, onEdit }) => {
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
+            <button onClick={handleExportPdf} disabled={exportingPdf}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-sky-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+              title="Exporter en PDF">
+              {exportingPdf ? <span className="w-3.5 h-3.5 border-2 border-slate-500 border-t-transparent rounded-full animate-spin" /> : <FileDown className="w-3.5 h-3.5" />}
+            </button>
             <button onClick={() => { onClose(); onEdit(article); }}
               className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:text-sky-300 hover:bg-white/10 transition-colors"
               title="Modifier">
@@ -191,7 +300,7 @@ const FormModal = ({ article, onClose, onSaved }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl">
+      <div className="flex max-h-[92vh] min-h-0 w-full max-w-2xl flex-col overflow-hidden rounded-[18px] shadow-2xl" style={{ background: 'var(--panel)' }}>
         {/* Header */}
         <div className="flex items-start justify-between gap-4 px-6 py-5 flex-shrink-0"
           style={{ background: 'linear-gradient(135deg, #0d1828, #0a2820)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -432,6 +541,7 @@ const TestCables = () => {
             rows={filtered.map(buildArticleRow)}
           />
           <ExportPickerButton
+            label="PDF résumé"
             items={filtered}
             getKey={(a) => a.id}
             getSearchText={(a) => `${a.numero_article || ''} ${a.designation || ''} ${a.indice || ''}`}
@@ -441,6 +551,15 @@ const TestCables = () => {
             buildRow={buildArticleRow}
             filename={() => `Test_cables_${new Date().toISOString().slice(0, 10)}.pdf`}
             title="Test des câbles faisceaux"
+          />
+          <ExportPickerButton
+            label="PDF détaillé"
+            items={filtered}
+            getKey={(a) => a.id}
+            getSearchText={(a) => `${a.numero_article || ''} ${a.designation || ''} ${a.indice || ''}`}
+            getPrimaryLabel={(a) => a.numero_article || '—'}
+            getSecondaryLabel={(a) => a.designation || ''}
+            onExport={exportArticlesDetailPDF}
           />
           <button onClick={() => openForm()}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] text-[13px] font-bold text-white transition-transform hover:-translate-y-0.5"
