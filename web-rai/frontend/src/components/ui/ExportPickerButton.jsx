@@ -1,13 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, FileText } from 'lucide-react';
+import { Search, FileText, FileSpreadsheet } from 'lucide-react';
 import { exportRowsToPDF } from '../../utils/pdfExport';
+import { exportRowsToExcel } from '../../utils/excelExport';
 
-// Generic "Exporter PDF" trigger + modal — same choose-what-to-export concept
-// as the ECME export (whole/current view, or a searchable custom selection),
-// generalized so any list page can drop it in with its own item shape.
+// Generic "choose what to export" trigger + modal — whole/current view, or a
+// searchable custom selection — generalized so any list page can drop it in
+// with its own item shape, for either a PDF or an Excel output (`format`).
 function ExportPickerModal({
   isOpen, onClose, items, getKey, getSearchText, getPrimaryLabel, getSecondaryLabel,
-  columns, buildRow, buildRows, onExport, filename, title,
+  columns, buildRow, buildRows, onExport, filename, title, sheetName,
+  mergeGroupKey, mergeColumns, format = 'pdf',
 }) {
   const [mode,      setMode]      = useState('view'); // 'view' | 'custom'
   const [search,    setSearch]    = useState('');
@@ -46,22 +48,30 @@ function ExportPickerModal({
         // piece of equipment → its whole measurement history); buildRow
         // stays the simple 1-row-per-item path most pages use.
         const rows = buildRows ? targetItems.flatMap(buildRows) : targetItems.map(buildRow);
-        await exportRowsToPDF({
-          filename: typeof filename === 'function' ? filename() : filename,
-          title,
-          subtitle: `Exporté le ${new Date().toLocaleDateString('fr-FR')} — ${rows.length} ligne(s)`,
-          columns,
-          rows,
-        });
+        const resolvedFilename = typeof filename === 'function' ? filename() : filename;
+        if (format === 'excel') {
+          await exportRowsToExcel({ filename: resolvedFilename, sheetName: sheetName || title, columns, rows, mergeGroupKey, mergeColumns });
+        } else {
+          await exportRowsToPDF({
+            filename: resolvedFilename,
+            title,
+            subtitle: `Exporté le ${new Date().toLocaleDateString('fr-FR')} — ${rows.length} ligne(s)`,
+            columns,
+            rows,
+          });
+        }
       }
       onClose();
     } catch (err) {
-      console.error('Erreur export PDF:', err);
-      alert("Erreur lors de l'export PDF.");
+      console.error(`Erreur export ${format === 'excel' ? 'Excel' : 'PDF'}:`, err);
+      alert(`Erreur lors de l'export ${format === 'excel' ? 'Excel' : 'PDF'}.`);
     } finally {
       setExporting(false);
     }
   };
+
+  const FormatIcon = format === 'excel' ? FileSpreadsheet : FileText;
+  const formatName = format === 'excel' ? 'Excel' : 'PDF';
 
   const MODES = [
     { id: 'view', label: 'Vue actuelle', desc: 'Tous les éléments actuellement affichés (recherche/filtre inclus).' },
@@ -74,7 +84,7 @@ function ExportPickerModal({
       <div className="relative rounded-[16px] shadow-2xl w-[440px] max-h-[85vh] flex flex-col overflow-hidden" style={{ background: 'var(--panel)' }}>
         <div className="px-5 py-4 flex items-center justify-between flex-shrink-0" style={{ background: 'linear-gradient(135deg, #0d1828, #0a2820)' }}>
           <p className="text-sm font-bold text-white font-display flex items-center gap-2">
-            <FileText className="w-4 h-4 opacity-70" /> Exporter en PDF
+            <FormatIcon className="w-4 h-4 opacity-70" /> Exporter en {formatName}
           </p>
           <button onClick={onClose} className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors text-base flex-shrink-0">✕</button>
         </div>
@@ -141,20 +151,22 @@ function ExportPickerModal({
   );
 }
 
-const ExportPickerButton = ({ label = 'Exporter PDF', ...props }) => {
+const ExportPickerButton = ({ label, format = 'pdf', ...props }) => {
   const [open, setOpen] = useState(false);
   const items = props.items || [];
   const hasItems = items.length > 0;
+  const Icon = format === 'excel' ? FileSpreadsheet : FileText;
+  const resolvedLabel = label || (format === 'excel' ? 'Exporter Excel' : 'Exporter PDF');
 
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} disabled={!hasItems}
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-xs font-semibold transition-colors disabled:opacity-50"
         style={{ background: 'var(--panel)', border: '1px solid var(--border)', color: 'var(--text2)' }}>
-        <FileText className="w-3.5 h-3.5" />
-        {label}
+        <Icon className="w-3.5 h-3.5" />
+        {resolvedLabel}
       </button>
-      <ExportPickerModal {...props} items={items} isOpen={open} onClose={() => setOpen(false)} />
+      <ExportPickerModal {...props} items={items} format={format} isOpen={open} onClose={() => setOpen(false)} />
     </>
   );
 };

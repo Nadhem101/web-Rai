@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { articleTestService } from '../../services/api';
-import ExportExcelButton from '../../components/ui/ExportExcelButton.jsx';
 import ExportPickerButton from '../../components/ui/ExportPickerButton.jsx';
 import {
   Search, Plus, X, Pencil, Trash2, Cable, AlertCircle,
@@ -551,19 +550,31 @@ const TestCables = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
-          <ExportExcelButton
+          <ExportPickerButton
+            format="excel"
             label="Excel résumé"
-            filename={`Test_cables_${new Date().toISOString().slice(0, 10)}.xlsx`}
-            sheetName="Test câbles"
+            items={filtered}
+            getKey={(a) => a.id}
+            getSearchText={(a) => `${a.numero_article || ''} ${a.designation || ''} ${a.indice || ''}`}
+            getPrimaryLabel={(a) => a.numero_article || '—'}
+            getSecondaryLabel={(a) => a.designation || ''}
             columns={testCablesExportColumns}
-            rows={filtered.map(buildArticleRow)}
+            buildRow={buildArticleRow}
+            filename={() => `Test_cables_${new Date().toISOString().slice(0, 10)}.xlsx`}
+            sheetName="Test câbles"
           />
-          <ExportExcelButton
+          <ExportPickerButton
+            format="excel"
             label="Excel détaillé"
-            filename={`Test_cables_detaille_${new Date().toISOString().slice(0, 10)}.xlsx`}
-            sheetName="Test câbles détaillé"
+            items={filtered}
+            getKey={(a) => a.id}
+            getSearchText={(a) => `${a.numero_article || ''} ${a.designation || ''} ${a.indice || ''}`}
+            getPrimaryLabel={(a) => a.numero_article || '—'}
+            getSecondaryLabel={(a) => a.designation || ''}
             columns={testCablesDetailExportColumns}
-            rows={filtered.flatMap(buildArticleDetailRows)}
+            buildRows={buildArticleDetailRows}
+            filename={() => `Test_cables_detaille_${new Date().toISOString().slice(0, 10)}.xlsx`}
+            sheetName="Test câbles détaillé"
             mergeGroupKey={(r) => `${r.numero}__${r.indice}`}
             mergeColumns={['numero', 'indice', 'designation', 'testeur', 'programme']}
           />
