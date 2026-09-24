@@ -1,4 +1,4 @@
-const { Pince, PinceVariant, PinceMaintenanceRecord, Fabricant, Cosse } = require('../models');
+const { Pince, PinceVariant, PinceMaintenanceRecord, Fabricant, Cosse, Zone } = require('../models');
 
 const normalizeText = (value = '') => String(value ?? '').replace(/\uFEFF/g, '').trim();
 
@@ -50,6 +50,7 @@ exports.findAll = async (req, res) => {
     const pinces = await Pince.findAll({
       include: [
         Fabricant,
+        Zone,
         {
           model: PinceVariant,
           as: 'variants',
@@ -74,6 +75,7 @@ exports.findOne = async (req, res) => {
     const pince = await Pince.findByPk(req.params.id, {
       include: [
         Fabricant,
+        Zone,
         {
           model: PinceVariant,
           as: 'variants',

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { cosseService, fabricantService, pinceService } from '../services/api';
+import { cosseService, fabricantService, pinceService, zoneService } from '../services/api';
 import { X, Wrench, Pencil, AlertCircle } from 'lucide-react';
 
 const normalizeToolCode = (value = '') =>
@@ -18,6 +18,7 @@ const buildInitialState = (pince) => ({
   fabricant_nom:    pince?.Fabricant?.nom   ?? '',
   statut:           pince?.statut           ?? 'À vérifier',
   remarque:         pince?.remarque         ?? '',
+  zone_id:          pince?.zone_id != null ? String(pince.zone_id) : (pince?.Zone?.id != null ? String(pince.Zone.id) : ''),
 });
 
 const fieldClass = 'w-full rounded-[10px] px-4 py-2.5 text-sm outline-none transition-colors';
@@ -27,6 +28,7 @@ const labelClass = 'mb-1.5 block text-xs font-semibold uppercase tracking-[0.12e
 const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
   const [formData,       setFormData]       = useState(buildInitialState(pince));
   const [fabricants,     setFabricants]     = useState([]);
+  const [zones,          setZones]          = useState([]);
   const [cosses,         setCosses]         = useState([]);
   const [selectedCosseId, setSelectedCosseId] = useState('');
   const [cosseSearch,    setCosseSearch]    = useState('');
@@ -47,12 +49,13 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
     const load = async () => {
       setLoadingOptions(true);
       try {
-        const [fr, cr] = await Promise.all([fabricantService.getAll(), cosseService.getAll()]);
+        const [fr, zr, cr] = await Promise.all([fabricantService.getAll(), zoneService.getAll(), cosseService.getAll()]);
         if (!cancelled) {
           setFabricants(Array.isArray(fr?.data) ? fr.data : []);
+          setZones(Array.isArray(zr?.data) ? zr.data : []);
           setCosses(Array.isArray(cr) ? cr : []);
         }
-      } catch { if (!cancelled) { setFabricants([]); setCosses([]); } }
+      } catch { if (!cancelled) { setFabricants([]); setZones([]); setCosses([]); } }
       finally   { if (!cancelled) setLoadingOptions(false); }
     };
     load();
@@ -77,6 +80,10 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
   const fabricantOptions = useMemo(
     () => fabricants.slice().sort((a, b) => String(a.nom ?? '').localeCompare(String(b.nom ?? ''), 'fr', { numeric: true, sensitivity: 'base' })),
     [fabricants]
+  );
+  const zoneOptions = useMemo(
+    () => zones.slice().sort((a, b) => String(a.nom_zone ?? '').localeCompare(String(b.nom_zone ?? ''), 'fr', { numeric: true, sensitivity: 'base' })),
+    [zones]
   );
   const cosseOptions = useMemo(
     () => cosses.slice().sort((a, b) => buildCosseLabel(a).localeCompare(buildCosseLabel(b), 'fr', { numeric: true, sensitivity: 'base' })),
@@ -122,6 +129,7 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
       fabricant_nom:    formData.fabricant_nom.trim() || null,
       statut:           formData.statut,
       remarque:         formData.remarque.trim() || null,
+      zone_id:          formData.zone_id ? Number(formData.zone_id) : null,
       ...(selectedCosseId ? { cosse_id: Number(selectedCosseId) } : {}),
     };
     try {
@@ -235,16 +243,26 @@ const PinceForm = ({ pince, isOpen, onClose, onSuccess }) => {
             </div>
           </div>
 
-          <label className="block">
-            <span className={labelClass} style={{ color: 'var(--text3)' }}>Statut</span>
-            <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass} style={fieldStyle}>
-              <option value="En service">En service</option>
-              <option value="Hors service">Hors service</option>
-              <option value="À vérifier">À vérifier</option>
-              <option value="Manque cosse">Manque cosse</option>
-              <option value="Vérification visuelle">Vérification visuelle</option>
-            </select>
-          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="block">
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Statut</span>
+              <select name="statut" value={formData.statut} onChange={handleChange} className={fieldClass} style={fieldStyle}>
+                <option value="En service">En service</option>
+                <option value="Hors service">Hors service</option>
+                <option value="À vérifier">À vérifier</option>
+                <option value="Manque cosse">Manque cosse</option>
+                <option value="Vérification visuelle">Vérification visuelle</option>
+              </select>
+            </label>
+
+            <label className="block">
+              <span className={labelClass} style={{ color: 'var(--text3)' }}>Emplacement <span className="text-slate-400 normal-case font-normal">(zone)</span></span>
+              <select name="zone_id" value={formData.zone_id} onChange={handleChange} className={fieldClass} style={fieldStyle} disabled={loadingOptions}>
+                <option value="">{loadingOptions ? 'Chargement…' : 'Aucune zone'}</option>
+                {zoneOptions.map((z) => <option key={z.id} value={z.id}>{z.nom_zone}</option>)}
+              </select>
+            </label>
+          </div>
 
           <label className="block">
             <span className={labelClass} style={{ color: 'var(--text3)' }}>Remarque</span>

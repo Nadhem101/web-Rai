@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../db/config');
 const Fabricant = require('./fabricant.model');
+const Zone = require('./zone.model');
 
 const Pince = sequelize.define(
   'Pince',
@@ -42,5 +43,6 @@ const Pince = sequelize.define(
 );
 
 Pince.belongsTo(Fabricant, { foreignKey: 'fabricant_id' });
+Pince.belongsTo(Zone, { foreignKey: 'zone_id' });
 
 module.exports = Pince;

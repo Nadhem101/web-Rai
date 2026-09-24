@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { pinceService, pincePreventiveService } from '../services/api';
 import PinceForm from './PinceForm';
 import PinceDetailModal from './PinceDetailModal';
@@ -156,6 +157,9 @@ const HistoriqueDrawer = ({ numeroPince }) => {
 };
 
 const PincesList = ({ searchQuery = '' }) => {
+  const location = useLocation();
+  const preselectedPinceId = location.state?.pinceId ? Number(location.state.pinceId) : null;
+
   const [pinces, setPinces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingPince, setEditingPince] = useState(null);
@@ -164,6 +168,17 @@ const PincesList = ({ searchQuery = '' }) => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => { loadPinces(); }, []);
+
+  // Arriving from Suivi préventif's "voir dans l'inventaire" eye icon —
+  // auto-open that pince's detail once the list has loaded.
+  const autoOpenedRef = React.useRef(false);
+  useEffect(() => {
+    if (preselectedPinceId && pinces.length > 0 && !autoOpenedRef.current) {
+      autoOpenedRef.current = true;
+      const match = pinces.find((p) => p.id === preselectedPinceId);
+      if (match) { setSelectedPince(match); setShowModal(true); }
+    }
+  }, [preselectedPinceId, pinces]);
 
   const loadPinces = async () => {
     try {
@@ -198,12 +213,13 @@ const PincesList = ({ searchQuery = '' }) => {
 
   const pincesExportColumns = [
     { header: 'N° Pince', key: 'numero' }, { header: 'Constructeur', key: 'constructeur' },
-    { header: 'Référence', key: 'reference' }, { header: 'Statut', key: 'statut' },
-    { header: 'Remarque', key: 'remarque', width: 30 },
+    { header: 'Référence', key: 'reference' }, { header: 'Emplacement', key: 'emplacement' },
+    { header: 'Statut', key: 'statut' }, { header: 'Remarque', key: 'remarque', width: 30 },
   ];
   const buildPinceRow = (p) => ({
     numero: p.numero_pince || '', constructeur: p.Fabricant?.nom || '',
-    reference: p.reference_pince || '', statut: p.statut || '', remarque: p.remarque || '',
+    reference: p.reference_pince || '', emplacement: p.Zone?.nom_zone || '',
+    statut: p.statut || '', remarque: p.remarque || '',
   });
 
   const handleDetailClick = (pince) => { setSelectedPince(pince); setShowModal(true); };
@@ -281,6 +297,7 @@ const PincesList = ({ searchQuery = '' }) => {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">N° Pince</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Constructeur</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Référence</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Emplacement</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Statut</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Remarque</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
@@ -289,7 +306,7 @@ const PincesList = ({ searchQuery = '' }) => {
             <tbody className="divide-y divide-slate-100">
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-14 text-center">
+                  <td colSpan={7} className="py-14 text-center">
                     <PackageOpen className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                     <p className="text-sm text-slate-400">Aucune pince trouvée</p>
                   </td>
@@ -300,6 +317,7 @@ const PincesList = ({ searchQuery = '' }) => {
                     <td className="px-4 py-3 font-mono font-bold text-sky-600 whitespace-nowrap">{pince.numero_pince}</td>
                     <td className="px-4 py-3 text-slate-700">{pince.Fabricant?.nom || '—'}</td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-600">{pince.reference_pince || '—'}</td>
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{pince.Zone?.nom_zone || '—'}</td>
                     <td className="px-4 py-3 whitespace-nowrap"><StatusBadge statut={pince.statut} /></td>
                     <td className="px-4 py-3 text-slate-500 max-w-[200px] truncate" title={pince.remarque}>{pince.remarque || '—'}</td>
                     <td className="px-4 py-3">

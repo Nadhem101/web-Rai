@@ -97,6 +97,10 @@ const PinceDetailModal = ({ pince, isOpen, onClose }) => {
                 {pince.statut}
               </span>
             </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-600">Emplacement</label>
+              <p className="text-sm text-gray-700">{pince.Zone?.nom_zone || 'Non renseigné'}</p>
+            </div>
             <div className="col-span-2">
               <label className="text-sm font-semibold text-gray-600">Remarque</label>
               <p className="text-sm text-gray-700 italic">{pince.remarque || 'Aucune remarque'}</p>

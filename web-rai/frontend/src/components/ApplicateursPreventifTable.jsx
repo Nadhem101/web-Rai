@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { applicateurThresholdService, applicateurPreventiveService, applicateurService } from '../services/api';
-import { Search, Zap, PackageOpen, AlertCircle, XCircle, ClipboardList, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Zap, PackageOpen, AlertCircle, XCircle, ClipboardList, X, Eye } from 'lucide-react';
 import ExportExcelButton from './ui/ExportExcelButton.jsx';
 import ExportPickerButton from './ui/ExportPickerButton.jsx';
 
@@ -260,6 +261,7 @@ const ApplicateurMaintenanceModal = ({ group, activeRecords, onConfirm, onClose,
 
 // ── Main component ────────────────────────────────────────────────────────────
 const ApplicateursPreventifTable = () => {
+  const navigate = useNavigate();
   const [applicateurs, setApplicateurs] = useState([]);
   const [thresholds, setThresholds] = useState([]);
   const [preventiveRecords, setPreventiveRecords] = useState([]);
@@ -298,6 +300,18 @@ const ApplicateursPreventifTable = () => {
     });
     return map;
   }, [preventiveRecords]);
+
+  // Index the real inventory applicateurs by numero_outil, for the "voir
+  // dans l'inventaire" eye icon to resolve which applicateur to open.
+  const applicateurByOutil = useMemo(() => {
+    const map = {};
+    applicateurs.forEach((a) => { map[String(a.numero_outil ?? '').trim()] = a; });
+    return map;
+  }, [applicateurs]);
+
+  const goToInventaire = (applicateurId) => {
+    navigate('/inventaire?categorie=applicateurs', { state: { applicateurId } });
+  };
 
   const normalizedSearch = normalizeText(searchQuery);
   const filteredThresholds = useMemo(() =>
@@ -478,6 +492,7 @@ const ApplicateursPreventifTable = () => {
                   const activeRecs = preventiveByOutil[outilKey] || [];
                   const datePro = activeRecs[0]?.date_prochaine ?? null;
                   const schedule = getScheduleInfo(datePro);
+                  const matchedApplicateur = applicateurByOutil[outilKey];
 
                   // Stub row for applicateurs with no threshold configuration
                   if (group.rows.length === 0) {
@@ -486,7 +501,16 @@ const ApplicateursPreventifTable = () => {
                         style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border2)' }}>
                         <td className="px-4 py-3 align-top font-mono font-bold text-amber-600 whitespace-nowrap border-l-2 border-amber-200">
                           <div className="flex flex-col gap-1.5">
-                            <span>{formatValue(group.numeroOutil)}</span>
+                            <div className="flex items-center gap-1.5">
+                              <span>{formatValue(group.numeroOutil)}</span>
+                              {matchedApplicateur && (
+                                <button type="button" onClick={() => goToInventaire(matchedApplicateur.id)}
+                                  title="Voir dans l'inventaire"
+                                  className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex-shrink-0">
+                                  <Eye className="w-3 h-3" />
+                                </button>
+                              )}
+                            </div>
                             <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
                               {schedule.label}
                             </span>
@@ -525,7 +549,16 @@ const ApplicateursPreventifTable = () => {
                         {rowIndex === 0 && (
                           <td rowSpan={group.rows.length} className="px-4 py-3 align-top font-mono font-bold text-amber-600 whitespace-nowrap border-l-2 border-amber-200">
                             <div className="flex flex-col gap-1.5">
-                              <span>{formatValue(group.numeroOutil)}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span>{formatValue(group.numeroOutil)}</span>
+                                {matchedApplicateur && (
+                                  <button type="button" onClick={() => goToInventaire(matchedApplicateur.id)}
+                                    title="Voir dans l'inventaire"
+                                    className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex-shrink-0">
+                                    <Eye className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
                               {group.rows.length > 1 && <span className="text-[11px]" style={{ color: 'var(--text3)' }}>{group.rows.length} seuils</span>}
                               <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
                                 {schedule.label}

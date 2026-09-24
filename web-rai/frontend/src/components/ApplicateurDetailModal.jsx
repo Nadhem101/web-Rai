@@ -73,6 +73,10 @@ const ApplicateurDetailModal = ({ applicateur, isOpen, onClose }) => {
                 <label className="text-xs text-gray-600 font-semibold">N° Série</label>
                 <p className="text-sm font-mono text-gray-800">{applicateur.numero_serie || '-'}</p>
               </div>
+              <div>
+                <label className="text-xs text-gray-600 font-semibold">Emplacement</label>
+                <p className="text-sm text-gray-800">{applicateur.Zone?.nom_zone || '-'}</p>
+              </div>
             </div>
 
             <div className="pb-4 border-b-2 border-orange-300 mb-4">

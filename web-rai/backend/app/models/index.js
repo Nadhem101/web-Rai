@@ -70,11 +70,14 @@ DetailArticle.belongsTo(ArticleTest, { foreignKey: 'id_article', as: 'article' }
 Fabricant.hasMany(Pince, { foreignKey: 'fabricant_id' });
 Pince.hasMany(PinceVariant, { foreignKey: 'pince_id', as: 'variants' });
 PinceVariant.hasMany(PinceMaintenanceRecord, { foreignKey: 'pince_variant_id', as: 'maintenanceRecords' });
+Zone.hasMany(Pince, { foreignKey: 'zone_id' });
 
 // Applicateur relationships
 Fabricant.hasMany(Applicateur, { foreignKey: 'fabricant_id' });
 Applicateur.hasMany(ApplicateurVariant, { foreignKey: 'applicateur_id', as: 'variants' });
 ApplicateurVariant.hasMany(ApplicateurMaintenanceRecord, { foreignKey: 'applicateur_variant_id', as: 'maintenanceRecords' });
+Zone.hasMany(Applicateur, { foreignKey: 'zone_id' });
+Applicateur.belongsTo(Zone, { foreignKey: 'zone_id' });
 
 // Suivi moyen relationships
 SuiviMoyen.hasMany(SuiviMoyenLigne, { foreignKey: 'suivi_moyen_id', as: 'lignes', onDelete: 'CASCADE' });

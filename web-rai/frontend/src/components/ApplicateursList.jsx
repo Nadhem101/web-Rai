@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { applicateurService, applicateurPreventiveService } from '../services/api';
 import ApplicateurDetailModal from './ApplicateurDetailModal';
 import ApplicateurForm from './ApplicateurForm';
@@ -147,6 +148,9 @@ const StatusBadge = ({ statut }) => {
 };
 
 const ApplicateursList = ({ searchQuery = '' }) => {
+  const location = useLocation();
+  const preselectedApplicateurId = location.state?.applicateurId ? Number(location.state.applicateurId) : null;
+
   const [applicateurs, setApplicateurs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedApplicateur, setSelectedApplicateur] = useState(null);
@@ -155,6 +159,17 @@ const ApplicateursList = ({ searchQuery = '' }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
 
   useEffect(() => { fetchApplicateurs(); }, []);
+
+  // Arriving from Suivi préventif's "voir dans l'inventaire" eye icon —
+  // auto-open that applicateur's detail once the list has loaded.
+  const autoOpenedRef = React.useRef(false);
+  useEffect(() => {
+    if (preselectedApplicateurId && applicateurs.length > 0 && !autoOpenedRef.current) {
+      autoOpenedRef.current = true;
+      const match = applicateurs.find((a) => a.id === preselectedApplicateurId);
+      if (match) { setSelectedApplicateur(match); setShowModal(true); }
+    }
+  }, [preselectedApplicateurId, applicateurs]);
 
   const fetchApplicateurs = async () => {
     try {
@@ -184,11 +199,11 @@ const ApplicateursList = ({ searchQuery = '' }) => {
   const applicateursExportColumns = [
     { header: 'N° Outil', key: 'numero' }, { header: 'Désignation', key: 'designation', width: 26 },
     { header: 'Constructeur', key: 'constructeur' }, { header: 'N° Série', key: 'serie' },
-    { header: 'Cosses', key: 'cosses' }, { header: 'Statut', key: 'statut' },
+    { header: 'Emplacement', key: 'emplacement' }, { header: 'Cosses', key: 'cosses' }, { header: 'Statut', key: 'statut' },
   ];
   const buildApplicateurRow = (a) => ({
     numero: a.numero_outil || '', designation: a.designation || '', constructeur: a.constructeur_outil || '',
-    serie: a.numero_serie || '', cosses: a.variants?.length || 0, statut: a.statut || '',
+    serie: a.numero_serie || '', emplacement: a.Zone?.nom_zone || '', cosses: a.variants?.length || 0, statut: a.statut || '',
   });
 
   const handleDetailClick  = (a) => { setSelectedApplicateur(a); setShowModal(true); };
@@ -268,6 +283,7 @@ const ApplicateursList = ({ searchQuery = '' }) => {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Désignation</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Constructeur</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500 whitespace-nowrap">N° Série</th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Emplacement</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Cosses</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Statut</th>
                 <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
@@ -276,7 +292,7 @@ const ApplicateursList = ({ searchQuery = '' }) => {
             <tbody className="divide-y divide-slate-100">
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-14 text-center">
+                  <td colSpan={8} className="py-14 text-center">
                     <PackageOpen className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                     <p className="text-sm text-slate-400">Aucun applicateur trouvé</p>
                   </td>
@@ -288,6 +304,7 @@ const ApplicateursList = ({ searchQuery = '' }) => {
                     <td className="px-4 py-3 text-slate-700 max-w-[180px] truncate" title={a.designation}>{a.designation || '—'}</td>
                     <td className="px-4 py-3 text-slate-500">{a.constructeur_outil || '—'}</td>
                     <td className="px-4 py-3 font-mono text-xs text-slate-500">{a.numero_serie || '—'}</td>
+                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{a.Zone?.nom_zone || '—'}</td>
                     <td className="px-4 py-3 text-center">
                       <span className="inline-flex items-center justify-center min-w-[2rem] px-2 py-0.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">
                         {a.variants?.length || 0}

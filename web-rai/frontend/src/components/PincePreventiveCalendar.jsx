@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { pincePreventiveService, pinceService } from '../services/api';
-import { Pencil, Trash2, Plus, X, AlertCircle, Wrench, ClipboardList } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Pencil, Trash2, Plus, X, AlertCircle, Wrench, ClipboardList, Eye } from 'lucide-react';
 import ExportExcelButton from './ui/ExportExcelButton.jsx';
 import ExportPickerButton from './ui/ExportPickerButton.jsx';
 
@@ -473,6 +474,7 @@ const MaintenanceModal = ({ group, onConfirm, onClose, saving, error }) => {
 
 // ── PincePreventiveCalendar ───────────────────────────────────────────────────
 const PincePreventiveCalendar = ({ searchQuery = '' }) => {
+  const navigate = useNavigate();
   const [pinces, setPinces] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -501,6 +503,18 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
 
   // All groups built from inventory (every pince appears, even without records)
   const allGroups = useMemo(() => buildMergedGroups(pinces, records), [pinces, records]);
+
+  // Index the real inventory pinces by numero_pince, for the "voir dans
+  // l'inventaire" eye icon to resolve which pince to open.
+  const pinceByNumero = useMemo(() => {
+    const map = {};
+    pinces.forEach((p) => { map[String(p.numero_pince ?? '').trim()] = p; });
+    return map;
+  }, [pinces]);
+
+  const goToInventaire = (pinceId) => {
+    navigate('/inventaire?categorie=pinces', { state: { pinceId } });
+  };
 
   // Filter groups by search query
   const groupedRecords = useMemo(() => {
@@ -728,6 +742,7 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
             <tbody className="">
               {groupedRecords.flatMap((group) => {
                 const schedule = getGroupScheduleInfo(group);
+                const matchedPince = pinceByNumero[String(group.numeroPince ?? '').trim()];
 
                 // Stub row for pinces with no preventive records yet
                 if (group.rows.length === 0) {
@@ -736,7 +751,16 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                       style={{ background: 'var(--panel)', borderBottom: '1px solid var(--border2)' }}>
                       <td className="px-3 py-3 align-top border-l-[3px] border-l-[var(--accent)]">
                         <div className="flex flex-col gap-1.5 min-w-[130px]">
-                          <span className="font-mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{group.numeroPince}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{group.numeroPince}</span>
+                            {matchedPince && (
+                              <button type="button" onClick={() => goToInventaire(matchedPince.id)}
+                                title="Voir dans l'inventaire"
+                                className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex-shrink-0">
+                                <Eye className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                           <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
                             {schedule.label}
                           </span>
@@ -761,7 +785,16 @@ const PincePreventiveCalendar = ({ searchQuery = '' }) => {
                     <tr key={rowKey} className="transition-colors hover:bg-[var(--panel3)]" style={{ background: rowIndex % 2 === 0 ? 'var(--panel)' : 'var(--panel2)', borderBottom: '1px solid var(--border2)' }}>
                       {renderMergedCell(group, 'numero_pince', record, rowIndex, 'px-3 py-3 align-top border-l-[3px] border-l-[var(--accent)]', (value) => (
                         <div className="flex flex-col gap-1.5 min-w-[130px]">
-                          <span className="font-mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{formatValue(value)}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono font-bold text-sm" style={{ color: 'var(--accent)' }}>{formatValue(value)}</span>
+                            {matchedPince && (
+                              <button type="button" onClick={() => goToInventaire(matchedPince.id)}
+                                title="Voir dans l'inventaire"
+                                className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors flex-shrink-0">
+                                <Eye className="w-3 h-3" />
+                              </button>
+                            )}
+                          </div>
                           <span className={`inline-flex items-center self-start rounded-full border px-2 py-0.5 text-[11px] font-semibold ${schedule.chipClass}`}>
                             {schedule.label}
                           </span>

@@ -1,4 +1,4 @@
-const { Applicateur, ApplicateurVariant, Cosse } = require('../models');
+const { Applicateur, ApplicateurVariant, Cosse, Zone } = require('../models');
 
 const buildPrimaryVariantPayload = (cosse) => ({
   reference_constructeur: cosse.reference_constructeur || null,
@@ -24,6 +24,7 @@ exports.findAll = async (req, res) => {
   try {
     const applicateurs = await Applicateur.findAll({
       include: [
+        Zone,
         {
           model: ApplicateurVariant,
           as: 'variants',
@@ -41,6 +42,7 @@ exports.findOne = async (req, res) => {
   try {
     const applicateur = await Applicateur.findByPk(req.params.id, {
       include: [
+        Zone,
         {
           model: ApplicateurVariant,
           as: 'variants',
