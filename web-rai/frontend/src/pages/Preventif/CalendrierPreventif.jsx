@@ -39,9 +39,15 @@ const CALENDAR_VIEWS = [
     title: 'Calendrier des preventives systematiques — Assemblage Mecanique',
     subtitle: '" KW01 ===> KW53 "',
     reference: 'FQ024/00',
+    // Mirrors the sidebar's "Assemblage Meca" grouping in navConfig.js —
+    // Assemblage Électro-Mécanique, Électro-aimant and Chauvin Arnoux fold
+    // into this same view (they're still their own real zones, just
+    // grouped here as a calendar convenience).
     matches: (equipement) => {
       const zone = normalizeText(equipement?.Zone?.nom_zone || equipement?.zone);
-      return isStandardCalendarEquipment(equipement) && ['bobinage', 'embases relais'].includes(zone);
+      return isStandardCalendarEquipment(equipement) && [
+        'bobinage', 'embases relais', 'assemblage electro-mecanique', 'electro-aimant', 'chauvin arnoux',
+      ].includes(zone);
     },
   },
   {
@@ -50,9 +56,10 @@ const CALENDAR_VIEWS = [
     title: 'Calendrier des preventives systematiques — Faisceau Cable',
     subtitle: '" KW01 ===> KW53 "',
     reference: 'FQ024/00',
+    // Mirrors the sidebar's "Faisceau Cable" grouping — Kuhn folds in here too.
     matches: (equipement) => {
       const zone = normalizeText(equipement?.Zone?.nom_zone || equipement?.zone);
-      return isStandardCalendarEquipment(equipement) && ['club', 'cablage'].includes(zone);
+      return isStandardCalendarEquipment(equipement) && ['club', 'cablage', 'kuhn'].includes(zone);
     },
   },
   {

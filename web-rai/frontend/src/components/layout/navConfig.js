@@ -3,26 +3,29 @@
 // Sidebar.jsx (it has its own local expand state) — this just holds the data
 // it maps over.
 
+// Each entry still links to its own real zone (`zone:<nom_zone>`, matched
+// against the live `zones` table by ListeEquipements.jsx) — `group` is a
+// purely presentational bucket for the sidebar and the maintenance
+// calendar's view tabs (see CALENDAR_VIEWS in CalendrierPreventif.jsx,
+// which mirrors this same grouping). Creating/editing an equipment still
+// shows every real zone flat, ungrouped — the grouping never touches the
+// underlying zone data, it's just a navigation/calendar convenience.
 export const subZones = [
-  // Assemblage Meca
+  // Assemblage Meca — Bobinage/Embases Relais were already here; Assemblage
+  // Électro-Mécanique, Électro-aimant and Chauvin Arnoux folded in per
+  // explicit request (previously listed standalone).
   { group: 'Assemblage Meca', id: 'zone:Bobinage', label: 'Bobinage' },
   { group: 'Assemblage Meca', id: 'zone:Embases Relais', label: 'Embases Relais' },
-  // Faisceau Cable
+  { group: 'Assemblage Meca', id: 'zone:Assemblage Electro-Mecanique', label: 'Assemblage Électro-Mécanique' },
+  { group: 'Assemblage Meca', id: 'zone:Electro-aimant', label: 'Électro-aimant' },
+  { group: 'Assemblage Meca', id: 'zone:Chauvin Arnoux', label: 'Chauvin Arnoux' },
+  // Faisceau Cable — Kuhn folded in per explicit request (previously standalone).
   { group: 'Faisceau Cable', id: 'zone:Club', label: 'Club' },
   { group: 'Faisceau Cable', id: 'zone:Cablage', label: 'Cablage' },
-  // Individual zones
+  { group: 'Faisceau Cable', id: 'zone:Kuhn', label: 'Kuhn' },
+  // Individual zones — unchanged.
   { group: 'Electronique', id: 'zone:Electronique', label: 'Electronique', standalone: true },
   { group: 'Maintenance', id: 'zone:Maintenance', label: 'Maintenance', standalone: true },
-  // These four exist in the zones table but had no sidebar entry at all —
-  // equipment assigned to them saved fine but was unreachable via nav
-  // (see conversation: "if i change an existing equipment for chevain
-  // arnoux ... it disappears"). Listed standalone rather than folded into
-  // Assemblage Meca / Faisceau Cable above since their floor-layout
-  // grouping isn't confirmed.
-  { group: 'Assemblage Électro-Mécanique', id: 'zone:Assemblage Electro-Mecanique', label: 'Assemblage Électro-Mécanique', standalone: true },
-  { group: 'Électro-aimant', id: 'zone:Electro-aimant', label: 'Électro-aimant', standalone: true },
-  { group: 'Kuhn', id: 'zone:Kuhn', label: 'Kuhn', standalone: true },
-  { group: 'Chauvin Arnoux', id: 'zone:Chauvin Arnoux', label: 'Chauvin Arnoux', standalone: true },
 ];
 
 export const zoneGroups = ['Assemblage Meca', 'Faisceau Cable'];
